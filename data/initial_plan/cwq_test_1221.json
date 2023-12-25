@@ -1,0 +1,2318 @@
+[
+    {
+        "ID": "WebQTest-832_c334509bb5e02cacae1ba2e80c176499",
+        "compositionality_type": "composition",
+        "created": "2018-02-13T04:12:57",
+        "machine_question": "when is the last time the the team has a team moscot named Lou Seal won the world series",
+        "question": "Lou Seal is the mascot for the team that last won the World Series when?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:sports.sports_team.team_mascot ns:m.03_dwn . \n?c ns:sports.sports_team.championships ?x .\n?x ns:time.event.start_date ?sk0 .\n}\nORDER BY DESC(xsd:datetime(?sk0))\nLIMIT 1\n",
+        "webqsp_ID": "WebQTest-832",
+        "webqsp_question": "when is the last time the giants won the world series",
+        "topic_entity": {
+            "m.03_dwn": "Lou Seal"
+        },
+        "answer": "2014 World Series",
+        "relation_path_candidates": {
+            "Lou Seal": [
+                "Lou Seal -> sports.sports_team_mascot.team -> sports.sports_championship.most_recent_winner -> sports.sports_championship.year",
+                "Lou Seal -> sports.sports_team_mascot.team -> sports.sports_team_championships.championship -> sports.sports_championship.year"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-1259_1997cb4922db71983be26e6a509950f4",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T21:58:58",
+        "machine_question": "where did the artist had a concert tour named Country Nation World Tour graduate from college",
+        "question": "Where did the \"Country Nation World Tour\" concert artist go to college?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:music.artist.concert_tours ns:m.010qhfmm . \n?c ns:people.person.education ?y .\n?y ns:education.education.institution ?x .\n?x ns:common.topic.notable_types ns:m.01y2hnl .\n?y ns:education.education.degree ns:m.019v9k .\n}\n",
+        "webqsp_ID": "WebQTrn-1259",
+        "webqsp_question": "where did brad paisley graduate from college",
+        "topic_entity": {
+            "m.010qhfmm": "Country Nation World Tour",
+            "m.019v9k": "Bachelor's degree"
+        },
+        "answer": "Belmont University",
+        "relation_path_candidates": {
+            "Country Nation World Tour": [
+                "Country Nation World Tour -> music.concert_tours.concert_artist -> people.person.education -> education.education.institution",
+                "Country Nation World Tour -> music.concert_tours.concert_artist -> people.person.education -> education.education.institution -> education.education.institution.graduates",
+                "Country Nation World Tour -> music.concert_tours.concert_artist -> people.person.education -> education.education.institution.graduates"
+            ],
+            "Bachelor's degree": [
+                "Bachelor's degree -> education.education.institution.graduates",
+                "Bachelor's degree -> education.education.institution"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-1384_744a496b907e407b16bc5d7c197dc3f0",
+        "compositionality_type": "composition",
+        "created": "2018-02-13T05:14:50",
+        "machine_question": "what is the predominant religion in the religious leader is Ovadia Yosef",
+        "question": "What is the predominant religion where the leader is Ovadia Yosef?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:religion.religious_leadership_jurisdiction.leader ?k .\n?k ns:religion.religious_organization_leadership.leader ns:m.02qmnw . \n?c ns:location.statistical_region.religions ?y .\n?y ns:location.religion_percentage.religion ?x .\n?y ns:location.religion_percentage.percentage ?sk0 .\n}\nORDER BY DESC(xsd:float(?sk0))\nLIMIT 1\n",
+        "webqsp_ID": "WebQTest-1384",
+        "webqsp_question": "what is the predominant religion in israel",
+        "topic_entity": {
+            "m.02qmnw": "Ovadia Yosef"
+        },
+        "answer": "Judaism",
+        "relation_path_candidates": {
+            "Ovadia Yosef": [
+                "Ovadia Yosef -> people.leader.title -> organization.leadership.leader -> organization.organization_leadership.role -> organization.organization_leadership.religion -> religion.religion_leader.religion",
+                "Ovadia Yosef -> people.leader.title -> organization.leadership.leader -> organization.organization_leadership.religion -> religion.religion_leader.religion"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-241_dfb6c97ac9bf2f0ac07f27dd80f9edc2",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-12T20:06:06",
+        "machine_question": "what countries share borders with france and is the location contains and airport that server Nijmegen",
+        "question": "What country bordering France contains an airport that serves Nijmegen?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.0f8l9c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.0f8l9c ns:location.location.adjoin_s ?y .\n?y ns:location.adjoining_relationship.adjoins ?x .\n?x ns:common.topic.notable_types ns:m.01mp .\n?x ns:location.location.contains ?c .\n?c ns:aviation.airport.serves ns:m.05g2b . \n}",
+        "webqsp_ID": "WebQTrn-241",
+        "webqsp_question": "what countries share borders with france",
+        "topic_entity": {
+            "m.0f8l9c": "France",
+            "m.05g2b": "Nijmegen"
+        },
+        "answer": "Germany",
+        "relation_path_candidates": {
+            "France": [
+                "France -> location.location.contains -> location.location.airports",
+                "France -> location.location.adjoins -> location.location.airports"
+            ],
+            "Nijmegen": [
+                "Nijmegen -> location.location.airport_served_by_airport -> location.airport.serves",
+                "Nijmegen -> location.location.airport_served_by_airport -> location.location.contains"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-1077_f4a9e5f1e0dcfb82cbadf4771eda7bb5",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T21:40:31",
+        "machine_question": "what religions are practiced in the country that has the national anthem Afghan National Anthem",
+        "question": "The national anthem Afghan National Anthem is from the country which practices what religions?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:location.country.national_anthem ?k .\n?k ns:government.national_anthem_of_a_country.anthem ns:m.02r0hl7 . \n?c ns:location.statistical_region.religions ?y .\n?y ns:location.religion_percentage.religion ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-1077",
+        "webqsp_question": "what religions are practiced in afghanistan",
+        "topic_entity": {
+            "m.02r0hl7": "Afghan National Anthem"
+        },
+        "answer": "Sunni Islam",
+        "relation_path_candidates": {
+            "Afghan National Anthem": [
+                "Afghan National Anthem -> government.national_anthem_of_a_country.anthem -> location.country.national_anthem -> location.statistical_region.religions",
+                "Afghan National Anthem -> government.national_anthem_of_a_country.anthem -> location.country.national_anthem -> location.religion_percentage.religion",
+                "Afghan National Anthem -> government.national_anthem_of_a_country.anthem -> location.country.national_anthem -> location.religion_percentage.religion_percentage"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-576_01e2da60a2779c4ae4b5d1547499a4f8",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T03:48:03",
+        "machine_question": "what are the 7 countries that are part of central america and is the country that contains Alta Verapaz Department",
+        "question": "Which nation has the Alta Verapaz Department and is in Central America?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.01tzh)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.01tzh ns:location.location.contains ?x .\n?x ns:common.topic.notable_types ns:m.01mp .\n?x ns:location.country.administrative_divisions ns:m.0146np . \n}",
+        "webqsp_ID": "WebQTest-576",
+        "webqsp_question": "what are the 7 countries that are part of central america",
+        "topic_entity": {
+            "m.01tzh": "Central America",
+            "m.0146np": "Alta Verapaz Department"
+        },
+        "answer": "Guatemala",
+        "relation_path_candidates": {
+            "Central America": [
+                "Central America -> location.location.containedby -> location.country.national_capital -> location.country.administrative_divisions -> location.administrative_division.department",
+                "Central America -> location.location.containedby -> location.country.administrative_divisions -> location.administrative_division.department"
+            ],
+            "Alta Verapaz Department": [
+                "Alta Verapaz Department -> location.administrative_division.country",
+                "Alta Verapaz Department -> location.administrative_division.department -> location.administrative_division.country"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-590_6aad73acb74f304bc9acae44314164be",
+        "compositionality_type": "composition",
+        "created": "2018-02-13T03:49:14",
+        "machine_question": "who is in charge of the country that has the national anthem Libya, Libya, Libya now",
+        "question": "Which man is the leader of the country that uses Libya, Libya, Libya as its national anthem?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:location.country.national_anthem ?k .\n?k ns:government.national_anthem_of_a_country.anthem ns:m.0gg95zf . \n?c ns:government.governmental_jurisdiction.governing_officials ?y .\n?y ns:government.government_position_held.office_holder ?x .\n?y ns:government.government_position_held.office_position_or_title ns:m.0j5wjnc .\nFILTER(NOT EXISTS {?y ns:government.government_position_held.from ?sk0} || \nEXISTS {?y ns:government.government_position_held.from ?sk1 . \nFILTER(xsd:datetime(?sk1) <= \"2015-08-10\"^^xsd:dateTime) })\nFILTER(NOT EXISTS {?y ns:government.government_position_held.to ?sk2} || \nEXISTS {?y ns:government.government_position_held.to ?sk3 . \nFILTER(xsd:datetime(?sk3) >= \"2015-08-10\"^^xsd:dateTime) })\n}\n",
+        "webqsp_ID": "WebQTest-590",
+        "webqsp_question": "who is in charge of libya now",
+        "topic_entity": {
+            "m.0gg95zf": "Libya, Libya, Libya",
+            "m.0j5wjnc": "Prime Minister of Libya"
+        },
+        "answer": "Abdullah al-Thani",
+        "relation_path_candidates": {
+            "Libya, Libya, Libya": [
+                "Libya, Libya, Libya -> government.national_anthem_of_a_country.anthem -> location.country.head_of_state",
+                "Libya, Libya, Libya -> location.country.national_anthem -> location.country.head_of_state",
+                "Libya, Libya, Libya -> government.national_anthem_of_a_country.anthem -> location.location.head_of_state",
+                "Libya, Libya, Libya -> location.country.national_anthem -> location.location.head_of_state"
+            ],
+            "Prime Minister of Libya": [
+                "Prime Minister of Libya -> government.government_position_held.office_holder -> location.country.national_anthem",
+                "Prime Minister of Libya -> government.government_position_held.office_holder -> location.location.national_anthem",
+                "Prime Minister of Libya -> government.government_position_held.office_holder -> location.location.head_of_state",
+                "Prime Minister of Libya -> government.government_position_held.office_holder -> location.country.head_of_state"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-3251_d8cddfe5e947e414b7735780ef1efff8",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T01:31:49",
+        "machine_question": "what college is in greeley colorado and is the education institution has a sports team named Northern Colorado Bears football",
+        "question": "What educational institution has a football sports team named Northern Colorado Bears is in Greeley, Colorado?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.0rczx)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.0rczx ns:location.location.contains ?x .\n?x ns:common.topic.notable_types ns:m.01y2hnl .\n?x ns:education.educational_institution.sports_teams ns:m.0lqj7vt . \n}",
+        "webqsp_ID": "WebQTrn-3251",
+        "webqsp_question": "what college is in greeley colorado",
+        "topic_entity": {
+            "m.0rczx": "Greeley",
+            "m.0lqj7vt": "Northern Colorado Bears football"
+        },
+        "answer": "University of Northern Colorado",
+        "relation_path_candidates": {
+            "Greeley": [
+                "Greeley -> location.location.containedby -> organization.educational_institution.campuses -> organization.sports_team.location",
+                "Greeley -> location.location.containedby -> organization.educational_institution.campuses -> organization.sports_team.location -> organization.sports_team.sport",
+                "Greeley -> location.location.containedby -> organization.educational_institution.campuses -> organization.sports_team.sport"
+            ],
+            "Northern Colorado Bears football": [
+                "Northern Colorado Bears football -> sports.sports_team_roster.team -> organization.sports_team.location",
+                "Northern Colorado Bears football -> sports.sports_team_roster.team -> organization.sports_team.location -> organization.educational_institution.campuses",
+                "Northern Colorado Bears football -> sports.sports_team_roster.team -> organization.sports_team.location -> organization.educational_institution.campuses -> organization.educational_institution.name"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-2069_0fa727f3b282196eb1097410b4be6818",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T23:22:00",
+        "machine_question": "what language the location that appointed Michelle Bachelet to govermental position speak",
+        "question": "What language is spoken in the location that appointed Michelle Bachelet to a governmental position speak?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:government.governmental_jurisdiction.governing_officials ?k .\n?k ns:government.government_position_held.appointed_by ns:m.03wws_ . \n?c ns:location.country.languages_spoken ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-2069",
+        "webqsp_question": "what language chile speak",
+        "topic_entity": {
+            "m.03wws_": "Michelle Bachelet"
+        },
+        "answer": "Spanish Language",
+        "relation_path_candidates": {
+            "Michelle Bachelet": [
+                "Michelle Bachelet -> government.government_position_held.jurisdiction_of_office -> location.location.containedby -> location.location.contains -> location.location.holds_offices -> location.location.spoken_languages",
+                "Michelle Bachelet -> government.government_position_held.jurisdiction_of_office -> location.location.holds_offices -> location.location.spoken_languages",
+                "Michelle Bachelet -> government.government_position_held.jurisdiction_of_office -> location.location.spoken_languages"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-1938_7322a2a4d46bf36b95bfab4418c9a32b",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T23:08:49",
+        "machine_question": "what type of government does the country that contains Northern District",
+        "question": "What type of government is used in the country with Northern District?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:location.country.administrative_divisions ns:m.01vz6b . \n?c ns:location.country.form_of_government ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-1938",
+        "webqsp_question": "what type of government does israel",
+        "topic_entity": {
+            "m.01vz6b": "Northern District"
+        },
+        "answer": "Parliamentary system",
+        "relation_path_candidates": {
+            "Northern District": [
+                "Northern District -> location.location.contains -> location.administrative_division.country -> government.governmental_jurisdiction.government_type",
+                "Northern District -> location.location.contains -> location.administrative_division.country -> government.governmental_jurisdiction.government_type",
+                "Northern District -> location.location.contains -> location.administrative_division.country -> government.governmental_jurisdiction.government_type"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-60_68f0d0ad309d64a4af858a5ef4fb5713",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-12T19:43:48",
+        "machine_question": "what countries do people speak portuguese and is the chile laber percent was once 1.8",
+        "question": "In which countries do the people speak Portuguese, where the child labor percentage was once 1.8?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.05zjd)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.05zjd ns:language.human_language.countries_spoken_in ?x .\n?x ns:location.statistical_region.child_labor_percent ?c .\n?c ns:measurement_unit.dated_percentage.rate \"1.8\" . \n}",
+        "webqsp_ID": "WebQTrn-60",
+        "webqsp_question": "what countries do people speak portuguese",
+        "topic_entity": {
+            "m.05zjd": "Portuguese Language"
+        },
+        "answer": "Mozambique",
+        "relation_path_candidates": {
+            "Portuguese Language": [
+                "Portuguese Language -> language.language_speakers.language -> location.language_speakers.speaks_language -> location.country.languages_spoken",
+                "Portuguese Language -> language.language_speakers.language -> location.language_speakers.speaks_language -> location.country.child_labor_percentage"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-100_bf66fd89b6e9fc5fcb96c8b3f7a0e616",
+        "compositionality_type": "composition",
+        "created": "2018-02-13T02:46:16",
+        "machine_question": "what language is spoken in the country that contains Nord-Ouest Department today",
+        "question": "The people from the country that contains Nord-Ouest Department speak what languages today?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:location.country.administrative_divisions ns:m.02g__4 . \n?c ns:location.country.languages_spoken ?x .\n}\n",
+        "webqsp_ID": "WebQTest-100",
+        "webqsp_question": "what language is spoken in haiti today",
+        "topic_entity": {
+            "m.02g__4": "Nord-Ouest Department"
+        },
+        "answer": "French",
+        "relation_path_candidates": {
+            "Nord-Ouest Department": [
+                "Nord-Ouest Department -> location.location.contains -> location.country.languages_spoken",
+                "Nord-Ouest Department -> location.location.contains -> location.country.language_spoken",
+                "Nord-Ouest Department -> location.location.contains -> location.country.language"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-962_032f61bfcfed69da8b215bb8f058c24e",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T21:28:01",
+        "machine_question": "who played the film has a charcter named Jenny's Father as a kid",
+        "question": "What actor played the a kid in the movie with a character named Jenny's Father?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:film.film.starring ?k .\n?k ns:film.performance.character ns:m.0y54dn_ . \n?c ns:film.film.starring ?y .\n?y ns:film.performance.actor ?x .\n?y ns:film.performance.character ns:m.0264f7h .\n?y ns:film.performance.character_note ?sk0 .\nFILTER (str(?sk0) = \"Young Forrest\")\n}\n",
+        "webqsp_ID": "WebQTrn-962",
+        "webqsp_question": "who played forrest gump as a kid",
+        "topic_entity": {
+            "m.0y54dn_": "Jenny's Father",
+            "m.0264f7h": "Forrest Gump"
+        },
+        "answer": "Michael Connor Humphreys",
+        "relation_path_candidates": {
+            "Jenny's Father": [
+                "Jenny's Father -> film.film_character.portrayed_in_films -> film.performance.actor -> film.performance.film",
+                "Jenny's Father -> film.film_character.portrayed_in_films -> film.performance.actor -> film.film.performance",
+                "Jenny's Father -> film.film_character.portrayed_in_films -> film.performance.actor -> film.film.character.portrayed_in_films"
+            ],
+            "Forrest Gump": [
+                "Forrest Gump -> film.film_character.portrayed_in_films -> film.performance.actor -> film.performance.film",
+                "Forrest Gump -> film.film_character.portrayed_in_films -> film.performance.actor -> film.film.performance",
+                "Forrest Gump -> film.film_character.portrayed_in_films -> film.performance.actor -> film.film.character.portrayed_in_films"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-849_586aae7703d62aa44eb79759e1563309",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-12T21:13:45",
+        "machine_question": "which countries do germany border and is the country that contains Lejre Municipality",
+        "question": "What European Union country sharing borders with Germany contains the Lejre Municipality?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.0345h)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.0345h ns:location.location.adjoin_s ?y .\n?y ns:location.adjoining_relationship.adjoins ?x .\n?x ns:common.topic.notable_types ns:m.01mp .\n?x ns:location.country.administrative_divisions ns:m.010v_j8w . \n}",
+        "webqsp_ID": "WebQTrn-849",
+        "webqsp_question": "which countries do germany border",
+        "topic_entity": {
+            "m.0345h": "Germany",
+            "m.010v_j8w": "Lejre Municipality"
+        },
+        "answer": "Denmark",
+        "relation_path_candidates": {
+            "Germany": [
+                "Germany -> location.country.adjoining_countries -> location.adjoining_relationship.adjoins -> location.country.member_of_the_european_union",
+                "Germany -> location.country.adjoining_countries -> location.adjoining_relationship.adjoins -> location.country.member_of_the_european_union -> organization.membership_organization.members",
+                "Germany -> location.country.adjoining_countries -> location.adjoining_relationship.adjoins -> location.country.member_of_the_european_union -> organization.membership_organization.membership -> organization.membership_organization.member"
+            ],
+            "Lejre Municipality": [
+                "Lejre Municipality -> location.location.containedby -> location.country",
+                "Lejre Municipality -> location.location.containedby -> location.country.member_of_the_european_union",
+                "Lejre Municipality -> location.location.containedby -> location.country.member_of_the_european_union -> organization.membership_organization.members",
+                "Lejre Municipality -> location.location.containedby -> location.country.member_of_the_european_union -> organization.membership_organization.membership -> organization.membership_organization.member"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-710_c264a6d11d7956741926d417b94327e2",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T20:57:09",
+        "machine_question": "when was the last time the the organiztion leadership has a person named Larry Baer won a world series",
+        "question": "When was the last time a team led by Larr Baer win the World Series?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:organization.organization.leadership ?k .\n?k ns:organization.leadership.person ns:m.0hhv_6h . \n?c ns:sports.sports_team.championships ?x .\n?x ns:time.event.start_date ?sk0 .\n}\nORDER BY DESC(xsd:datetime(?sk0))\nLIMIT 1\n",
+        "webqsp_ID": "WebQTrn-710",
+        "webqsp_question": "when was the last time the san francisco giants won a world series",
+        "topic_entity": {
+            "m.0hhv_6h": "Larry Baer"
+        },
+        "answer": "2014 World Series",
+        "relation_path_candidates": {
+            "Larry Baer": [
+                "Larry Baer -> sports.sports_team_owner.teams_owned -> sports.sports_team.leadership -> sports.sports_team_season.leader -> sports.sports_championship_season.champion",
+                "Larry Baer -> sports.sports_team_owner.teams_owned -> sports.sports_team_season.leader -> sports.sports_championship_season.champion"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-2209_c1374f388d9cc7a78365860c91218362",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T23:35:04",
+        "machine_question": "when did the the basket ball team head coach is Brad Stevens win championship",
+        "question": "What year did the basketball team coached by Brad Stevens win the championship?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:basketball.basketball_team.head_coach ns:m.02qwvmq . \n?c ns:sports.sports_team.championships ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-2209",
+        "webqsp_question": "when did the celtics win championship",
+        "topic_entity": {
+            "m.02qwvmq": "Brad Stevens"
+        },
+        "answer": "1964 NBA Finals",
+        "relation_path_candidates": {
+            "Brad Stevens": [
+                "Brad Stevens -> sports.sports_team_coach_tenure.team -> sports.sports_team_season_champion.champion -> time.event.start_date",
+                "Brad Stevens -> sports.sports_team_coach_tenure.team -> sports.sports_team_season_champion.champion -> time.event.end_date",
+                "Brad Stevens -> sports.sports_team_coach_tenure.team -> sports.sports_team_season_champion.champion -> time.event.event_start_date"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-1251_cbf2f20f6caf754bc49d672ca7b150b7",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T04:57:06",
+        "machine_question": "which countries speak germanic languages and the currency used in the country is East German mark",
+        "question": "What country speaks Germanic languages and uses the East German mark as currency?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.04306rv)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.04306rv ns:language.human_language.countries_spoken_in ?x .\n?x ns:location.country.official_language ns:m.04306rv .\n?x ns:location.country.currency_used ns:m.01tct6 . \n}",
+        "webqsp_ID": "WebQTest-1251",
+        "webqsp_question": "which countries speak germanic languages",
+        "topic_entity": {
+            "m.04306rv": "German Language",
+            "m.01tct6": "East German mark"
+        },
+        "answer": "East Germany",
+        "relation_path_candidates": {
+            "German Language": [
+                "German Language -> language.language_countries -> location.country.languages_spoken -> location.language_speakers.language",
+                "German Language -> language.language_countries -> location.country.languages_spoken"
+            ],
+            "East German mark": [
+                "East German mark -> location.currency.currency_countries -> location.currency_used_by_country.currency_used_by_country",
+                "East German mark -> location.currency_used_by_country.currency_used_by_country"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-3100_143c89d70679c3e5257c93d8e2bc4c67",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T01:15:20",
+        "machine_question": "what is the dominican republic part of and the location time zone is UTCâ05:00",
+        "question": "Which globe region with the UTCâ05:00 time zone does the Dominican Republic call home?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.027rn)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.027rn ns:location.location.containedby ?x .\n?x ns:location.location.time_zones ns:m.02_37z . \n}",
+        "webqsp_ID": "WebQTrn-3100",
+        "webqsp_question": "what is the dominican republic part of",
+        "topic_entity": {
+            "m.027rn": "Dominican Republic",
+            "m.02_37z": "UTC−05:00"
+        },
+        "answer": "Greater Antilles",
+        "relation_path_candidates": {
+            "Dominican Republic": [
+                "Dominican Republic -> location.country.time_zones -> location.time_zone.time_zone_locations -> location.time_zone_location.time_zone -> location.time_zone_region.time_zones -> location.time_zone_region.globe_region",
+                "Dominican Republic -> location.country.time_zones -> location.time_zone.time_zone_locations -> location.time_zone_location.time_zone -> location.time_zone_region.time_zones -> location.time_zone_region.globe_region -> location.globe_region.countries",
+                "Dominican Republic -> location.country.time_zones -> location.time_zone.time_zone_locations -> location.time_zone_location.time_zone -> location.time_zone_region.time_zones -> location.time_zone_region.globe_region -> location.globe_region.countries -> location.country.currency_used"
+            ],
+            "UTC−05:00": [
+                "UTC−05:00 -> location.time_zone.time_zone_locations -> location.time_zone_location.time_zone -> location.time_zone_region.time_zones -> location.time_zone_region.globe_region",
+                "UTC−05:00 -> location.time_zone.time_zone_locations -> location.time_zone_location.time_zone -> location.time_zone_region.time_zones -> location.time_zone_region.globe_region -> location.globe_region.countries",
+                "UTC−05:00 -> location.time_zone.time_zone_locations -> location.time_zone_location.time_zone -> location.time_zone_region.time_zones -> location.time_zone_region.globe_region -> location.globe_region.countries -> location.country.currency_used"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-662_7a992044f94b39edfc37ac5dcfcb3c26",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T20:53:12",
+        "machine_question": "what was the team won the 2008 FIFA Club World Cup Final championship first name",
+        "question": "What was the name of the team that won the 2008 FIFA Club World Cup Final championship?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:sports.sports_team.championships ns:m.053nq3y . \n?c ns:sports.sports_team.previously_known_as ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-662",
+        "webqsp_question": "what was manchester united first name",
+        "topic_entity": {
+            "m.053nq3y": "2008 FIFA Club World Cup Final"
+        },
+        "answer": "Newton Heath L&YR F.C.",
+        "relation_path_candidates": {
+            "2008 FIFA Club World Cup Final": [
+                "2008 FIFA Club World Cup Final -> sports.sports_championship.winner -> sports.sports_championship.competition -> sports.sports_championship.competition_name",
+                "2008 FIFA Club World Cup Final -> sports.sports_championship.winner -> sports.sports_championship.competition_name",
+                "2008 FIFA Club World Cup Final -> sports.sports_championship.winner -> sports.sports_championship.competition -> sports.sports_championship.name",
+                "2008 FIFA Club World Cup Final -> sports.sports_championship.winner -> sports.sports_championship.name"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-743_0a8cdba29cf260283b7c890b3609c0b9",
+        "compositionality_type": "superlative",
+        "created": "2018-02-13T04:04:56",
+        "machine_question": "what was the name of jfk 's brothers and held his govermental position from latest",
+        "question": "Which of JFK's brother held the latest governmental position?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.0d3k14)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.0d3k14 ns:people.person.sibling_s ?y .\n?y ns:people.sibling_relationship.sibling ?x .\n?x ns:people.person.gender ns:m.05zppz .\n?x ns:government.politician.government_positions_held ?c .\n?c ns:government.government_position_held.from ?num .\n}\nORDER BY DESC(?num) LIMIT 1",
+        "webqsp_ID": "WebQTest-743",
+        "webqsp_question": "what was the name of jfk 's brothers",
+        "topic_entity": {
+            "m.0d3k14": "John F. Kennedy",
+            "m.05zppz": "Male"
+        },
+        "answer": "Robert F. Kennedy",
+        "relation_path_candidates": {
+            "John F. Kennedy": [
+                "John F. Kennedy -> government.politician.government_positions_held -> government.government_position_held.title",
+                "John F. Kennedy -> government.politician.government_positions_held -> government.government_position_held.office_holder"
+            ],
+            "Male": [
+                "Male -> people.person.gender -> government.politician.government_positions_held -> government.government_position_held.title",
+                "Male -> people.person.gender -> government.politician.government_positions_held -> government.government_position_held.office_holder"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-1797_68a33792b0a1e18937dcd4b3f50d941e",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T06:00:12",
+        "machine_question": "who fought in the battle of vicksburg and the country capital is Montgomery",
+        "question": "What group fought in the Battle of Vicksburg that was based in Montgomery?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.01hf7f)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.01hf7f ns:base.culturalevent.event.entity_involved ?x .\n?x ns:location.country.capital ns:m.0fttg . \n}",
+        "webqsp_ID": "WebQTest-1797",
+        "webqsp_question": "who fought in the battle of vicksburg",
+        "topic_entity": {
+            "m.01hf7f": "Siege of Vicksburg",
+            "m.0fttg": "Montgomery"
+        },
+        "answer": "Confederate States of America",
+        "relation_path_candidates": {
+            "Siege of Vicksburg": [
+                "Siege of Vicksburg -> military.battle.participants -> military.battle.participant -> military.military_combatant.combatants",
+                "Siege of Vicksburg -> military.military_combatant.combatants -> military.battle.participant -> military.battle.participants",
+                "Siege of Vicksburg -> military.battle.participant -> military.battle.participants"
+            ],
+            "Montgomery": [
+                "Montgomery -> military.military_combatant.combatants -> military.battle.participant -> military.battle.participants",
+                "Montgomery -> military.battle.participant -> military.battle.participants",
+                "Montgomery -> military.battle.participants -> military.battle.participant -> military.military_combatant.combatants"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-1864_9dc4e22121d3a46d45b8f9bd9e8c7013",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T22:59:40",
+        "machine_question": "which the location time zone is ASEAN Common Time Zone country has the biggest population",
+        "question": "Which country that is situated in the ASEAN Common Time Zone has the largest population?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:location.location.time_zones ns:m.0bzt6c . \n?c ns:location.location.contains ?x .\n?x ns:common.topic.notable_types ns:m.01mp .\n?x ns:topic_server.population_number ?sk0 .\n}\nORDER BY DESC(xsd:float(?sk0))\nLIMIT 1\n",
+        "webqsp_ID": "WebQTrn-1864",
+        "webqsp_question": "which asian country has the biggest population",
+        "topic_entity": {
+            "m.0bzt6c": "ASEAN Common Time Zone"
+        },
+        "answer": "India",
+        "relation_path_candidates": {
+            "ASEAN Common Time Zone": [
+                "ASEAN Common Time Zone -> location.timezone.countries -> location.country.population",
+                "ASEAN Common Time Zone -> location.timezone.countries -> location.country.population_number",
+                "ASEAN Common Time Zone -> location.timezone.countries -> location.country.population_total"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-1841_b8df00139e3fa59b8633ef551ed8ca9f",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-12T22:57:24",
+        "machine_question": "what are popular sports in spain and is the team won the 2010 FIFA World Cup championship",
+        "question": "What popular sport in Spain has a team that won the 2010 FIFA World Cup championship?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.06mkj)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.06mkj ns:sports.sports_team_location.teams ?x .\n?x ns:sports.sports_team.championships ns:m.016h2b . \n}",
+        "webqsp_ID": "WebQTrn-1841",
+        "webqsp_question": "what are popular sports in spain",
+        "topic_entity": {
+            "m.06mkj": "Spain",
+            "m.016h2b": "2010 FIFA World Cup"
+        },
+        "answer": "Spain national football team",
+        "relation_path_candidates": {
+            "Spain": [
+                "Spain -> location.location.sports_teams -> sports.sports_team.sport",
+                "Spain -> sports.sports_team_location.teams -> sports.sports_team.sport",
+                "Spain -> location.location.sports_teams -> sports.sports_team.sport"
+            ],
+            "2010 FIFA World Cup": [
+                "2010 FIFA World Cup -> sports.sports_championship.champion -> sports.sports_championship.winning_team -> sports.sports_team.sport",
+                "2010 FIFA World Cup -> sports.sports_championship.champion -> sports.sports_championship.winning_team -> sports.sports_team.sport"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-124_f3990dc9aa470fa81ec4cf2912a9924f",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-12T19:50:05",
+        "machine_question": "what movie did angelina jolie direct and is the film has a charcter named Ajla",
+        "question": "Which movie with a character called Ajila was directed by Angelina Jolie?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.0f4vbz)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.0f4vbz ns:film.director.film ?x .\n?x ns:film.film.starring ?c .\n?c ns:film.performance.character ns:m.0gwfc0b . \n}",
+        "webqsp_ID": "WebQTrn-124",
+        "webqsp_question": "what movie did angelina jolie direct",
+        "topic_entity": {
+            "m.0f4vbz": "Angelina Jolie",
+            "m.0gwfc0b": "Ajla"
+        },
+        "answer": "In the Land of Blood and Honey",
+        "relation_path_candidates": {
+            "Angelina Jolie": [
+                "Angelina Jolie -> film.director.film -> film.film.character -> film.character.portrayed_in_films",
+                "Angelina Jolie -> film.director.film -> film.film.character -> film.character.portrayed_in_films -> film.character.portrayed_in_films_by_actor",
+                "Angelina Jolie -> film.director.film -> film.film.character -> film.character.portrayed_in_films -> film.film.character.portrayed_in_films_by_actor"
+            ],
+            "Ajila": [
+                "Ajila -> film.character.portrayed_in_films -> film.director.film",
+                "Ajila -> film.character.portrayed_in_films -> film.film.character -> film.character.portrayed_in_films",
+                "Ajila -> film.character.portrayed_in_films -> film.film.character -> film.character.portrayed_in_films -> film.character.portrayed_in_films_by_actor",
+                "Ajila -> film.character.portrayed_in_films -> film.film.character -> film.character.portrayed_in_films -> film.film.character.portrayed_in_films_by_actor"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-538_49b4e9304f18a0a1cbe37bb162f61131",
+        "compositionality_type": "composition",
+        "created": "2018-02-13T03:44:58",
+        "machine_question": "what are all the movies the person education institution is West Reading El Ctr has been in",
+        "question": "WHat movies have the actress who is an alumni for West Reading El Ctr a part of?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:people.person.education ?k .\n?k ns:education.education.institution ns:m.076czr3 . \n?c ns:film.actor.film ?y .\n?y ns:film.performance.film ?x .\n}\n",
+        "webqsp_ID": "WebQTest-538",
+        "webqsp_question": "what are all the movies taylor swift has been in",
+        "topic_entity": {
+            "m.076czr3": "West Reading El Ctr"
+        },
+        "answer": "The Lorax",
+        "relation_path_candidates": {
+            "West Reading El Ctr": [
+                "West Reading El Ctr -> organization.organization.alumni -> film.performance.actor -> film.film.starring",
+                "West Reading El Ctr -> organization.organization.alumni -> film.performance.actor -> film.film.starring -> film.film.starring.film"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-2722_8babdaa9ecd05a72e3227b43b1f98771",
+        "compositionality_type": "composition",
+        "created": "2018-02-13T00:31:46",
+        "machine_question": "what did the person education institution is Dewitt High School win gold for",
+        "question": "For what did the personage who was educated at the Dewitt High School win a gold medal?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:people.person.education ?k .\n?k ns:education.education.institution ns:m.07635c3 . \n?c ns:olympics.olympic_athlete.medals_won ?y .\n?y ns:olympics.olympic_medal_honor.event ?x .\n?y ns:olympics.olympic_medal_honor.medal ns:m.02lpp7 .\n}\n",
+        "webqsp_ID": "WebQTrn-2722",
+        "webqsp_question": "what did jordyn wieber win gold for",
+        "topic_entity": {
+            "m.07635c3": "Dewitt High School",
+            "m.02lpp7": "Gold medal"
+        },
+        "answer": "Gymnastics at the 2012 Summer Olympics – Women's artistic team all-around",
+        "relation_path_candidates": {
+            "Dewitt High School": [
+                "Dewitt High School -> education.educational_institution.students -> award.award_winner.awards_won -> award.award_honor.award -> award.award_honor.honored_for",
+                "Dewitt High School -> education.educational_institution.alumni -> award.award_winner.awards_won -> award.award_honor.award -> award.award_honor.honored_for",
+                "Dewitt High School -> education.educational_institution.alumni -> award.award_winner.awards_won -> award.award_honor.honored_for"
+            ],
+            "Gold medal": [
+                "Gold medal -> award.award_winner.awards_won -> award.award_honor.award -> award.award_honor.honored_for",
+                "Gold medal -> award.award_honor.award -> award.award_honor.honored_for",
+                "Gold medal -> award.award_honor.honored_for"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-983_ccda690fb745939d0a62c3fbcf3e3769",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T04:29:58",
+        "machine_question": "where did tennessee williams go to college and the educational institution newspaper is The Maneater",
+        "question": "Where did Tennessee Williams go to college where the newspaper is \"The Maneater\"?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.0c4y8)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.0c4y8 ns:people.person.education ?y .\n?y ns:education.education.institution ?x .\n?x ns:common.topic.notable_types ns:m.01y2hnl .\n?x ns:education.educational_institution.newspaper ns:m.04pk3f . \n}",
+        "webqsp_ID": "WebQTest-983",
+        "webqsp_question": "where did tennessee williams go to college",
+        "topic_entity": {
+            "m.0c4y8": "Tennessee Williams",
+            "m.04pk3f": "The Maneater"
+        },
+        "answer": "University of Missouri",
+        "relation_path_candidates": {
+            "Tennessee Williams": [
+                "Tennessee Williams -> people.person.education -> education.education.institution -> organization.newspaper_circulation.newspaper -> organization.newspaper_circulation.newspaper_circulation_area -> organization.newspaper_circulation_area.newspaper_circulation_area -> organization.newspaper_circulation_area.newspaper_circulation_area -> organization.newspaper_circulation_area.newspaper_circulation_area",
+                "Tennessee Williams -> people.person.education -> education.education.institution -> organization.newspaper_circulation.newspaper"
+            ],
+            "The Maneater": [
+                "The Maneater -> organization.newspaper_circulation_area.newspaper_circulation_area -> organization.newspaper_circulation_area.newspaper_circulation_area -> organization.newspaper_circulation_area.newspaper_circulation_area -> organization.newspaper_circulation_area.newspaper_circulation_area -> organization.newspaper_circulation_area.newspaper_circulation_area -> organization.newspaper_circulation_area.newspaper_circulation_area -> organization.newspaper_circulation_area.newspaper_circulation_area -> organization.newspaper_circulation_area.newspaper_circulation_area -> organization.newspaper_circulation_area.newspaper_circulation_area -> organization.newspaper_circulation_area.newspaper_circulation_area",
+                "The Maneater -> organization.newspaper_circulation_area.newspaper_circulation_area -> organization.newspaper_circulation_area.newspaper_circulation_area -> organization.newspaper_circulation_area.newspaper_circulation_area -> organization.newspaper_circulation_area.newspaper_circulation_area -> organization.newspaper_circulation_area.newspaper_circulation_area -> organization.newspaper_circulation_area.newspaper_circulation_area -> organization.newspaper_circulation_area.newspaper_circulation_area -> organization.newspaper_circulation_area.newspaper_circulation_area"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-1770_8db36acba886620a06031d39165d78de",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T22:48:28",
+        "machine_question": "what is the artist had a concert tour named I Am... World Tour 's daughters name",
+        "question": "Who is the daughter of the artist who had a concert tour called I Am... World Tour?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:music.artist.concert_tours ns:m.05200my . \n?c ns:people.person.children ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-1770",
+        "webqsp_question": "what is beyonce 's daughters name",
+        "topic_entity": {
+            "m.05200my": "I Am... World Tour"
+        },
+        "answer": "Blue Ivy",
+        "relation_path_candidates": {
+            "I Am... World Tour": [
+                "I Am... World Tour -> music.concert_tour.artist -> people.person.children",
+                "I Am... World Tour -> music.concert_tour.artist -> people.person.child",
+                "I Am... World Tour -> music.concert_tour.artist -> people.person.offspring"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-1817_89670933168c3f4e5195a241f9d46e76",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T22:53:47",
+        "machine_question": "what type of government does the country that has the national anthem Tiáº¿n QuÃ¢n Ca have today",
+        "question": "What are the governmental types in the country whose national anthem is Tien Quan Ca?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:location.country.national_anthem ?k .\n?k ns:government.national_anthem_of_a_country.anthem ns:m.01kvf8 . \n?c ns:location.country.form_of_government ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-1817",
+        "webqsp_question": "what type of government does vietnam have today",
+        "topic_entity": {
+            "m.01kvf8": "Tiến Quân Ca"
+        },
+        "answer": "Communist state",
+        "relation_path_candidates": {
+            "Tiến Quân Ca": [
+                "Tiến Quân Ca -> government.national_anthem_of_a_country.anthem -> location.country.government_type",
+                "Tiến Quân Ca -> location.country.national_anthem -> location.country.government_type",
+                "Tiến Quân Ca -> location.country.national_anthem -> location.country.government_type"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-849_1eb0f1ddd5074471fbe3a7f6b575f202",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-12T21:13:45",
+        "machine_question": "which countries do germany border and the country capital is Copenhagen",
+        "question": "Copenhagen is the capital of which German neighboring country?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.0345h)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.0345h ns:location.location.adjoin_s ?y .\n?y ns:location.adjoining_relationship.adjoins ?x .\n?x ns:common.topic.notable_types ns:m.01mp .\n?x ns:location.country.capital ns:m.01lfy . \n}",
+        "webqsp_ID": "WebQTrn-849",
+        "webqsp_question": "which countries do germany border",
+        "topic_entity": {
+            "m.0345h": "Germany",
+            "m.01lfy": "Copenhagen"
+        },
+        "answer": "Denmark",
+        "relation_path_candidates": {
+            "Germany": [
+                "Germany -> location.country.neighboring_countries -> location.adjoining_relationship.adjoins -> location.country.capital",
+                "Germany -> location.country.neighboring_countries -> location.country.capital"
+            ],
+            "Copenhagen": [
+                "Copenhagen -> location.city.capital_of -> location.country.neighboring_countries",
+                "Copenhagen -> location.city.capital_of -> location.country"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-2152_92fba37c9723caee68665ad9a5e4a468",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-12T23:29:58",
+        "machine_question": "what teams are in the american league west and the sports team owner is Tom Hicks",
+        "question": "Which of team owners Tom Hicks sports team are in the American League West?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.07fbnf)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.07fbnf ns:sports.sports_league.teams ?y .\n?y ns:sports.sports_league_participation.team ?x .\n?x ns:sports.professional_sports_team.owner_s ns:m.02kmcb . \n}",
+        "webqsp_ID": "WebQTrn-2152",
+        "webqsp_question": "what teams are in the american league west",
+        "topic_entity": {
+            "m.07fbnf": "American League West",
+            "m.02kmcb": "Tom Hicks"
+        },
+        "answer": "Texas Rangers",
+        "relation_path_candidates": {
+            "American League West": [
+                "American League West -> sports.sports_league_teams.sports_league -> sports.sports_league_team_relationship.sports_team -> sports.sports_team_owner_relationship.sports_team_owner",
+                "American League West -> sports.sports_league_teams.sports_league -> sports.sports_league_team_relationship.sports_team -> sports.sports_team_owner_relationship.sports_team_owner.sports_team_owner_relationship.sports_team_owner"
+            ],
+            "Tom Hicks": [
+                "Tom Hicks -> sports.sports_team_owner_relationship.sports_team_owner -> sports.sports_team.league -> sports.sports_league_teams.sports_league",
+                "Tom Hicks -> sports.sports_team_owner_relationship.sports_team_owner -> sports.sports_team.league.sports_team.league -> sports.sports_league_teams.sports_league"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-3376_0619d288bbed0ca782e60c6f841a6051",
+        "compositionality_type": "composition",
+        "created": "2018-02-13T01:46:30",
+        "machine_question": "where did the person education institution is Castlemont High School go to school",
+        "question": "What colleges did the famous person who went to Castlemont High school go to?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:people.person.education ?k .\n?k ns:education.education.institution ns:m.0gy5x53 . \n?c ns:people.person.education ?y .\n?y ns:education.education.institution ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-3376",
+        "webqsp_question": "where did kevin hart go to school",
+        "topic_entity": {
+            "m.0gy5x53": "Castlemont High School"
+        },
+        "answer": "Temple University",
+        "relation_path_candidates": {
+            "Castlemont High School": [
+                "Castlemont High School -> education.educational_institution.students -> education.education.student -> education.education.student.college",
+                "Castlemont High School -> education.school_alumni.alumni -> education.alumnus.education -> education.education.education -> education.education.student.college",
+                "Castlemont High School -> education.school_alumni.alumni -> education.alumnus.education -> education.education.education -> education.education.school.college",
+                "Castlemont High School -> education.school_alumni.alumni -> education.alumnus.education -> education.education.school.college"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-567_693feb48c0515cd069014e7ca2846b37",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-12T20:44:09",
+        "machine_question": "what movies did ron howard do and is the film has a charcter named Teklel Hafouli",
+        "question": "What movie with the character Teklel Hafouli did Ron Howard do?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.0g2lq)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.0g2lq ns:film.actor.film ?y .\n?y ns:film.performance.film ?x .\n?x ns:film.film.starring ?c .\n?c ns:film.performance.character ns:m.01064ngx . \n}",
+        "webqsp_ID": "WebQTrn-567",
+        "webqsp_question": "what movies did ron howard do",
+        "topic_entity": {
+            "m.0g2lq": "Ron Howard",
+            "m.01064ngx": "Teklel Hafouli"
+        },
+        "answer": "The Journey",
+        "relation_path_candidates": {
+            "Ron Howard": [
+                "Ron Howard -> film.film.directed_by -> film.film.character -> film.film.character.portrayed_in_films -> film.film.character.portrayed_by -> film.film_staff.director",
+                "Ron Howard -> film.film.directed_by -> film.film.character -> film.film.character.portrayed_in_films -> film.film.character.portrayed_by -> film.film.director"
+            ],
+            "Teklel Hafouli": [
+                "Teklel Hafouli -> film.film.character.portrayed_in_films -> film.film.character.portrayed_by -> film.film.director",
+                "Teklel Hafouli -> film.film.character.portrayed_in_films -> film.film.character.portrayed_by -> film.film_staff.director",
+                "Teklel Hafouli -> film.film.character.portrayed_in_films -> film.film.character.portrayed_by -> film.film_maker.director",
+                "Teklel Hafouli -> film.film.character.portrayed_in_films -> film.film.character.portrayed_by -> film.film.directed_by"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-1077_0c34ca057060e35aa5c74fbbca682dee",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T21:40:31",
+        "machine_question": "what religions are practiced in the country that contains Badakhshan Province",
+        "question": "In the nation that has the Badakhshan province, what religions are practiced?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:location.country.administrative_divisions ns:m.04pwfx . \n?c ns:location.statistical_region.religions ?y .\n?y ns:location.religion_percentage.religion ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-1077",
+        "webqsp_question": "what religions are practiced in afghanistan",
+        "topic_entity": {
+            "m.04pwfx": "Badakhshan Province"
+        },
+        "answer": "Sunni Islam",
+        "relation_path_candidates": {
+            "Badakhshan Province": [
+                "Badakhshan Province -> location.administrative_division.country -> location.location.geolocation -> location.mailing_address.state_province_region -> location.country.religion",
+                "Badakhshan Province -> location.country.administrative_divisions -> location.country.religion"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-1686_29e74083744b3631541b29b4094fb273",
+        "compositionality_type": "comparative",
+        "created": "2018-02-13T05:48:37",
+        "machine_question": "who is the governor of arizona 2009 and held his govermental position from before 1998",
+        "question": "Who was the governor of Arizona in 2009 that held his governmental position before 1998?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.0vmt)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.0vmt ns:government.governmental_jurisdiction.governing_officials ?y .\n?y ns:government.government_position_held.office_holder ?x .\n?y ns:government.government_position_held.basic_title ns:m.0fkvn .\nFILTER(NOT EXISTS {?y ns:government.government_position_held.from ?sk0} || \nEXISTS {?y ns:government.government_position_held.from ?sk1 . \nFILTER(xsd:datetime(?sk1) <= \"2009-12-31\"^^xsd:dateTime) })\nFILTER(NOT EXISTS {?y ns:government.government_position_held.to ?sk2} || \nEXISTS {?y ns:government.government_position_held.to ?sk3 . \nFILTER(xsd:datetime(?sk3) >= \"2009-01-01\"^^xsd:dateTime) })\n?x ns:government.politician.government_positions_held ?c .\n?c ns:government.government_position_held.from ?num .\nFILTER (?num < \"1998\"^^xsd:dateTime) . \n}",
+        "webqsp_ID": "WebQTest-1686",
+        "webqsp_question": "who is the governor of arizona 2009",
+        "topic_entity": {
+            "m.0vmt": "Arizona",
+            "m.0fkvn": "Governor"
+        },
+        "answer": "Janet Napolitano",
+        "relation_path_candidates": {
+            "Arizona": [
+                "Arizona -> government.governmental_jurisdiction.governors -> government.government_position_held.office_holder -> government.government_position_held.from -> time.event.start_date -> time.event.end_date -> government.government_position_held.office_holder -> government.governmental_jurisdiction.governors",
+                "Arizona -> government.governmental_jurisdiction.governors -> government.government_position_held.office_holder -> government.government_position_held.from -> time.event.start_date -> time.event.end_date -> government.government_position_held.office_holder -> government.governmental_jurisdiction.governors"
+            ],
+            "Governor": [
+                "Governor -> government.government_position_held.from -> time.event.start_date -> time.event.end_date -> government.government_position_held.office_holder -> government.governmental_jurisdiction.governors -> government.government_position_held.office_holder",
+                "Governor -> government.government_position_held.from -> time.event.start_date -> time.event.end_date -> government.government_position_held.office_holder -> government.governmental_jurisdiction.governors -> government.government_position_held.office_holder"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-626_8c6b952c6bd963f0ece4e401c9eb731a",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T03:50:57",
+        "machine_question": "what does the missouri river bisect and the location time zone is Central Time Zone",
+        "question": "What does the Missouri River bisect in the Central Time Zone?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.04ykz)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.04ykz ns:location.location.partially_contained_by ?y .\n?y ns:location.partial_containment_relationship.partially_contained_by ?x .\n?x ns:location.location.time_zones ns:m.02fqwt . \n}",
+        "webqsp_ID": "WebQTest-626",
+        "webqsp_question": "what does the missouri river bisect",
+        "topic_entity": {
+            "m.04ykz": "Missouri River",
+            "m.02fqwt": "Central Time Zone"
+        },
+        "answer": "Iowa",
+        "relation_path_candidates": {
+            "Missouri River": [
+                "Missouri River -> location.body_of_water.bridges -> location.bridge.crosses",
+                "Missouri River -> location.body_of_water.bridges -> location.bridge.crosses -> location.location.containedby",
+                "Missouri River -> location.body_of_water.bridges -> location.bridge.crosses -> location.location.containedby -> location.location.geolocation"
+            ],
+            "Central Time Zone": [
+                "Central Time Zone -> location.location.geolocation -> location.location.containedby -> location.body_of_water.bridges -> location.bridge.crosses",
+                "Central Time Zone -> location.location.containedby -> location.body_of_water.bridges -> location.bridge.crosses",
+                "Central Time Zone -> location.location.containedby -> location.body_of_water.bridges -> location.bridge.crosses -> location.location.geolocation"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-12_68d745a0657c86906382873e57294d6a",
+        "compositionality_type": "comparative",
+        "created": "2018-02-13T02:38:13",
+        "machine_question": "who is governor of ohio 2011 and held his govermental position from before 1983-01-03",
+        "question": "Who was the governor of Ohio in 2011 that was in the government prior to 3-1-1983?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.05kkh)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.05kkh ns:government.governmental_jurisdiction.governing_officials ?y .\n?y ns:government.government_position_held.office_holder ?x .\n?y ns:government.government_position_held.basic_title ns:m.0fkvn .\nFILTER(NOT EXISTS {?y ns:government.government_position_held.from ?sk0} || \nEXISTS {?y ns:government.government_position_held.from ?sk1 . \nFILTER(xsd:datetime(?sk1) <= \"2011-12-31\"^^xsd:dateTime) })\nFILTER(NOT EXISTS {?y ns:government.government_position_held.to ?sk2} || \nEXISTS {?y ns:government.government_position_held.to ?sk3 . \nFILTER(xsd:datetime(?sk3) >= \"2011-01-01\"^^xsd:dateTime) })\n?x ns:government.politician.government_positions_held ?c .\n?c ns:government.government_position_held.from ?num .\nFILTER (?num < \"1983-01-03\"^^xsd:dateTime) . \n}",
+        "webqsp_ID": "WebQTest-12",
+        "webqsp_question": "who is governor of ohio 2011",
+        "topic_entity": {
+            "m.05kkh": "Ohio",
+            "m.0fkvn": "Governor"
+        },
+        "answer": "John Kasich",
+        "relation_path_candidates": {
+            "Ohio": [
+                "Ohio -> government.government_position_held.jurisdiction_of_office -> government.government_position_jurisdiction.office_holder -> government.government_position_held.from -> time.time_range.start",
+                "Ohio -> government.government_position_held.jurisdiction_of_office -> government.government_position_jurisdiction.office_holder -> government.government_position_held.to -> time.time_range.end",
+                "Ohio -> government.government_position_held.jurisdiction_of_office -> government.government_position_jurisdiction.office_holder -> government.government_position_held.from -> time.time_range.end"
+            ],
+            "Governor": [
+                "Governor -> government.government_position_held.jurisdiction_of_office -> government.government_position_jurisdiction.office_holder -> government.government_position_held.to -> time.time_range.start",
+                "Governor -> government.government_position_held.jurisdiction_of_office -> government.government_position_jurisdiction.office_holder -> government.government_position_held.from -> time.time_range.end",
+                "Governor -> government.government_position_held.jurisdiction_of_office -> government.government_position_jurisdiction.office_holder -> government.government_position_held.from -> time.time_range.start",
+                "Governor -> government.government_position_held.jurisdiction_of_office -> government.government_position_jurisdiction.office_holder -> government.government_position_held.to -> time.time_range.end"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-576_906ad6be7bec9d208f4dde4f7721c261",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T03:48:03",
+        "machine_question": "what are the 7 countries that are part of central america and is the co2 emiisions per capita was once 2009 metric ton",
+        "question": "Which of the seven Central American countries had co2 emissions per capita once of 2009 metric ton?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.01tzh)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.01tzh ns:location.location.contains ?x .\n?x ns:common.topic.notable_types ns:m.01mp .\n?x ns:location.statistical_region.co2_emissions_per_capita ?c .\n?c ns:measurement_unit.dated_metric_ton.date \"2009\"^^xsd:dateTime . \n}",
+        "webqsp_ID": "WebQTest-576",
+        "webqsp_question": "what are the 7 countries that are part of central america",
+        "topic_entity": {
+            "m.01tzh": "Central America"
+        },
+        "answer": "Guatemala",
+        "relation_path_candidates": {
+            "Central America": [
+                "Central America -> location.location.contains -> location.country.co2_emissions_per_capita",
+                "Central America -> location.location.contains -> location.country.co2_emissions_per_capita.metric_ton",
+                "Central America -> location.location.contains -> location.country.co2_emissions_per_capita.year"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-2152_3cdf60c15a8355981dd92e3c57ac2eed",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-12T23:29:58",
+        "machine_question": "what teams are in the american league west and is the team has a team moscot named Mariner Moose",
+        "question": "What team that has a mascot named Mariner Moose is in the American League West?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.07fbnf)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.07fbnf ns:sports.sports_league.teams ?y .\n?y ns:sports.sports_league_participation.team ?x .\n?x ns:sports.sports_team.team_mascot ns:m.03lqw4 . \n}",
+        "webqsp_ID": "WebQTrn-2152",
+        "webqsp_question": "what teams are in the american league west",
+        "topic_entity": {
+            "m.07fbnf": "American League West",
+            "m.03lqw4": "Mariner Moose"
+        },
+        "answer": "Seattle Mariners",
+        "relation_path_candidates": {
+            "American League West": [
+                "American League West -> sports.sports_league.teams -> sports.sports_team.team_mascot",
+                "American League West -> sports.sports_league.teams -> sports.sports_team.mascot"
+            ],
+            "Mariner Moose": [
+                "Mariner Moose -> sports.sports_team.team_mascot",
+                "Mariner Moose -> sports.sports_team.mascot"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-61_09020cbb000c86fda5910ec084690246",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T02:43:20",
+        "machine_question": "what are the religions practiced in indonesia and the relgion sacred site is Mecca",
+        "question": "What religion is practiced in Indonesia and has a sacred site of Mecca?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.03ryn)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.03ryn ns:location.statistical_region.religions ?y .\n?y ns:location.religion_percentage.religion ?x .\n?x ns:religion.religion.sacred_sites ns:m.058wp . \n}",
+        "webqsp_ID": "WebQTest-61",
+        "webqsp_question": "what are the religions practiced in indonesia",
+        "topic_entity": {
+            "m.03ryn": "Indonesia",
+            "m.058wp": "Mecca"
+        },
+        "answer": "Islam",
+        "relation_path_candidates": {
+            "Indonesia": [
+                "Indonesia -> location.statistical_region.religions -> location.religion_percentage.religion",
+                "Indonesia -> location.statistical_region.religions"
+            ],
+            "Mecca": [
+                "Mecca -> location.location.containedby -> location.country.religion -> location.religion_percentage.religion",
+                "Mecca -> location.location.containedby -> location.country.religion"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-1864_67ecd1c247c3b2c9545fbcf1ad8d9d00",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T22:59:40",
+        "machine_question": "which the location time zone is Anadyr Time Zone country has the biggest population",
+        "question": "Which location in the Anadyr Timezone has the biggest population?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:location.location.time_zones ns:m.0y496z9 . \n?c ns:location.location.contains ?x .\n?x ns:common.topic.notable_types ns:m.01mp .\n?x ns:topic_server.population_number ?sk0 .\n}\nORDER BY DESC(xsd:float(?sk0))\nLIMIT 1\n",
+        "webqsp_ID": "WebQTrn-1864",
+        "webqsp_question": "which asian country has the biggest population",
+        "topic_entity": {
+            "m.0y496z9": "Anadyr Time Zone"
+        },
+        "answer": "India",
+        "relation_path_candidates": {
+            "Anadyr Time Zone": [
+                "Anadyr Time Zone -> time.time_zone.territories -> location.location.containedby -> location.location.contains -> location.location.population",
+                "Anadyr Time Zone -> location.location.contains -> location.location.population",
+                "Anadyr Time Zone -> location.location.contains -> location.location.population.number"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-3136_a2debf685e0c50491e35a9cf7a1e9ade",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T01:18:28",
+        "machine_question": "what four regions make up the united kingdom and is the country that contains Down District Council",
+        "question": "Of the four regions which make up the United Kingdom, which is the country that includes the location, Down District Council?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.07ssc)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.07ssc ns:base.aareas.schema.administrative_area.administrative_children ?x .\n?x ns:location.country.administrative_divisions ns:m.02dv8y . \n}",
+        "webqsp_ID": "WebQTrn-3136",
+        "webqsp_question": "what four regions make up the united kingdom",
+        "topic_entity": {
+            "m.07ssc": "United Kingdom",
+            "m.02dv8y": "Down District Council"
+        },
+        "answer": "Northern Ireland",
+        "relation_path_candidates": {
+            "United Kingdom": [
+                "United Kingdom -> location.location.contains -> location.region.contains -> location.location.contains -> location.location.geolocation -> location.mailing_address.state_province_region -> location.country.includes",
+                "United Kingdom -> location.location.contains -> location.region.contains -> location.location.contains -> location.location.geolocation -> location.mailing_address.state_province_region -> location.country.includes"
+            ],
+            "Down District Council": [
+                "Down District Council -> location.location.containedby -> location.country.includes"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-998_f693ae2cb9aa6b8ffdf0f103a6777b62",
+        "compositionality_type": "composition",
+        "created": "2018-02-13T04:30:37",
+        "machine_question": "when was the last time the sports team owner is James L. Dolan won the championship",
+        "question": "What is the most recent event in which the sports team owned by James L. Dolan won the championship?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:sports.professional_sports_team.owner_s ns:m.0469ts . \n?c ns:sports.sports_team.championships ?x .\n?x ns:time.event.start_date ?sk0 .\n}\nORDER BY DESC(xsd:datetime(?sk0))\nLIMIT 1\n",
+        "webqsp_ID": "WebQTest-998",
+        "webqsp_question": "when was the last time knicks won the championship",
+        "topic_entity": {
+            "m.0469ts": "James L. Dolan"
+        },
+        "answer": "1973 NBA Finals",
+        "relation_path_candidates": {
+            "James L. Dolan": [
+                "James L. Dolan -> sports.sports_team_owner.teams_owned -> sports.sports_team_championships.championship -> sports.championship_event.event_date",
+                "James L. Dolan -> sports.sports_team_owner.teams_owned -> sports.sports_team_championships.championship -> sports.sports_championship_event.event_date",
+                "James L. Dolan -> sports.sports_team_owner.teams_owned -> sports.sports_team_championships.championship -> sports.sports_championship_event.event_date"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-1023_1e7110e48c30a2cef3caf291e3b8d394",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T21:32:30",
+        "machine_question": "what is the money of the country that contains Buenos Aires called",
+        "question": "What's the currency of the country that includes the location of Buenos Aires?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:location.country.administrative_divisions ns:m.01ly5m . \n?c ns:location.country.currency_used ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-1023",
+        "webqsp_question": "what is the money of argentina called",
+        "topic_entity": {
+            "m.01ly5m": "Buenos Aires"
+        },
+        "answer": "Argentine peso",
+        "relation_path_candidates": {
+            "Buenos Aires": [
+                "Buenos Aires -> location.location.containedby -> location.country.currency_used",
+                "Buenos Aires -> location.location.containedby -> location.country.currency"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-810_c334509bb5e02cacae1ba2e80c176499",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T21:02:29",
+        "machine_question": "what date did the the team has a team moscot named Lou Seal win the world series",
+        "question": "What year did the team with mascot named Lou Seal win the World Series?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:sports.sports_team.team_mascot ns:m.03_dwn . \n?c ns:sports.sports_team.championships ?x .\n?x ns:time.event.end_date ?sk0 .\n}\nORDER BY DESC(xsd:datetime(?sk0))\nLIMIT 1\n",
+        "webqsp_ID": "WebQTrn-810",
+        "webqsp_question": "what date did the san francisco giants win the world series",
+        "topic_entity": {
+            "m.03_dwn": "Lou Seal"
+        },
+        "answer": "2014 World Series",
+        "relation_path_candidates": {
+            "Lou Seal": [
+                "Lou Seal -> sports.sports_team_mascot.team -> sports.sports_team_championships.championship -> sports.sports_championship.champion -> time.event.start_date",
+                "Lou Seal -> sports.sports_team_mascot.team -> sports.sports_team.championships -> sports.sports_championship.champion -> time.event.start_date",
+                "Lou Seal -> sports.sports_team_mascot.team -> sports.sports_team_championships.championship -> time.event.start_date"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-557_960c16ffdb29e173df0577fc76c7455d",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T20:43:27",
+        "machine_question": "who played dorothy in the the film has a charcter named Winged Monkey #7",
+        "question": "In the film with teh character named Winged Monkey #7, who played Dorothy?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:film.film.starring ?k .\n?k ns:film.performance.character ns:m.0yj6trj . \n?c ns:film.film.starring ?y .\n?y ns:film.performance.actor ?x .\n?y ns:film.performance.character ns:m.020hj1 .\n}\n",
+        "webqsp_ID": "WebQTrn-557",
+        "webqsp_question": "who played dorothy in the wizard of oz movie",
+        "topic_entity": {
+            "m.0yj6trj": "Winged Monkey #7",
+            "m.020hj1": "Dorothy Gale"
+        },
+        "answer": "Judy Garland",
+        "relation_path_candidates": {
+            "Winged Monkey #7": [
+                "Winged Monkey #7 -> film.film_character.appeared_in_films -> film.film_character.film -> film.performance.actor -> film.film.staff",
+                "Winged Monkey #7 -> film.film_character.appeared_in_films -> film.film_character.film -> film.film.performance.actor -> film.film.staff.actor",
+                "Winged Monkey #7 -> film.film_character.appeared_in_films -> film.film_character.film -> film.film.performance.actor -> film.film.staff.actor.film"
+            ],
+            "Dorothy Gale": [
+                "Dorothy Gale -> film.film_character.appeared_in_films -> film.film_character.film -> film.performance.actor",
+                "Dorothy Gale -> film.film_character.appeared_in_films -> film.film_character.film -> film.film.performance.actor -> film.film.staff.actor",
+                "Dorothy Gale -> film.film_character.appeared_in_films -> film.film_character.film -> film.film.performance.actor -> film.film.staff.actor.film"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-21_660138373d19bbffdd3d3f7a30234e4a",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T19:40:09",
+        "machine_question": "who is the prime minister of the country that contains Dire Dawa",
+        "question": "Who holds the position of Prime Minister in the country which contains Dire Dawa?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:location.country.administrative_divisions ns:m.04lj5y . \n?c ns:government.governmental_jurisdiction.governing_officials ?y .\n?y ns:government.government_position_held.office_holder ?x .\n?y ns:government.government_position_held.basic_title ns:m.060bp .\nFILTER(NOT EXISTS {?y ns:government.government_position_held.from ?sk0} || \nEXISTS {?y ns:government.government_position_held.from ?sk1 . \nFILTER(xsd:datetime(?sk1) <= \"2015-08-10\"^^xsd:dateTime) })\nFILTER(NOT EXISTS {?y ns:government.government_position_held.to ?sk2} || \nEXISTS {?y ns:government.government_position_held.to ?sk3 . \nFILTER(xsd:datetime(?sk3) >= \"2015-08-10\"^^xsd:dateTime) })\n}\n",
+        "webqsp_ID": "WebQTrn-21",
+        "webqsp_question": "who is the prime minister of ethiopia",
+        "topic_entity": {
+            "m.04lj5y": "Dire Dawa",
+            "m.060bp": "Prime minister"
+        },
+        "answer": "Hailemariam Desalegn",
+        "relation_path_candidates": {
+            "Dire Dawa": [
+                "Dire Dawa -> location.location.contains -> government.governmental_jurisdiction.government_positions_held -> government.government_position_held.office_holder -> government.government_position_held.jurisdiction_of_office",
+                "Dire Dawa -> location.location.contains -> government.governmental_jurisdiction.government_positions_held -> government.government_position_held.office_holder -> government.government_position_held.office_position",
+                "Dire Dawa -> location.location.contains -> government.governmental_jurisdiction.government_positions_held -> government.government_position_held.office_holder -> government.government_position_held.jurisdiction_of_office -> government.governmental_jurisdiction.government_positions_held -> government.government_position_held.office_position"
+            ],
+            "Prime Minister": [
+                "Prime Minister -> government.governmental_jurisdiction.government_positions_held -> government.government_position_held.office_holder -> government.government_position_held.jurisdiction_of_office -> location.location.contains",
+                "Prime Minister -> government.governmental_jurisdiction.government_positions_held -> government.government_position_held.office_holder -> government.government_position_held.jurisdiction_of_office -> location.location.contains -> government.governmental_jurisdiction.government_positions_held -> government.government_position_held.office_position",
+                "Prime Minister -> government.governmental_jurisdiction.government_positions_held -> government.government_position_held.office_holder -> government.government_position_held.jurisdiction_of_office -> location.location.contains -> government.governmental_jurisdiction.government_positions_held -> government.government_position_held.office_position -> government.governmental_jurisdiction.government_positions_held -> government.government_position_held.jurisdiction_of_office"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-2286_e0906c845ea8b2e22e08e1b0e6eb9b43",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T23:43:08",
+        "machine_question": "where is the us state that has a capital named Frankfort located",
+        "question": "Where is the state with the capitol of Frankfort located?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:location.us_state.capital ns:m.0fvvg . \n?c ns:location.location.containedby ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-2286",
+        "webqsp_question": "where is kentucky located",
+        "topic_entity": {
+            "m.0fvvg": "Frankfort"
+        },
+        "answer": "United States of America",
+        "relation_path_candidates": {
+            "Frankfort": [
+                "Frankfort -> location.location.adjoin_s -> location.adjoining_relationship.adjoins -> location.location.geolocation -> location.mailing_address.state_province_region",
+                "Frankfort -> location.location.adjoin_s -> location.adjoining_relationship.adjoins -> location.location.geolocation -> location.location.containedby -> location.mailing_address.state_province_region",
+                "Frankfort -> location.location.geolocation -> location.mailing_address.state_province_region"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-1320_c5498ca807d2e1ec30d4c8fdd41f0bf7",
+        "compositionality_type": "composition",
+        "created": "2018-02-13T05:05:48",
+        "machine_question": "what is the the team has a team moscot named Hank stadium called",
+        "question": "What stadium does the team with mascot named Hank play at?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:sports.sports_team.team_mascot ns:m.0100sszz . \n?c ns:sports.sports_team.arena_stadium ?x .\n}\n",
+        "webqsp_ID": "WebQTest-1320",
+        "webqsp_question": "what is the milwaukee brewers stadium called",
+        "topic_entity": {
+            "m.0100sszz": "Hank"
+        },
+        "answer": "Miller Park",
+        "relation_path_candidates": {
+            "Hank": [
+                "Hank -> sports.sports_team_mascot.team -> sports.sports_team.arena_stadium -> location.location.containedby",
+                "Hank -> sports.sports_team_mascot.team -> sports.sports_team.arena_stadium"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-2444_8f2cd432b509e5b8fe681bb55bca2767",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T23:57:54",
+        "machine_question": "where is the team won the 1946 World Series championship stadium",
+        "question": "Where is the home stadium of the team who won the 1946 World Series championship?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:sports.sports_team.championships ns:m.04qhpf . \n?c ns:sports.sports_team.arena_stadium ?x .\n?x ns:architecture.structure.opened ?sk0 .\n}\nORDER BY DESC(xsd:datetime(?sk0))\nLIMIT 1\n",
+        "webqsp_ID": "WebQTrn-2444",
+        "webqsp_question": "where is st louis cardinals stadium",
+        "topic_entity": {
+            "m.04qhpf": "1946 World Series"
+        },
+        "answer": "Busch Stadium",
+        "relation_path_candidates": {
+            "1946 World Series": [
+                "1946 World Series -> sports.sports_championship.winner -> sports.sports_championship.winning_team -> sports.sports_team.team_stadiums -> sports.sports_team_stadium_relationship.stadium",
+                "1946 World Series -> sports.sports_championship.winner -> sports.sports_championship.winning_team -> sports.sports_team.arena_stadium -> sports.sports_team_stadium_relationship.stadium",
+                "1946 World Series -> sports.sports_championship.winner -> sports.sports_championship.winning_team -> sports.sports_team.stadiums -> sports.sports_team_stadium_relationship.stadium"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-100_524908899a8aa334a18a0ac00f8f2fe6",
+        "compositionality_type": "composition",
+        "created": "2018-02-13T02:46:16",
+        "machine_question": "what language is spoken in the country that contains Nord-Est Department today",
+        "question": "People from the country that contains Nord-Est Department speak what  languages today?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:location.country.administrative_divisions ns:m.02g_z8 . \n?c ns:location.country.languages_spoken ?x .\n}\n",
+        "webqsp_ID": "WebQTest-100",
+        "webqsp_question": "what language is spoken in haiti today",
+        "topic_entity": {
+            "m.02g_z8": "Nord-Est Department"
+        },
+        "answer": "French",
+        "relation_path_candidates": {
+            "Nord-Est Department": [
+                "Nord-Est Department -> location.administrative_division.country -> location.country.languages_spoken",
+                "Nord-Est Department -> location.administrative_division.country -> location.country.language_spoken",
+                "Nord-Est Department -> location.administrative_division.country -> location.country.language"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-568_d54918e8e89ad97237bce821087a9818",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T20:44:13",
+        "machine_question": "what county is the tv show NBC Nightside was filmed there",
+        "question": "In which US county is the TV program NBC Nightside filmed in?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:tv.tv_location.tv_shows_filmed_here ns:m.0b6grkv . \n?c ns:location.hud_county_place.county ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-568",
+        "webqsp_question": "what county is charlotte north carolina",
+        "topic_entity": {
+            "m.0b6grkv": "NBC Nightside"
+        },
+        "answer": "Mecklenburg County",
+        "relation_path_candidates": {
+            "NBC Nightside": [
+                "NBC Nightside -> tv.tv_program.country_of_origin -> location.location.containedby -> location.containedby.county",
+                "NBC Nightside -> tv.tv_program.country_of_origin -> location.location.containedby",
+                "NBC Nightside -> tv.tv_program.filming_locations -> location.location.containedby -> location.containedby.county"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-361_e24533e28da40db99eb4b25773f9d38f",
+        "compositionality_type": "comparative",
+        "created": "2018-02-13T03:21:49",
+        "machine_question": "what to do and see in vienna austria and is the museum that was established in before 1971",
+        "question": "What museum established before 1971 is there to see in Vienna, Austria?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.0fhp9)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.0fhp9 ns:travel.travel_destination.tourist_attractions ?x .\n?x ns:architecture.museum.established ?num .\nFILTER (?num < \"1971\"^^xsd:dateTime) . \n}",
+        "webqsp_ID": "WebQTest-361",
+        "webqsp_question": "what to do and see in vienna austria",
+        "topic_entity": {
+            "m.0fhp9": "Vienna"
+        },
+        "answer": "Kunsthistorisches Museum",
+        "relation_path_candidates": {
+            "Vienna": [
+                "Vienna -> location.location.contains -> location.containedby.location -> organization.organization.headquarters -> organization.museum.museum_founded -> time.event.start_date",
+                "Vienna -> location.location.contains -> organization.organization.headquarters -> organization.museum.museum_founded -> time.event.start_date",
+                "Vienna -> location.location.contains -> organization.museum.museum_founded -> time.event.start_date"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-2215_11c4cd5a25fd84f3980d7013c0329bad",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T23:35:49",
+        "machine_question": "where was the artist had a concert tour named Beat This Summer Tour born and raised",
+        "question": "Where was the artist that had This Summer Tour raised?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:music.artist.concert_tours ns:m.0wfrv9g . \n?c ns:people.person.place_of_birth ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-2215",
+        "webqsp_question": "where was brad paisley born and raised",
+        "topic_entity": {
+            "m.0wfrv9g": "Beat This Summer Tour"
+        },
+        "answer": "Glen Dale",
+        "relation_path_candidates": {
+            "Beat This Summer Tour": [
+                "Beat This Summer Tour -> music.artist.tours -> music.tour.artist -> people.person.places_lived -> people.place_lived.location",
+                "Beat This Summer Tour -> music.artist.origin -> people.person.places_lived -> people.place_lived.location",
+                "Beat This Summer Tour -> music.artist.origin -> people.person.place_of_birth -> people.place_of_birth.location"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-2834_6a27420dcf0528ae017dd74e40cfd38a",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T00:45:42",
+        "machine_question": "what are major religions in the united states and the religion organiztion is Tamil Nadu Thowheed Jamath",
+        "question": "What major US religions has a religious organization named Tamil Nadu Thowheed Jamath?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.09c7w0)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.09c7w0 ns:location.statistical_region.religions ?y .\n?y ns:location.religion_percentage.religion ?x .\n?x ns:religion.religion.organizations ns:m.010ffmhn . \n}",
+        "webqsp_ID": "WebQTrn-2834",
+        "webqsp_question": "what are major religions in the united states",
+        "topic_entity": {
+            "m.09c7w0": "United States of America",
+            "m.010ffmhn": "Tamil Nadu Thowheed Jamath"
+        },
+        "answer": "Islam",
+        "relation_path_candidates": {
+            "United States of America": [
+                "United States of America -> location.statistical_region.religions -> location.religion_percentage.religion",
+                "United States of America -> location.statistical_region.religions"
+            ],
+            "Tamil Nadu Thowheed Jamath": [
+                "Tamil Nadu Thowheed Jamath -> religion.religious_organization.religion",
+                "Tamil Nadu Thowheed Jamath -> religion.religious_organization.religion -> location.religion_percentage.religion"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-634_000f72b60ccaedff5f056f522ee06e98",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T20:50:33",
+        "machine_question": "what did the person who once lived in Mansfeld do",
+        "question": "A person who once lived in Mansfeld would have what profession?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:people.person.places_lived ?k .\n?k ns:people.place_lived.location ns:m.0cz504 . \n?c ns:people.person.profession ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-634",
+        "webqsp_question": "what did martin luther do",
+        "topic_entity": {
+            "m.0cz504": "Mansfeld"
+        },
+        "answer": "Professor",
+        "relation_path_candidates": {
+            "Mansfeld": [
+                "Mansfeld -> people.person.places_lived -> people.place_lived.person -> people.person.profession",
+                "Mansfeld -> people.person.places_lived -> people.place_lived.person -> people.person.profession"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-857_9392f3f06e288ee4e3437a74f6bf5a37",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T21:13:56",
+        "machine_question": "who was the vice president when the person education institution is Ramble Elementary was in office",
+        "question": "Who was the vice president of the President who attended Ramble Elementary School?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:people.person.education ?k .\n?k ns:education.education.institution ns:m.0b6xvr8 . \n?c ns:government.us_president.vice_president ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-857",
+        "webqsp_question": "who was the vice president when bill clinton was in office",
+        "topic_entity": {
+            "m.0b6xvr8": "Ramble Elementary"
+        },
+        "answer": "Al Gore",
+        "relation_path_candidates": {
+            "Ramble Elementary": [
+                "Ramble Elementary -> education.school_alumni.school -> government.politician_holding_office.office_holder -> government.government_position_held.office_holder -> government.government_position_held.office_holder -> government.government_position_held.title -> government.government_position_held.office_holder -> government.us_vice_president.vice_president",
+                "Ramble Elementary -> education.school_alumni.school -> government.politician_holding_office.office_holder -> government.government_position_held.office_holder -> government.government_position_held.title -> government.government_position_held.office_holder -> government.us_president.president -> government.us_vice_president.vice_president",
+                "Ramble Elementary -> education.school_alumni.school -> government.politician_holding_office.office_holder -> government.government_position_held.office_holder -> government.government_position_held.title -> government.government_position_held.office_holder -> government.us_president.president -> government.political_party_tenure.party -> government.us_vice_president.vice_president"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-810_a188aff4a054e1ec66fafba1b8021f67",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T21:02:29",
+        "machine_question": "what date did the the sports team owner is Bill Neukom win the world series",
+        "question": "What year did the MLB franchise owned by Bill Neukom win the world series?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:sports.professional_sports_team.owner_s ns:m.03cyzbv . \n?c ns:sports.sports_team.championships ?x .\n?x ns:time.event.end_date ?sk0 .\n}\nORDER BY DESC(xsd:datetime(?sk0))\nLIMIT 1\n",
+        "webqsp_ID": "WebQTrn-810",
+        "webqsp_question": "what date did the san francisco giants win the world series",
+        "topic_entity": {
+            "m.03cyzbv": "Bill Neukom"
+        },
+        "answer": "2014 World Series",
+        "relation_path_candidates": {
+            "Bill Neukom": [
+                "Bill Neukom -> sports.sports_team_owner.teams_owned -> sports.sports_team_championships.championships_won -> sports.championship.championship_year",
+                "Bill Neukom -> sports.sports_team_owner.teams_owned -> sports.sports_team_championships.championships_won -> sports.championship.championship_year"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-2026_d059b24adec4064377b957ca598769be",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T23:17:07",
+        "machine_question": "what currency does the the country capital is Santo Domingo",
+        "question": "Santo Domingo is the capital of the country with what currency?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:location.country.capital ns:m.0fthl . \n?c ns:location.country.currency_used ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-2026",
+        "webqsp_question": "what currency does the dominican republic",
+        "topic_entity": {
+            "m.0fthl": "Santo Domingo"
+        },
+        "answer": "Dominican peso",
+        "relation_path_candidates": {
+            "Santo Domingo": [
+                "Santo Domingo -> location.location.containedby -> location.country.capital -> location.country.currency_used",
+                "Santo Domingo -> location.location.containedby -> location.country.capital -> location.country.currency"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-60_990f6babd500d25e3746174e6da58c84",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-12T19:43:48",
+        "machine_question": "what countries do people speak portuguese and is the country imports from Brazil",
+        "question": "What Portuguese speaking country imported form Brazil?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.05zjd)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.05zjd ns:language.human_language.countries_spoken_in ?x .\n?x ns:location.statistical_region.places_imported_from ?c .\n?c ns:location.imports_and_exports.imported_from ns:m.015fr . \n}",
+        "webqsp_ID": "WebQTrn-60",
+        "webqsp_question": "what countries do people speak portuguese",
+        "topic_entity": {
+            "m.05zjd": "Portuguese Language",
+            "m.015fr": "Brazil"
+        },
+        "answer": "Angola",
+        "relation_path_candidates": {
+            "Portuguese Language": [
+                "Portuguese Language -> language.language_countries -> location.country.exports -> location.country.imports",
+                "Portuguese Language -> language.language_countries -> location.country.imports"
+            ],
+            "Brazil": [
+                "Brazil -> location.country.exports -> location.country.imports",
+                "Brazil -> location.country.exports"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-2570_374d1789f1735b6f08e1a829c0d075a2",
+        "compositionality_type": "comparative",
+        "created": "2018-02-13T00:11:21",
+        "machine_question": "who was the president of the united states during ww2 and held his govermental position from after 1933-03-04",
+        "question": "Who was the US President during WW2 that held his government position from 3-4-1933?",
+        "sparql": "#MANUAL SPARQL\nPREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\n  ns:m.081pw ns:time.event.start_date ?start ;\n             ns:time.event.end_date ?end .\n  ?x ns:government.politician.government_positions_held  ?y .\n  ?y ns:government.government_position_held.office_position_or_title ns:m.060d2 ; # President of the United States\n     ns:government.government_position_held.from  ?from ;\n     ns:government.government_position_held.to  ?to .\n  FILTER (?from < ?end)\n  FILTER (?to > ?start)?x ns:government.politician.government_positions_held ?c .\n?c ns:government.government_position_held.from ?num .\nFILTER (?num > \"1933-03-04\"^^xsd:dateTime) . \n}",
+        "webqsp_ID": "WebQTrn-2570",
+        "webqsp_question": "who was the president of the united states during ww2",
+        "topic_entity": {
+            "m.081pw": "World War II",
+            "m.060d2": "President of the United States"
+        },
+        "answer": "Harry S. Truman",
+        "relation_path_candidates": {
+            "World War II": [
+                "World War II -> military.military_conflict.commanders -> government.government_position_held.office_holder -> government.us_president.during",
+                "World War II -> military.military_conflict.commanders -> government.government_position_held.office_holder -> government.government_position_held.from -> government.us_president.during",
+                "World War II -> military.military_conflict.commanders -> government.government_position_held.office_holder -> government.government_position_held.from -> government.government_position_held.to -> government.us_president.during"
+            ],
+            "President of the United States": [
+                "President of the United States -> government.us_president.presidency_number -> government.government_position_held.office_holder",
+                "President of the United States -> government.government_position_held.office_holder -> government.government_position_held.from -> government.us_president.during",
+                "President of the United States -> government.government_position_held.office_holder -> government.government_position_held.from -> government.government_position_held.to -> government.us_president.during"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-484_ac67410188d0f2258139a3c84773885e",
+        "compositionality_type": "composition",
+        "created": "2018-02-13T03:36:37",
+        "machine_question": "what language does the location time zone is Central Western Time Zone use",
+        "question": "What languiages are spoken by residents of the Central Western Time Zone?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:location.location.time_zones ns:m.0y498v7 . \n?c ns:location.country.languages_spoken ?x .\n}\n",
+        "webqsp_ID": "WebQTest-484",
+        "webqsp_question": "what language does australia use",
+        "topic_entity": {
+            "m.0y498v7": "Central Western Time Zone"
+        },
+        "answer": "English Language",
+        "relation_path_candidates": {
+            "Central Western Time Zone": [
+                "Central Western Time Zone -> location.timezone.time_zone_region -> location.timezone.time_zone_region_languages -> language.language_spoken_by_geographical_entity",
+                "Central Western Time Zone -> location.timezone.time_zone_region -> location.timezone.time_zone_region_languages -> language.language_spoken_by_geographical_entity -> location.timezone.time_zone_region_languages",
+                "Central Western Time Zone -> location.timezone.time_zone_region -> location.timezone.time_zone_region_languages -> language.language_spoken_by_geographical_entity -> location.timezone.time_zone_region_languages -> location.timezone.time_zone_region"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-1785_1c178196ae53ffd4b09e5787a35c3950",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T05:59:52",
+        "machine_question": "what was kim richards in and a tv series that has 3 episodes",
+        "question": "What TV series that had 3 episodes was Kim Richards in?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.08l257)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.08l257 ns:film.actor.film ?y .\n?y ns:film.performance.film ?x .\n?x ns:tv.tv_series_episode.episode_number \"3\" . \n}",
+        "webqsp_ID": "WebQTest-1785",
+        "webqsp_question": "what was kim richards in",
+        "topic_entity": {
+            "m.08l257": "Kim Richards"
+        },
+        "answer": "Nanny and the Professor",
+        "relation_path_candidates": {
+            "Kim Richards": [
+                "Kim Richards -> tv.tv_actor.starring_roles -> tv.tv_series_episode.series -> tv.tv_series.number_of_episodes",
+                "Kim Richards -> tv.tv_actor.starring_roles -> tv.tv_series_episode.series -> tv.tv_series.number_of_episodes"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-3744_26401b4c33bcb760afd734acaa0a1869",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T02:30:13",
+        "machine_question": "what college did russell wilson go to and the educational institution newspaper is The Daily Cardinal",
+        "question": "The Daily Cardinal is the school newspaper at which university that Russell Wilson attended?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.05c10yf)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.05c10yf ns:people.person.education ?y .\n?y ns:education.education.institution ?x .\n?x ns:common.topic.notable_types ns:m.01y2hnl .\n?x ns:education.educational_institution.newspaper ns:m.048y10 . \n}",
+        "webqsp_ID": "WebQTrn-3744",
+        "webqsp_question": "what college did russell wilson go to",
+        "topic_entity": {
+            "m.05c10yf": "Russell Wilson",
+            "m.048y10": "The Daily Cardinal"
+        },
+        "answer": "University of Wisconsin-Madison",
+        "relation_path_candidates": {
+            "Russell Wilson": [
+                "Russell Wilson -> american_football.football_player.college -> education.education.institution",
+                "Russell Wilson -> education.education.institution.attended_by -> american_football.football_player.college"
+            ],
+            "The Daily Cardinal": [
+                "The Daily Cardinal -> organization.newspaper_circulation.area_served -> education.education.institution",
+                "The Daily Cardinal -> organization.newspaper_circulation.area_served -> organization.newspaper_circulation.newspaper -> education.education.institution"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-810_e3d40457273785e46c5b71732713a5f4",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T21:02:29",
+        "machine_question": "what date did the the team has a team moscot named Crazy Crab win the world series",
+        "question": "When did the team with Crazy crab as their mascot win the world series?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:sports.sports_team.team_mascot ns:m.02q_hzh . \n?c ns:sports.sports_team.championships ?x .\n?x ns:time.event.end_date ?sk0 .\n}\nORDER BY DESC(xsd:datetime(?sk0))\nLIMIT 1\n",
+        "webqsp_ID": "WebQTrn-810",
+        "webqsp_question": "what date did the san francisco giants win the world series",
+        "topic_entity": {
+            "m.02q_hzh": "Crazy Crab"
+        },
+        "answer": "2014 World Series",
+        "relation_path_candidates": {
+            "Crazy Crab": [
+                "Crazy Crab -> sports.sports_team_mascot.team -> sports.sports_team_championships.championship -> sports.championship.champion -> time.event.start_date",
+                "Crazy Crab -> sports.sports_team_mascot.team -> sports.sports_team_championships.championship -> sports.championship.champion -> time.event.end_date",
+                "Crazy Crab -> sports.sports_team_mascot.team -> sports.sports_team_championships.championship -> sports.championship.champion -> time.event.date"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-538_92e606ef9c0429ad6820797ad2950730",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T03:44:58",
+        "machine_question": "what are all the movies taylor swift has been in and is the film has a charcter named Once-ler",
+        "question": "What movie was Taylor Swift in that had a character named Once-ler?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.0dl567)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.0dl567 ns:film.actor.film ?y .\n?y ns:film.performance.film ?x .\n?x ns:film.film.starring ?c .\n?c ns:film.performance.character ns:m.02t2k3 . \n}",
+        "webqsp_ID": "WebQTest-538",
+        "webqsp_question": "what are all the movies taylor swift has been in",
+        "topic_entity": {
+            "m.0dl567": "Taylor Swift",
+            "m.02t2k3": "Once-ler"
+        },
+        "answer": "The Lorax",
+        "relation_path_candidates": {
+            "Taylor Swift": [
+                "Taylor Swift -> film.performance.actor -> film.film.character -> film.character.portrayed_in_films",
+                "Taylor Swift -> film.performance.actor -> film.film.character -> film.character.appears_in_works"
+            ],
+            "Once-ler": [
+                "Once-ler -> film.character.portrayed_in_films -> film.performance.actor",
+                "Once-ler -> film.character.portrayed_in_films -> film.film.character -> film.performance.actor",
+                "Once-ler -> film.character.appears_in_works -> film.performance.actor",
+                "Once-ler -> film.character.appears_in_works -> film.film.character -> film.performance.actor"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-2189_f4440609f5cecb091bf8e86adb47be25",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T23:32:42",
+        "machine_question": "what is modern the country that has the national anthem Bilady, Bilady, Bilady language",
+        "question": "What is considered modern in the country where Bilady, Bilady, Bilady language is the national anthem?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:location.country.national_anthem ?k .\n?k ns:government.national_anthem_of_a_country.anthem ns:m.0d9nj_ . \n?c ns:location.country.official_language ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-2189",
+        "webqsp_question": "what is modern egyptian language",
+        "topic_entity": {
+            "m.0d9nj_": "Bilady, Bilady, Bilady"
+        },
+        "answer": "Modern Standard Arabic",
+        "relation_path_candidates": {
+            "Bilady, Bilady, Bilady": [
+                "Bilady, Bilady, Bilady -> government.national_anthem_of_a_country.anthem -> location.country.national_anthem -> location.country.modern"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-372_a806813629e86776ae3bfe26a3e000f8",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T20:19:04",
+        "machine_question": "what do the religion place of worship is Barcelona Cathedral call their god",
+        "question": "What does the religion who worships in Barcelona Cathedral call their God?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:religion.religion.places_of_worship ns:m.0vlyb . \n?c ns:religion.religion.deities ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-372",
+        "webqsp_question": "what do catholics call their god",
+        "topic_entity": {
+            "m.0vlyb": "Barcelona Cathedral"
+        },
+        "answer": "The Father",
+        "relation_path_candidates": {
+            "Barcelona Cathedral": [
+                "Barcelona Cathedral -> religion.religious_organization.religion -> religion.religion.god",
+                "Barcelona Cathedral -> religion.religious_organization.religion -> religion.religion.god"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-3744_b9bd90569bb7912ec3ea180bf164663c",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T02:30:13",
+        "machine_question": "what college did russell wilson go to and is the education institution has a sports team named Wisconsin Badgers men's basketball",
+        "question": "What educational institution with men's  sports team named Wisconsin Badgers did Russell Wilson go to?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.05c10yf)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.05c10yf ns:people.person.education ?y .\n?y ns:education.education.institution ?x .\n?x ns:common.topic.notable_types ns:m.01y2hnl .\n?x ns:education.educational_institution.sports_teams ns:m.02qkqcv . \n}",
+        "webqsp_ID": "WebQTrn-3744",
+        "webqsp_question": "what college did russell wilson go to",
+        "topic_entity": {
+            "m.05c10yf": "Russell Wilson",
+            "m.02qkqcv": "Wisconsin Badgers men's basketball"
+        },
+        "answer": "University of Wisconsin-Madison",
+        "relation_path_candidates": {
+            "Russell Wilson": [
+                "Russell Wilson -> people.person.education -> education.educational_institution.students -> sports.sports_team_roster.teams -> sports.sports_team.roster -> sports.sports_team_roster.players -> people.person",
+                "Russell Wilson -> people.person.education -> education.educational_institution.athletes -> sports.sports_team_roster.teams -> sports.sports_team.roster -> sports.sports_team_roster.players -> people.person"
+            ],
+            "Wisconsin Badgers men's basketball": [
+                "Wisconsin Badgers men's basketball -> sports.sports_team.sport -> education.sports_team.sports -> education.sports_team.athletes -> people.person",
+                "Wisconsin Badgers men's basketball -> sports.sports_team.sport -> education.sports_team.sports -> education.sports_team.athletes -> people.person.education"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-712_6099ea03f4fd2476605c4a513318d29c",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T04:02:04",
+        "machine_question": "what countries have territories in oceania and is the location that appointed Liberal Government of New Zealand to govermental position",
+        "question": "What country  that appointed Liberal Government of New Zealand to governmental position is an Oceania territory?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.05nrg)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.05nrg ns:location.location.contains ?x .\n?x ns:common.topic.notable_types ns:m.01mp .\n?x ns:government.governmental_jurisdiction.governing_officials ?c .\n?c ns:government.government_position_held.appointed_by ns:m.027ns_m . \n}",
+        "webqsp_ID": "WebQTest-712",
+        "webqsp_question": "what countries have territories in oceania",
+        "topic_entity": {
+            "m.05nrg": "Oceania",
+            "m.027ns_m": "Liberal Government of New Zealand"
+        },
+        "answer": "New Zealand",
+        "relation_path_candidates": {
+            "Oceania": [
+                "Oceania -> location.location.containedby -> location.continent.country -> government.government_position_held.jurisdiction_of_office -> government.government_position_jurisdiction.appointed_by -> government.government_position_appointer.appointee",
+                "Oceania -> location.location.containedby -> location.continent.country -> government.government_position_jurisdiction.appointed_by -> government.government_position_appointer.appointee",
+                "Oceania -> location.location.containedby -> location.continent.country -> government.government_position_held.jurisdiction_of_office -> government.government_position_appointer.appointee"
+            ],
+            "Liberal Government of New Zealand": [
+                "Liberal Government of New Zealand -> government.government_position_held.jurisdiction_of_office -> government.government_position_jurisdiction.appointed_by -> government.government_position_appointer.appointee -> location.location.containedby -> location.continent.country",
+                "Liberal Government of New Zealand -> government.government_position_held.jurisdiction_of_office -> government.government_position_appointer.appointee -> location.location.containedby -> location.continent.country",
+                "Liberal Government of New Zealand -> government.government_position_jurisdiction.appointed_by -> government.government_position_appointer.appointee -> location.location.containedby -> location.continent.country"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-100_de15ac1f762e3ec1e1261f6d9c81ebf9",
+        "compositionality_type": "composition",
+        "created": "2018-02-13T02:46:16",
+        "machine_question": "what language is spoken in the country that has the national anthem La Dessalinienne today",
+        "question": "What languages are spoken in the country that has national anthem La Dessaliniene?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:location.country.national_anthem ?k .\n?k ns:government.national_anthem_of_a_country.anthem ns:m.01pm6h . \n?c ns:location.country.languages_spoken ?x .\n}\n",
+        "webqsp_ID": "WebQTest-100",
+        "webqsp_question": "what language is spoken in haiti today",
+        "topic_entity": {
+            "m.01pm6h": "La Dessalinienne"
+        },
+        "answer": "French",
+        "relation_path_candidates": {
+            "La Dessalinienne": [
+                "La Dessalinienne -> government.national_anthem_of_a_country.anthem -> location.country.national_anthem -> location.country.languages_spoken",
+                "La Dessalinienne -> location.country.national_anthem -> government.national_anthem_of_a_country.anthem -> location.country.languages_spoken",
+                "La Dessalinienne -> government.national_anthem_of_a_country.anthem -> location.country.languages_spoken"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-1557_edfd3507d32929ce0e9d844f7a2674de",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-12T22:31:35",
+        "machine_question": "where did charles drew go to college and the educational institution newspaper is Le DÃ©lit franÃ§ais",
+        "question": "What educational institution with Le Delit Francais newspaper did Charles Drew attend?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.018t67)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.018t67 ns:people.person.education ?y .\n?y ns:education.education.institution ?x .\n?x ns:common.topic.notable_types ns:m.01y2hnl .\n?x ns:education.educational_institution.newspaper ns:m.05d99s . \n}",
+        "webqsp_ID": "WebQTrn-1557",
+        "webqsp_question": "where did charles drew go to college",
+        "topic_entity": {
+            "m.018t67": "Charles R. Drew",
+            "m.05d99s": "Le Délit français"
+        },
+        "answer": "McGill University",
+        "relation_path_candidates": {
+            "Charles R. Drew": [
+                "Charles R. Drew -> education.educational_institution.attended_by -> organization.newspaper_circulation.institution -> organization.newspaper_circulation.newspaper",
+                "Charles R. Drew -> education.educational_institution.attended_by -> organization.educational_institution.newspaper_circulation -> organization.newspaper_circulation.newspaper",
+                "Charles R. Drew -> education.educational_institution.attended_by -> organization.educational_institution.newspaper_circulation -> organization.newspaper_circulation.institution -> organization.newspaper_circulation.newspaper"
+            ],
+            "Le Délit français": [
+                "Le Délit français -> organization.newspaper_circulation.institution -> education.educational_institution.attended_by -> organization.newspaper_circulation.newspaper",
+                "Le Délit français -> organization.newspaper_circulation.institution -> organization.educational_institution.newspaper_circulation -> education.educational_institution.attended_by -> organization.newspaper_circulation.newspaper",
+                "Le Délit français -> organization.newspaper_circulation.institution -> organization.educational_institution.newspaper_circulation -> education.educational_institution.attended_by -> organization.newspaper_circulation.newspaper"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-60_39ba4faa87698cb0767d1a5ee7ce1827",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-12T19:43:48",
+        "machine_question": "what countries do people speak portuguese and is the gdp real adjusted value was once 100349905926",
+        "question": "What country do they speak Portuguese where the GDP real adjusted value was once 100349905926?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.05zjd)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.05zjd ns:language.human_language.countries_spoken_in ?x .\n?x ns:location.statistical_region.gdp_real ?c .\n?c ns:measurement_unit.adjusted_money_value.adjusted_value \"100349905926\" . \n}",
+        "webqsp_ID": "WebQTrn-60",
+        "webqsp_question": "what countries do people speak portuguese",
+        "topic_entity": {
+            "m.05zjd": "Portuguese Language"
+        },
+        "answer": "South Africa",
+        "relation_path_candidates": {
+            "Portuguese Language": [
+                "Portuguese Language -> language.language_speakers.language -> location.country.language_spoken -> measurement_unit.dated_money_value.amount -> measurement_unit.dated_money_value.currency"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-846_a29552911617e890ca2e1d6564e0990e",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T21:11:00",
+        "machine_question": "where was the artist had a concert tour named The Avril Lavigne Tour born",
+        "question": "What is the birthplace of the artist that went on The Avril Lavinge Tour?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:music.artist.concert_tours ns:m.0z2ntbg . \n?c ns:people.person.place_of_birth ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-846",
+        "webqsp_question": "where was avril lavigne born",
+        "topic_entity": {
+            "m.0z2ntbg": "The Avril Lavigne Tour"
+        },
+        "answer": "Belleville",
+        "relation_path_candidates": {
+            "The Avril Lavigne Tour": [
+                "The Avril Lavigne Tour -> music.festival.lineup -> music.festival_performance.artist -> music.artist.origin -> people.person.place_of_birth",
+                "The Avril Lavigne Tour -> music.festival.lineup -> music.festival_performance.artist -> music.artist.origin.location -> people.person.place_of_birth",
+                "The Avril Lavigne Tour -> music.festival_performance.artist -> music.artist.origin -> people.person.place_of_birth"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-121_333b95bd45af3e6e31e328bc8c24d84f",
+        "compositionality_type": "composition",
+        "created": "2018-02-13T02:47:21",
+        "machine_question": "what team did the person education institution is Chase Lane Primary School play for in 2011",
+        "question": "The person educated at Chase Lane Primary School played for what team in 2011?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:people.person.education ?k .\n?k ns:education.education.institution ns:m.04dyl8y . \n?c ns:sports.pro_athlete.teams ?y .\n?y ns:sports.sports_team_roster.team ?x .\nFILTER(NOT EXISTS {?y ns:sports.sports_team_roster.from ?sk0} || \nEXISTS {?y ns:sports.sports_team_roster.from ?sk1 . \nFILTER(xsd:datetime(?sk1) <= \"2011-12-31\"^^xsd:dateTime) })\nFILTER(NOT EXISTS {?y ns:sports.sports_team_roster.to ?sk2} || \nEXISTS {?y ns:sports.sports_team_roster.to ?sk3 . \nFILTER(xsd:datetime(?sk3) >= \"2011-01-01\"^^xsd:dateTime) })\n}\n",
+        "webqsp_ID": "WebQTest-121",
+        "webqsp_question": "what team did david beckham play for in 2011",
+        "topic_entity": {
+            "m.04dyl8y": "Chase Lane Primary School"
+        },
+        "answer": "LA Galaxy",
+        "relation_path_candidates": {
+            "Chase Lane Primary School": [
+                "Chase Lane Primary School -> education.educational_institution.students -> sports.sports_team_roster.player -> sports.sports_team_roster.team -> sports.sports_team_roster.year -> sports.sports_team_roster.team",
+                "Chase Lane Primary School -> education.educational_institution.students -> sports.sports_team_roster.player -> sports.sports_team_roster.team -> sports.sports_team_roster.year -> sports.sports_team_roster.team"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-626_47b990334f91b6d3bd042f82b81740f6",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T03:50:57",
+        "machine_question": "what does the missouri river bisect and is the location that appointed Dennis Daugaard to govermental position",
+        "question": "What location appointed Dennis Daugaard to governmental position and is bisected by the Missouri River?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.04ykz)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.04ykz ns:location.location.partially_contained_by ?y .\n?y ns:location.partial_containment_relationship.partially_contained_by ?x .\n?x ns:government.governmental_jurisdiction.governing_officials ?c .\n?c ns:government.government_position_held.appointed_by ns:m.0bb5tw . \n}",
+        "webqsp_ID": "WebQTest-626",
+        "webqsp_question": "what does the missouri river bisect",
+        "topic_entity": {
+            "m.04ykz": "Missouri River",
+            "m.0bb5tw": "Dennis Daugaard"
+        },
+        "answer": "South Dakota",
+        "relation_path_candidates": {
+            "Missouri River": [
+                "Missouri River -> location.river.bisects -> location.location.containedby -> government.governmental_jurisdiction.government_positions_appointed_in_jurisdiction",
+                "Missouri River -> location.river.bisects -> location.location.containedby -> government.governmental_jurisdiction.government_positions_appointed_in_jurisdiction -> government.government_position_held.jurisdiction_of_office"
+            ],
+            "Dennis Daugaard": [
+                "Dennis Daugaard -> government.government_position_held.jurisdiction_of_office -> government.governmental_jurisdiction.government_positions_appointed_in_jurisdiction",
+                "Dennis Daugaard -> government.government_position_held.jurisdiction_of_office -> government.governmental_jurisdiction.government_positions_appointed_in_jurisdiction -> location.location.containedby"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-2444_e5059ff268415917df330817b9c8ef8c",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T23:57:54",
+        "machine_question": "where is the sports team owner is William DeWitt, Jr. stadium",
+        "question": "In what stadium does the team who is owned by William DeWitt, Jr. play?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:sports.professional_sports_team.owner_s ns:m.05qblx . \n?c ns:sports.sports_team.arena_stadium ?x .\n?x ns:architecture.structure.opened ?sk0 .\n}\nORDER BY DESC(xsd:datetime(?sk0))\nLIMIT 1\n",
+        "webqsp_ID": "WebQTrn-2444",
+        "webqsp_question": "where is st louis cardinals stadium",
+        "topic_entity": {
+            "m.05qblx": "William DeWitt, Jr."
+        },
+        "answer": "Busch Stadium",
+        "relation_path_candidates": {
+            "William DeWitt, Jr.": [
+                "William DeWitt, Jr. -> sports.sports_team_owner.teams_owned -> sports.sports_team.arena_stadium",
+                "William DeWitt, Jr. -> sports.sports_team_owner.teams_owned -> sports.sports_team.venue",
+                "William DeWitt, Jr. -> sports.sports_team_owner.teams_owned -> sports.sports_team.home_venue"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-2664_471b83eade9707a4dba68e201bf29d73",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T00:24:47",
+        "machine_question": "who are the main trading partners of china and the location time zone is Greenwich Mean Time Zone",
+        "question": "What country located in the Greenwich Mean Time Zone that is the main trading partner of China?",
+        "sparql": "#MANUAL SPARQL\nPREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x \nWHERE {\n\tFILTER (?x != ns:m.0d05w3)\n\t{ \n\t  ns:m.0d05w3 ns:location.statistical_region.places_exported_to ?y .\n\t  ?y ns:location.imports_and_exports.exported_to ?x . \n\t}\n\tUNION\n\t{\n\t  ns:m.0d05w3 ns:location.statistical_region.places_imported_from ?y .\n\t  ?y ns:location.imports_and_exports.imported_from ?x . \n\t}?x ns:location.location.time_zones ns:m.03bdv . \n}",
+        "webqsp_ID": "WebQTrn-2664",
+        "webqsp_question": "who are the main trading partners of china",
+        "topic_entity": {
+            "m.0d05w3": "China",
+            "m.03bdv": "Greenwich Mean Time Zone"
+        },
+        "answer": "Sierra Leone",
+        "relation_path_candidates": {
+            "China": [
+                "China -> location.country.main_trading_partners",
+                "China -> location.country.trading_partners"
+            ],
+            "Greenwich Mean Time Zone": [
+                "Greenwich Mean Time Zone -> location.timezone.countries",
+                "Greenwich Mean Time Zone -> location.timezone.time_zones -> location.country.timezone"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-576_8dfecb6548586cf236340abadabeb86c",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T03:48:03",
+        "machine_question": "what are the 7 countries that are part of central america and the currency used in the country is United States Dollar",
+        "question": "Which of the seven Central American countries uses the United States Dollar currency?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.01tzh)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.01tzh ns:location.location.contains ?x .\n?x ns:common.topic.notable_types ns:m.01mp .\n?x ns:location.country.currency_used ns:m.09nqf . \n}",
+        "webqsp_ID": "WebQTest-576",
+        "webqsp_question": "what are the 7 countries that are part of central america",
+        "topic_entity": {
+            "m.01tzh": "Central America",
+            "m.09nqf": "United States Dollar"
+        },
+        "answer": "Panama",
+        "relation_path_candidates": {
+            "Central America": [
+                "Central America -> location.location.contains -> location.country.currency_used",
+                "Central America -> location.location.contains -> location.country.currency",
+                "Central America -> location.location.contains -> location.country.currency_used_by"
+            ],
+            "United States Dollar": [
+                "United States Dollar -> location.currency_country.currency_used -> location.country.currency",
+                "United States Dollar -> location.currency_country.currency_used_by -> location.country.currency",
+                "United States Dollar -> location.currency_country.currency_used_by"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-124_028bb5f442b37a4af9f9fd9fa0bc5e9a",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T19:50:05",
+        "machine_question": "what movie did the person education institution is William O. Schaefer Elementary School direct",
+        "question": "What movies did the person who went to William O. Schafer Elementary School direct?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:people.person.education ?k .\n?k ns:education.education.institution ns:m.076dzmh . \n?c ns:film.director.film ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-124",
+        "webqsp_question": "what movie did angelina jolie direct",
+        "topic_entity": {
+            "m.076dzmh": "William O. Schaefer Elementary School"
+        },
+        "answer": "Unbroken",
+        "relation_path_candidates": {
+            "William O. Schaefer Elementary School": [
+                "William O. Schaefer Elementary School -> education.educational_institution.students_alumni -> film.director.film -> film.film.directed_by",
+                "William O. Schaefer Elementary School -> education.educational_institution.students_alumni -> film.film.director -> film.film.directed_by",
+                "William O. Schaefer Elementary School -> education.school_alumni.school -> film.director.film -> film.film.directed_by"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-2871_d7d303efc1f901f14e6aae2bb469743c",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T00:49:14",
+        "machine_question": "what is there to see near the grand canyon and the location time zone is Mountain Time Zone",
+        "question": "What is there to see in Mountain Time Zone near the Grand Canyon?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.0cns5)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.0cns5 ns:travel.tourist_attraction.near_travel_destination ?x .\n?x ns:location.location.time_zones ns:m.02hczc . \n}",
+        "webqsp_ID": "WebQTrn-2871",
+        "webqsp_question": "what is there to see near the grand canyon",
+        "topic_entity": {
+            "m.0cns5": "Grand Canyon",
+            "m.02hczc": "Mountain Time Zone"
+        },
+        "answer": "Phoenix",
+        "relation_path_candidates": {
+            "Grand Canyon": [
+                "Grand Canyon -> location.location.nearby_attractions",
+                "Grand Canyon -> location.location.landmarks"
+            ],
+            "Mountain Time Zone": [
+                "Mountain Time Zone -> location.location.containedby -> location.location.contains -> location.location.nearby_attractions",
+                "Mountain Time Zone -> location.location.contains -> location.location.nearby_attractions",
+                "Mountain Time Zone -> location.location.nearby_attractions"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-750_bb35e9b8023fbf9c05df55b4245a4775",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T21:00:12",
+        "machine_question": "what years have the the team won the 1988 World Series championship won the world series",
+        "question": "In which years have the baseball club that claimed victory in the 1988 World Series won the World Series?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:sports.sports_team.championships ns:m.04j7ml . \n?c ns:sports.sports_team.championships ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-750",
+        "webqsp_question": "what years have the dodgers won the world series",
+        "topic_entity": {
+            "m.04j7ml": "1988 World Series"
+        },
+        "answer": "1959 World Series",
+        "relation_path_candidates": {
+            "1988 World Series": [
+                "1988 World Series -> sports.sports_championship.winning_team -> sports.sports_championship.winning_teams -> sports.sports_championship.winning_teams",
+                "1988 World Series -> sports.sports_championship.winning_team -> sports.sports_championship.winning_teams -> sports.sports_championship.winning_teams -> sports.sports_championship.winning_teams"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-96_11da03aa9cec8b011619c8ea0dbfdcf9",
+        "compositionality_type": "composition",
+        "created": "2018-02-13T02:45:55",
+        "machine_question": "where did the person education institution is East Whittier Elementary School die",
+        "question": "The person who attended education institution in East Whittier Elementary School died where?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:people.person.education ?k .\n?k ns:education.education.institution ns:m.0_sp3dx . \n?c ns:people.deceased_person.place_of_death ?x .\n}\n",
+        "webqsp_ID": "WebQTest-96",
+        "webqsp_question": "where did richard nixon die",
+        "topic_entity": {
+            "m.0_sp3dx": "East Whittier Elementary School"
+        },
+        "answer": "New York City",
+        "relation_path_candidates": {
+            "East Whittier Elementary School": [
+                "East Whittier Elementary School -> education.educational_institution.attended_by -> people.person.place_of_death",
+                "East Whittier Elementary School -> education.educational_institution.alumni -> people.person.place_of_death",
+                "East Whittier Elementary School -> education.educational_institution.attended_by -> people.deceased_person.place_of_death"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-1528_25853c768670cd164d7793f094ba7cbb",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T05:31:58",
+        "machine_question": "what movies does logan lerman play in and is the film has a charcter named Luke Castellan",
+        "question": "What film with character Luke Castelland does Logan Lerman play in?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.04f1s6)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.04f1s6 ns:film.actor.film ?y .\n?y ns:film.performance.film ?x .\n?x ns:film.film.starring ?c .\n?c ns:film.performance.character ns:g.122sg15v . \n}",
+        "webqsp_ID": "WebQTest-1528",
+        "webqsp_question": "what movies does logan lerman play in",
+        "topic_entity": {
+            "m.04f1s6": "Logan Lerman"
+        },
+        "answer": "Percy Jackson & the Olympians: The Lightning Thief",
+        "relation_path_candidates": {
+            "Logan Lerman": [
+                "Logan Lerman -> film.performance.character -> film.film.character -> film.film.character.portrayed_in_films -> film.performance.actor",
+                "Logan Lerman -> film.performance.character -> film.film.character.portrayed_in_films -> film.performance.actor"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-1260_5dd0eeca79ae03b7711252c032849eb2",
+        "compositionality_type": "composition",
+        "created": "2018-02-13T04:57:17",
+        "machine_question": "what year did the team has a team moscot named Rise win super bowl",
+        "question": "Rise is the mascot for the team which won the Super Bowl in what year?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:sports.sports_team.team_mascot ns:m.0nz45zc . \n?c ns:sports.sports_team.championships ?x .\n?x ns:common.topic.notable_types ns:m.01xljv1 .\n}\n",
+        "webqsp_ID": "WebQTest-1260",
+        "webqsp_question": "what year did baltimore ravens win super bowl",
+        "topic_entity": {
+            "m.0nz45zc": "Rise",
+            "m.01xljv1": "Super bowl"
+        },
+        "answer": "Super Bowl XXXV",
+        "relation_path_candidates": {
+            "Rise": [
+                "Rise -> sports.sports_team_mascot.team -> sports.sports_team.sport -> sports.sports_league_championship.championship -> sports.championship.champion",
+                "Rise -> sports.sports_team_mascot.team -> sports.sports_team.sport -> sports.sports_team_championship.championship -> sports.championship.champion",
+                "Rise -> sports.sports_team_mascot.team -> sports.sports_team.sport -> sports.sports_team_championship.championship -> sports.championship.championship_year -> time.event.start_date"
+            ],
+            "Super Bowl": [
+                "Super Bowl -> sports.sports_league_championship.championship -> sports.championship.champion -> sports.sports_team.sport -> sports.sports_team_mascot.team -> time.event.start_date",
+                "Super Bowl -> sports.sports_team_championship.championship -> sports.championship.champion -> sports.sports_team.sport -> sports.sports_team_mascot.team -> time.event.start_date"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-626_bd2c9bc1c0a692218e7c4182a1d52f85",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T03:50:57",
+        "machine_question": "what does the missouri river bisect and is the location that appointed Mike Johanns to govermental position",
+        "question": "Mike Johanns was elected governor of what area that is bisected by the Missouri River?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.04ykz)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.04ykz ns:location.location.partially_contained_by ?y .\n?y ns:location.partial_containment_relationship.partially_contained_by ?x .\n?x ns:government.governmental_jurisdiction.governing_officials ?c .\n?c ns:government.government_position_held.appointed_by ns:m.02722_ . \n}",
+        "webqsp_ID": "WebQTest-626",
+        "webqsp_question": "what does the missouri river bisect",
+        "topic_entity": {
+            "m.04ykz": "Missouri River",
+            "m.02722_": "Mike Johanns"
+        },
+        "answer": "Nebraska",
+        "relation_path_candidates": {
+            "Missouri River": [
+                "Missouri River -> location.river.bisects -> location.location.containedby",
+                "Missouri River -> location.river.bisects -> location.location.contains"
+            ],
+            "Mike Johanns": [
+                "Mike Johanns -> government.government_position_held.jurisdiction_of_office -> location.location.containedby",
+                "Mike Johanns -> government.government_position_held.jurisdiction_of_office -> location.location.contains",
+                "Mike Johanns -> government.government_position_held.jurisdiction_of_office -> location.location.geolocation -> location.location.containedby",
+                "Mike Johanns -> government.government_position_held.jurisdiction_of_office -> location.location.geolocation -> location.location.contains"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-1841_6bf772ee1b388c1b3c226b02c8244aa7",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-12T22:57:24",
+        "machine_question": "what are popular sports in spain and is the team won the 2014 Eurocup Finals championship",
+        "question": "Which popular sports team in Spain, that won the 2014 Eurocup Finals championship?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.06mkj)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.06mkj ns:sports.sports_team_location.teams ?x .\n?x ns:sports.sports_team.championships ns:m.010wxwln . \n}",
+        "webqsp_ID": "WebQTrn-1841",
+        "webqsp_question": "what are popular sports in spain",
+        "topic_entity": {
+            "m.06mkj": "Spain",
+            "m.010wxwln": "2014 Eurocup Finals"
+        },
+        "answer": "Valencia BC",
+        "relation_path_candidates": {
+            "Spain": [
+                "Spain -> location.location.sports_teams -> sports.sports_team_location.teams",
+                "Spain -> sports.sports_team_location.location -> sports.sports_team_location.teams",
+                "Spain -> sports.sports_location.teams"
+            ],
+            "2014 Eurocup Finals": [
+                "2014 Eurocup Finals -> sports.sports_championship_event.winner -> sports.sports_championship.winning_team",
+                "2014 Eurocup Finals -> sports.sports_championship.winning_team"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-1119_8c41904eaef9fce2d95afd27eb9150ec",
+        "compositionality_type": "composition",
+        "created": "2018-02-13T04:45:06",
+        "machine_question": "what is the organiztion leadership has a person named Bentley B. Rayburn",
+        "question": "What organization led by Bentley B. Rayburn?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:organization.organization.leadership ?k .\n?k ns:organization.leadership.person ns:m.0hprvkj . \n?c ns:common.topic.notable_types ?x .\n}\n",
+        "webqsp_ID": "WebQTest-1119",
+        "webqsp_question": "what is colorado technical university",
+        "topic_entity": {
+            "m.0hprvkj": "Bentley B. Rayburn"
+        },
+        "answer": "College/University",
+        "relation_path_candidates": {
+            "Bentley B. Rayburn": [
+                "Bentley B. Rayburn -> organization.organization_board_membership.organization -> organization.organization_board_membership.member",
+                "Bentley B. Rayburn -> organization.organization_board_membership.member -> organization.leadership.organization",
+                "Bentley B. Rayburn -> organization.organization_board_membership.member -> organization.leadership.person"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-1812_5fb6c8c4d53d55c03445e4b2454ef810",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-12T22:53:34",
+        "machine_question": "what countries are in the caribbean and the currency used in the country is East Caribbean dollar",
+        "question": "What Caribbean countries use the East Caribbean dollar currency?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.0261m)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.0261m ns:location.location.contains ?x .\n?x ns:common.topic.notable_types ns:m.01mp .\n?x ns:location.country.currency_used ns:m.02r4k . \n}",
+        "webqsp_ID": "WebQTrn-1812",
+        "webqsp_question": "what countries are in the caribbean",
+        "topic_entity": {
+            "m.0261m": "Caribbean",
+            "m.02r4k": "East Caribbean dollar"
+        },
+        "answer": "Anguilla",
+        "relation_path_candidates": {
+            "Caribbean": [
+                "Caribbean -> location.location.contains -> location.country.currency_used",
+                "Caribbean -> location.location.contains -> location.country.currency",
+                "Caribbean -> location.location.contains -> location.country.currency_used_by"
+            ],
+            "East Caribbean dollar": [
+                "East Caribbean dollar -> location.currency.currency_countries",
+                "East Caribbean dollar -> location.currency.currency_used_by"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-1394_dc71f08a76d71762a0cfd30f11f66535",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-12T22:13:10",
+        "machine_question": "what country does turkey trade with and is the country that contains Annaba Province",
+        "question": "What country does Turkey trade with that contains the Annaba Province?",
+        "sparql": "#MANUAL SPARQL\nPREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x \nWHERE {\n\tFILTER (?x != ns:m.01znc_)\n\t{ \n\t  ns:m.01znc_ ns:location.statistical_region.places_exported_to ?y .\n\t  ?y ns:location.imports_and_exports.exported_to ?x . \n\t}\n\tUNION\n\t{\n\t  ns:m.01znc_ ns:location.statistical_region.places_imported_from ?y .\n\t  ?y ns:location.imports_and_exports.imported_from ?x . \n\t}?x ns:location.country.administrative_divisions ns:m.018h9n . \n}",
+        "webqsp_ID": "WebQTrn-1394",
+        "webqsp_question": "what country does turkey trade with",
+        "topic_entity": {
+            "m.01znc_": "Turkey",
+            "m.018h9n": "Annaba Province"
+        },
+        "answer": "Algeria",
+        "relation_path_candidates": {
+            "Turkey": [
+                "Turkey -> location.country.export -> location.export.exported_to -> location.export.export_destination -> location.export_destination.country",
+                "Turkey -> location.country.export -> location.export.exported_to -> location.export.export_destination"
+            ],
+            "Annaba Province": [
+                "Annaba Province -> location.location.containedby -> location.location.contains -> location.location.geolocation -> location.mailing_address.state_province_region -> location.country.country",
+                "Annaba Province -> location.location.containedby -> location.location.contains -> location.location.geolocation -> location.mailing_address.state_province_region -> location.country.currency_used"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-1091_d3301dedbdcb2d171a75be1631e8cec5",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T04:41:33",
+        "machine_question": "what type of religions are in the united states and the relgion sacred site is Lumbini",
+        "question": "What type of religiong with a religious sacred site of Lumbini is in the United States?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.09c7w0)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.09c7w0 ns:location.statistical_region.religions ?y .\n?y ns:location.religion_percentage.religion ?x .\n?x ns:religion.religion.sacred_sites ns:m.01c_w6 . \n}",
+        "webqsp_ID": "WebQTest-1091",
+        "webqsp_question": "what type of religions are in the united states",
+        "topic_entity": {
+            "m.09c7w0": "United States of America",
+            "m.01c_w6": "Lumbini"
+        },
+        "answer": "Buddhism",
+        "relation_path_candidates": {
+            "United States of America": [
+                "United States of America -> location.statistical_region.religions -> location.religion_percentage.religion",
+                "United States of America -> location.statistical_region.religions"
+            ],
+            "Lumbini": [
+                "Lumbini -> location.location.containedby -> location.country.religions -> location.religion_percentage.religion",
+                "Lumbini -> location.location.containedby -> location.country.religions"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-2444_8fb3f377318c9e61f47779b2c188167b",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T23:57:54",
+        "machine_question": "where is the team won the 1931 World Series championship stadium",
+        "question": "What stadium does the champion of the 1931 World Series Championship play at?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:sports.sports_team.championships ns:m.04tfzf . \n?c ns:sports.sports_team.arena_stadium ?x .\n?x ns:architecture.structure.opened ?sk0 .\n}\nORDER BY DESC(xsd:datetime(?sk0))\nLIMIT 1\n",
+        "webqsp_ID": "WebQTrn-2444",
+        "webqsp_question": "where is st louis cardinals stadium",
+        "topic_entity": {
+            "m.04tfzf": "1931 World Series"
+        },
+        "answer": "Busch Stadium",
+        "relation_path_candidates": {
+            "1931 World Series": [
+                "1931 World Series -> sports.sports_championship.champion -> sports.sports_championship.championship_winner -> sports.sports_team.team_stadiums -> sports.sports_team.stadium",
+                "1931 World Series -> sports.sports_championship.champion -> sports.sports_championship.championship_winner -> sports.sports_team.team_venue -> sports.sports_team.stadium",
+                "1931 World Series -> sports.sports_championship.champion -> sports.sports_championship.championship_winner -> sports.sports_team.team_venue -> sports.sports_team.stadiums -> sports.sports_team.stadium"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-1812_c29807a955ea46fa79cdc9f7aeacba18",
+        "compositionality_type": "composition",
+        "created": "2018-02-13T06:03:28",
+        "machine_question": "where was the artist had a concert tour named Rihanna: Live in Concert Tour raised",
+        "question": "Where was the main artist featured in the Rihanna: Live in Concert Tour raised?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:music.artist.concert_tours ns:m.09g79g8 . \n?c ns:people.person.place_of_birth ?x .\n}\n",
+        "webqsp_ID": "WebQTest-1812",
+        "webqsp_question": "where was rihanna raised",
+        "topic_entity": {
+            "m.09g79g8": "Rihanna: Live in Concert Tour"
+        },
+        "answer": "Saint Michael Parish",
+        "relation_path_candidates": {
+            "Rihanna: Live in Concert Tour": [
+                "Rihanna: Live in Concert Tour -> music.film_music_contributor.film -> film.film_music_contributor.contributor -> people.person.place_of_birth",
+                "Rihanna: Live in Concert Tour -> music.film_music_contributor.film -> film.film_music_contributor.contributor -> people.person.places_lived -> people.place_lived.location",
+                "Rihanna: Live in Concert Tour -> music.film_music_contributor.film -> film.film_music_contributor.contributor -> people.person.place_of_birth -> people.person.places_lived -> people.place_lived.location"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-397_c7ee26d5c3f80107d7ae5fede489209a",
+        "compositionality_type": "composition",
+        "created": "2018-02-13T03:26:49",
+        "machine_question": "what are the school colors for the child organization is Harvard Art Museums",
+        "question": "What are the school colors of Harvard Art Museum?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:organization.organization.child ?k .\n?k ns:organization.organization_relationship.child ns:m.0cxwnd . \n?c ns:education.educational_institution.colors ?x .\n}\n",
+        "webqsp_ID": "WebQTest-397",
+        "webqsp_question": "what are the school colors for harvard university",
+        "topic_entity": {
+            "m.0cxwnd": "Harvard Art Museums"
+        },
+        "answer": "Crimson",
+        "relation_path_candidates": {
+            "Harvard Art Museums": [
+                "Harvard Art Museums -> organization.organization.colors"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-2478_3e09b108c3448248556d4c34acae3cf7",
+        "compositionality_type": "composition",
+        "created": "2018-02-13T00:00:04",
+        "machine_question": "what is the the organiztion leadership has a person named Eric F. Spina mascot",
+        "question": "What is the mascot of the organization with the person named Eric F. Spina?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:organization.organization.leadership ?k .\n?k ns:organization.leadership.person ns:m.0zsryt0 . \n?c ns:education.educational_institution.mascot ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-2478",
+        "webqsp_question": "what is the syracuse university mascot",
+        "topic_entity": {
+            "m.0zsryt0": "Eric F. Spina"
+        },
+        "answer": "Syracuse University Otto the Orange",
+        "relation_path_candidates": {
+            "Eric F. Spina": [
+                "Eric F. Spina -> organization.organization_founder.organizations_founded -> organization.organization.mascot",
+                "Eric F. Spina -> organization.organization_board_membership.organizations -> organization.organization.mascot",
+                "Eric F. Spina -> organization.organization_board_membership.organizations -> organization.organization.mascot",
+                "Eric F. Spina -> organization.organization.leadership -> organization.leadership.mascot"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-2057_b64f996ceca972c0d6fea3de2705ce63",
+        "compositionality_type": "composition",
+        "created": "2018-02-12T23:19:38",
+        "machine_question": "what money does the country that contains Alta Verapaz Department use",
+        "question": "The country that contains Alta Verapaz Department uses what money?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:location.country.administrative_divisions ns:m.0146np . \n?c ns:location.country.currency_used ?x .\n}\n",
+        "webqsp_ID": "WebQTrn-2057",
+        "webqsp_question": "what money does guatemala use",
+        "topic_entity": {
+            "m.0146np": "Alta Verapaz Department"
+        },
+        "answer": "Guatemalan quetzal",
+        "relation_path_candidates": {
+            "Alta Verapaz Department": [
+                "Alta Verapaz Department -> location.location.contains -> location.administrative_division.country -> location.country.currency_used",
+                "Alta Verapaz Department -> location.location.contains -> location.administrative_division.country -> location.country.currency"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-1348_3bddf705b2a346fbdc2f00e9a02b84f3",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T05:09:31",
+        "machine_question": "what team did peyton manning 's dad play for and is the team has a team moscot named Viktor the Viking",
+        "question": "What team did Payton Manning's father play for that has a mascot named Viktor the Viking?",
+        "sparql": "#MANUAL SPARQL\nPREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nns:m.027jv8 ns:people.person.parents ?y .\n?y ns:people.person.gender ns:m.05zppz . #Male\n?y ns:sports.pro_athlete.teams ?z .\n?z ns:sports.sports_team_roster.team ?x .?x ns:sports.sports_team.team_mascot ns:m.052tn0n . \n}",
+        "webqsp_ID": "WebQTest-1348",
+        "webqsp_question": "what team did peyton manning 's dad play for",
+        "topic_entity": {
+            "m.027jv8": "Peyton Manning",
+            "m.05zppz": "Male",
+            "m.052tn0n": "Viktor the Viking"
+        },
+        "answer": "Minnesota Vikings",
+        "relation_path_candidates": {
+            "Peyton Manning": [
+                "Peyton Manning -> american_football.football_player.family -> american_football.football_family.member -> american_football.football_team.athletes -> sports.sports_team_mascot.mascot",
+                "Peyton Manning -> american_football.football_player.family -> american_football.football_family.member -> american_football.football_team.athletes -> sports.sports_team.mascot"
+            ],
+            "Male": [
+                "Male -> sports.sports_team_mascot.mascot",
+                "Male -> sports.sports_team.mascot"
+            ],
+            "Viktor the Viking": [
+                "Viktor the Viking -> sports.sports_team.mascot"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-60_22027d5bb310c0d956b5f22248a6811c",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-12T19:43:48",
+        "machine_question": "what countries do people speak portuguese and is the CPI inflation rate was once -1.61 percent",
+        "question": "Which country that once had a CPI inflation rate of -1.61 speaks Portuguese?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.05zjd)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.05zjd ns:language.human_language.countries_spoken_in ?x .\n?x ns:location.statistical_region.cpi_inflation_rate ?c .\n?c ns:measurement_unit.dated_percentage.rate \"-1.61\" . \n}",
+        "webqsp_ID": "WebQTrn-60",
+        "webqsp_question": "what countries do people speak portuguese",
+        "topic_entity": {
+            "m.05zjd": "Portuguese Language"
+        },
+        "answer": "Macau",
+        "relation_path_candidates": {
+            "Portuguese Language": [
+                "Portuguese Language -> language.language_speakers.language -> location.country.languages_spoken -> measurement_unit.dated_percentage_change.from -> measurement_unit.dated_percentage_change.date -> economics.inflation_rate.date -> economics.inflation_rate.country -> location.country.languages_spoken"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTrn-60_0b79f757e511e73c7aca0bb6f6057f2d",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-12T19:43:48",
+        "machine_question": "what countries do people speak portuguese and is the CPI inflation rate was once -1.56 percent",
+        "question": "What country that once had the CPI inflation rate at -1.56 percent do people speak Portuguese?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.05zjd)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.05zjd ns:language.human_language.countries_spoken_in ?x .\n?x ns:location.statistical_region.cpi_inflation_rate ?c .\n?c ns:measurement_unit.dated_percentage.rate \"-1.56\" . \n}",
+        "webqsp_ID": "WebQTrn-60",
+        "webqsp_question": "what countries do people speak portuguese",
+        "topic_entity": {
+            "m.05zjd": "Portuguese Language"
+        },
+        "answer": "Macau",
+        "relation_path_candidates": {
+            "Portuguese Language": [
+                "Portuguese Language -> language.language_speakers.language -> location.country.languages_spoken -> measurement_unit.dated_percentage.rate_country -> measurement_unit.dated_percentage.percentage",
+                "Portuguese Language -> language.language_speakers.language -> location.country.languages_spoken -> measurement_unit.dated_percentage.rate_country -> measurement_unit.dated_percentage.percentage",
+                "Portuguese Language -> language.language_speakers.language -> location.country.languages_spoken -> measurement_unit.dated_percentage.percentage"
+            ]
+        }
+    },
+    {
+        "ID": "WebQTest-61_8f0d44a78a2e50f47729db23c5850da0",
+        "compositionality_type": "conjunction",
+        "created": "2018-02-13T02:43:20",
+        "machine_question": "what are the religions practiced in indonesia and the religion notable figure is Mary",
+        "question": "Mary is a notable figure in which religion that is observed in Indonesia?",
+        "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ns:m.03ryn)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\nns:m.03ryn ns:location.statistical_region.religions ?y .\n?y ns:location.religion_percentage.religion ?x .\n?x ns:religion.religion.notable_figures ns:m.04n7gc6 . \n}",
+        "webqsp_ID": "WebQTest-61",
+        "webqsp_question": "what are the religions practiced in indonesia",
+        "topic_entity": {
+            "m.03ryn": "Indonesia",
+            "m.04n7gc6": "Mary"
+        },
+        "answer": "Catholicism",
+        "relation_path_candidates": {
+            "Indonesia": [
+                "Indonesia -> location.country.religious_adherents -> religion.religion.adherents",
+                "Indonesia -> location.country.religious_adherents -> religion.religion.adherents_of",
+                "Indonesia -> location.country.religious_adherents -> religion.religion.adherents_of -> religion.religion.adherents"
+            ],
+            "Mary": [
+                "Mary -> people.person.religion -> religion.religious_person.religion",
+                "Mary -> people.person.religion -> religion.religious_person.religion_of",
+                "Mary -> people.person.religion -> religion.religious_person.religion_of -> religion.religious_person.religion"
+            ]
+        }
+    }
+]
