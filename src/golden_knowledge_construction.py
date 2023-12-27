@@ -247,7 +247,8 @@ def match(s1: str, s2: str) -> bool:
 
 def calculate_answer_coverage_rate():
     # sr_graph = read_jsonl_file_50("/home/v-sitaocheng/demos/llm_hallu/reasoning-on-graphs/results/gen_rule_path/RoG-cwq/RoG/test/predictions_kg.jsonl")
-    sr_graph = read_jsonl_file_50("/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/RoG/test/_home_v-sitaocheng_demos_llm_hallu_reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_1223.jsonl")
+    # sr_graph = read_jsonl_file_50("/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/RoG/test/_home_v-sitaocheng_demos_llm_hallu_reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt35_1225_llm_stop.jsonl")
+    sr_graph = read_jsonl_file_50("/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/RoG/test/_home_v-sitaocheng_demos_llm_hallu_reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt35_1226_llm_stop_longest_only_multi_merge.jsonl")
     # cwq = readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1127.json")
     cwq = readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/data/cwq.json")
     all_recall=0
@@ -261,7 +262,7 @@ def calculate_answer_coverage_rate():
     for index, lines in enumerate(tqdm(sr_graph)):
         topic_entity = cwq[index]['topic_entity']
         num_of_path = len(topic_entity.keys())
-        if num_of_path != 1:
+        if num_of_path == 1:
             continue
         # print(topic_entity.values())
         all_knowledge_one_path_num += 1
@@ -273,9 +274,9 @@ def calculate_answer_coverage_rate():
         recall=0
         for ans in answer_list:
             # if ","+ans.strip() in knowledge_seq or ans+"," in knowledge_seq:
-            if match(knowledge_seq,ans):
+            if match(knowledge_seq, ans):
                 recall+=1
-                # print(lines['kg_triples_str'])
+                print(lines['kg_triples_str'])
         if recall == 0:
             print(lines['question'])
             print(topic_entity)
@@ -285,7 +286,7 @@ def calculate_answer_coverage_rate():
        
         all_recall+=recall/len(answer_list)
 
-    print("coverage rate:" , all_recall/len(sr_graph))    
+    # print("coverage rate:" , all_recall/len(sr_graph))    
     print(all_knowledge_one_path_num)
     print("coverage rate one path:" , all_recall/all_knowledge_one_path_num)    
     # print("number of knowledge:" , all_knowledge_num/len(sr_graph))    

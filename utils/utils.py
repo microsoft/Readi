@@ -1,13 +1,30 @@
-from utils.prompt_list import *
+import sys, os
+sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/..")
+from .prompt_list import *
 import json
 from rank_bm25 import BM25Okapi
 from sentence_transformers import util
 from sentence_transformers import SentenceTransformer
-from utils.cloudgpt_aoai_new import get_openai_token
-from utils.freebase_func import *
+from .cloudgpt_aoai_new import *
+from .freebase_func import *
 import openai
 import re
 import time
+from sentence_transformers import SentenceTransformer, util
+
+transformer_model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
+
+
+def get_openai_embedding(input_message):
+    openai.api_type = "azure"
+    openai.api_base = "https://cloudgpt-openai.azure-api.net/"
+    openai.api_version = "2023-07-01-preview"
+    openai.api_key = get_openai_token()
+
+    response = openai.Embedding.create(engine="text-embedding-ada-002",
+                                        input=input_message)
+                                        
+    return response['data']
 
 
 def run_llm(prompt, temperature, max_tokens, opeani_api_keys, engine="gpt-35-turbo-16k-20230613"):
@@ -560,3 +577,26 @@ def readlines(file_path):
             lines.append(line)
     return lines
 
+
+
+def similar_search_list(question, relation_list):
+    question_embedding = get_openai_embedding(question)[0]['embedding']
+    relation_embeddings = [i['embedding'] for i in get_openai_embedding(relation_list)]
+
+    # # sentenceTransformer embedding
+    # if sentenceTransformer_embedding:
+    # question_embedding = transformer_model.encode(question, convert_to_tensor=True)
+    # relation_embeddings = transformer_model.encode(relation_list, convert_to_tensor=True)
+
+    # 计算问题和每个关系的相似度
+    similarities = util.pytorch_cos_sim(question_embedding, relation_embeddings)
+    
+    # 将相似度与关系列表进行配对并按相似度进行排序
+    sorted_relations = [(relation, score) for relation, score in zip(relation_list, similarities.tolist()[0])]
+    sorted_relations = sorted(sorted_relations, key=lambda x: x[1], reverse=True)
+
+    # 仅返回排好序的关系列表，不包括相似度分数
+    sorted_relation_list = [relation[0] for relation in sorted_relations]
+    return sorted_relation_list
+
+get_ent_one_hop_rel("m.0bdxs5")

@@ -195,7 +195,9 @@ def bfs_with_rule_LLM_engine(entity_id, entity_label, target_rule, grounded_reas
         # grounded_knowledge_current.clear()
         # ungrounded_neighbor_relation_dict.clear()
         # 遍历当前层
-        print("current layer size when BFS",size)
+        print("current layer size when BFS", size)
+
+        # size太大了 应该是遇到了超级大节点 这时候如果是cvt可以考虑剪枝一下
         while size > 0:
             size -= 1
             current_node, current_path, current_position = queue.popleft()
@@ -227,14 +229,21 @@ def bfs_with_rule_LLM_engine(entity_id, entity_label, target_rule, grounded_reas
 
                 # 当前层的当前节点没有交集 要存储一下当前节点的邻居 用来refine
                 if len(intersection) <= 0:
+                    #这里也可以考虑来一个相似度排序!!!TODO
                     ungrounded_neighbor_relation_dict[utils.id2entity_name_or_type_en(current_node)] = edge_set
                     continue
                 # 当前层的当前节点有交集，说明grounded到了  加入队列（等待下一层)
                 else:
                     for relation in intersection:
+                        if len(queue)>=1000:
+                            break
+                        # 前向 后向关系
                         neighbors_with_relation = [neighbor for neighbor in utils.entity_search(current_node, relation, True) + utils.entity_search(current_node, relation, False)]
                         for neighbor in neighbors_with_relation:
-                            queue.append((neighbor, current_path + [(utils.id2entity_name_or_type_en(current_node), relation, utils.id2entity_name_or_type_en(neighbor))], current_position + 1))
+                            if len(queue) < 1000:
+                                queue.append((neighbor, current_path + [(utils.id2entity_name_or_type_en(current_node), relation, utils.id2entity_name_or_type_en(neighbor))], current_position + 1))
+                            else:
+                                break
 
     return result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict
 

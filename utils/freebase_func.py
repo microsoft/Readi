@@ -15,10 +15,9 @@ def check_end_word(s):
     return any(s.endswith(word) for word in words)
 
 def abandon_rels(relation):
-    if relation == "type.object.type" or relation == "type.object.name" or relation.startswith("common.") or relation.startswith("freebase.") or "sameAs" in relation:
+    if relation == "type.object.type" or relation == "type.object.name" or relation == "type.object.key" or relation == 'type.type.instance' or relation.startswith("common.") or relation.startswith("freebase.") or relation.startswith("user.alust.default_domain.") or relation.startswith("user.avh.default_domain.") or "sameAs" in relation:
         return True
-
-
+    
 
 def execute_sparql(sparql_txt):
     sparql_txt='PREFIX : <http://rdf.freebase.com/ns/>\n'+sparql_txt
@@ -112,4 +111,3 @@ def table_result_to_list(res):
     
 print(execute_sparql("""\nPREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?tailEntity \nWHERE {\n  ns:m.0jm9h ns:location.administrative_division.country ?tailEntity .\n}"""))
 # print(id2entity_name_or_type_en("m.047hrrr"))
-

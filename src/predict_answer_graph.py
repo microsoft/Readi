@@ -224,7 +224,7 @@ def main(args, LLM):
     with open(os.path.join(output_dir, "args.txt"), "w") as f:
         json.dump(args.__dict__, f, indent=2)
 
-    output_file = os.path.join(output_dir, f"predictions_kg_with_input_llm_cwq100_path_onePath_gpt3.5_1224.jsonl")
+    output_file = os.path.join(output_dir, f"predictions_kg_with_input_llm_cwq100_path_onePath_gpt35_1225_llm_stop.jsonl")
     fout, processed_list = get_output_file(output_file, force=args.force)
 
     if args.n > 1:
@@ -320,7 +320,7 @@ def main_engine(args, LLM):
     with open(os.path.join(output_dir, "args.txt"), "w") as f:
         json.dump(args.__dict__, f, indent=2)
 
-    output_file = os.path.join(output_dir, f"predictions_kg_with_input_llm_cwq100_path_onePath_gpt3.5_1224.jsonl")
+    output_file = os.path.join(output_dir, f"predictions_kg_with_input_llm_cwq100_path_onePath_gpt35_1226_llm_stop_longest_only_multi_merge.jsonl")
     fout, processed_list = get_output_file(output_file, force=args.force)
 
     with open(args.init_plan_path, 'r') as f:
