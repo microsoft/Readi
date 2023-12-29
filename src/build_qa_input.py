@@ -312,18 +312,21 @@ class PromptBuilder(object):
         
         return reasoning_paths, lists_of_paths
 
+
     # def run_llm(self, prompt, temperature, max_tokens, opeani_api_keys, engine="gpt-4-32k-20230321"):
     def run_llm(self, prompt, temperature, max_tokens, opeani_api_keys, engine="gpt-35-turbo-16k-20230613"):
-        if "llama" not in engine.lower():           
+        if "llama" not in engine.lower():   
             openai.api_type = "azure"
             openai.api_base = "https://cloudgpt-openai.azure-api.net/"
             openai.api_version = "2023-07-01-preview"
-            openai.api_key = get_openai_token()
+            # to maintain token freshness, we need to acquire a new token every time we use the API
+            openai.api_key = get_openai_token()        
+
         else:
             openai.api_key = opeani_api_keys
             openai.api_key = get_openai_token()
 
-        # messages = [{"role":"system","content":"You are an AI assistant that helps people find information."}]
+        messages = [{"role":"system","content":"You are an AI assistant that helps people find information."}]
         messages = []
         # rules放在这里  Q: K: A:
 
@@ -346,7 +349,10 @@ class PromptBuilder(object):
             except:
                 print("openai error, retry")
                 f += 1
-                messages[-1] = {"role":"user","content": prompt[:16384]}
+                if "gpt-4" in engine:
+                    messages[-1] = {"role":"user","content": prompt[:32767]}
+                else:
+                    messages[-1] = {"role":"user","content": prompt[:16384]}
                 print(len(messages[-1]["content"]))
                 result = ""
                 time.sleep(2)
@@ -464,7 +470,7 @@ class PromptBuilder(object):
         return reasoning_path_LLM_init, refine_time, End_loop_cur_path, thought
 
 
-    def LLM_refine_and_stop_condition(self, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time, End_loop_cur_path):
+    def LLM_refine_and_stop_condition(self, llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time, End_loop_cur_path, Ends_with_cvt):
         # 初始路径 refine之前
         init_path = reasoning_path_LLM_init[entity_label]
         if type(init_path) == list:
@@ -473,17 +479,18 @@ class PromptBuilder(object):
         grounded_know = []
         ungrounded_cand_rel = {}
         max_grounded_len = 0
-
+        thought = ""
         # 已有的知识, 其他topic的路径   (加不加看效果考虑)
         # for entity, knowledge in grounded_revised_knowledge.items():
         #     if len(knowledge)>0:
         #         grounded_know.append(knowledge)
 
-        # 已有的知识有两种取法 一种是只要最长的(断掉的开始),还有一种是全部从0到最长的都取
+        # 已有的知识有两种取法 一种是只要最长的(断掉的开始), 还有一种是全部从0到最长的都取
         if len(grounded_knowledge_current) > 0:
             max_grounded_len = grounded_knowledge_current[-1][-1]
-        # 已有的知识,当前路径   这里可以有一个优化, 同类grounding对的知识 是不是取一个就够了????
-        if len(grounded_knowledge_current) < 30:
+
+        # 已有的知识,当前路径     这里可以有一个优化, 同类grounding对的知识     是不是取一个就够了????
+        if len(grounded_knowledge_current) < 25:
             for know in grounded_knowledge_current:
                 # 1. 只要最长的知识
                 if know[-1] == max_grounded_len:
@@ -504,25 +511,41 @@ class PromptBuilder(object):
                     grounded_know.append(i[1])
 
             # 后续可以考虑根据相似度排序!!!!!
-            if len(grounded_know) > 25 :
+            if len(grounded_know) > 15 :
                 # 相似度排序
                 # grounded_know = utils.similar_search_list(question, [utils.path_to_string(know) for know in grounded_know])[:25]
-                grounded_know = random.sample(grounded_know, 25)
+                grounded_know = random.sample(grounded_know, 15)
 
-            # cvt可能很多 随机抽10个吧
+            # # cvt可能很多 随机抽10个吧
+            # cvt_know = [(i[0], i[1]) for i in grounded_knowledge_current if utils.id2entity_name_or_type_en(i[0]).startswith("m.") and len(i[1])>0 and i[2]==max_grounded_len]
+            # if len(cvt_know) > 10:
+            #     # cand_cvt = utils.similar_search_list(question, [utils.path_to_string(i[1]) for i in cvt_know])[:25]
+            #     cand_cvt = random.sample(cvt_know, 10)
+            # else:
+            #     cand_cvt = cvt_know
+
+            # for cvt in cand_cvt:
+            #     if cvt[0] in ungrounded_neighbor_relation_dict.keys():
+            #         # cvt的label就是本身 不用转化
+            #         ungrounded_cand_rel[cvt[0]] = ungrounded_neighbor_relation_dict[cvt[0]]
+            #     grounded_know.append(cvt[1])
+
+
+            # cvt可能很多  全部处理成 <cvt></cvt>.
             cvt_know = [(i[0], i[1]) for i in grounded_knowledge_current if utils.id2entity_name_or_type_en(i[0]).startswith("m.") and len(i[1])>0 and i[2]==max_grounded_len]
             if len(cvt_know) > 10:
                 # cand_cvt = utils.similar_search_list(question, [utils.path_to_string(i[1]) for i in cvt_know])[:25]
-                cand_cvt = random.sample(cvt_know, 10)
-            else:
-                cand_cvt = cvt_know
-
-            for cvt in cand_cvt:
+                cvt_know = random.sample(cvt_know, 10)
+            for cvt in cvt_know:
                 if cvt[0] in ungrounded_neighbor_relation_dict.keys():
                     # cvt的label就是本身 不用转化
                     ungrounded_cand_rel[cvt[0]] = ungrounded_neighbor_relation_dict[cvt[0]]
                 grounded_know.append(cvt[1])
-
+        
+        grounded_know = [" -> ".join([i if not i.startswith("m.") else "<cvt></cvt>" for i in utils.path_to_string(knowledge).split(" -> ")]) for knowledge in grounded_know]
+        grounded_know = list(set(grounded_know))
+        grounded_know_string = "\n".join(grounded_know)
+        
         # candidate relation用集合方式 不用dict方式 尝试一下
         candidate_rel = []
         for k, v in ungrounded_cand_rel.items():
@@ -536,43 +559,105 @@ class PromptBuilder(object):
 
         candidate_rel.sort()
 
-        grounded_know_string = ""
-        for know in grounded_know:
-            if know == []:
-                continue
-            grounded_know_string+=utils.path_to_string(know) + "\n"
+        # grounded_know_string = ""
+        # for know in grounded_know:
+        #     if know == []:
+        #         continue
+        #     grounded_know_string+=utils.path_to_string(know) + "\n"
 
         # prompts = refine_prompt_path_one_path_1222  + "\nQuestion: " + question + "\nInitial Path:" + str(init_path) + "\nGrounded Knowledge:" + grounded_know_string +"\nCandidate Relations:" + str(ungrounded_cand_rel) + "\nThought:"
-        prompts = refine_prompt_path_one_path_add_stop_condition_1226  + "Question: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nThought:"
+        # prompts = refine_prompt_path_one_path_add_stop_condition_1227  + "Question: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nThought:"
+        # prompts = refine_prompt_path_one_path_add_stop_condition_func_1227  + "Question: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
+        # prompts = refine_prompt_path_one_path_add_stop_condition_func_cvt_deal_1228  + "Question: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
+        prompts = refine_prompt_path_one_path_add_stop_condition_func_cvt_deal_goal_progress_1228  + "Question: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
 
         # call_time=0
-        while refine_time <= 16:
-            response = self.run_llm(prompts, temperature=0.4, max_tokens=4096, opeani_api_keys="")
+        while refine_time <= 5:
+            response = self.run_llm(prompts, temperature=0.2, max_tokens=4096, opeani_api_keys="", engine=llm_engine)
             try:
-                if "***STOP REFINE***" in response:
+                refine_time += 1
+                function_calls = response.split("Function Call:")[-1].strip().strip("\"").strip()
+                if "stop_refine()" in function_calls:
+                    if Ends_with_cvt:
+                        print("Ends with CVT, but output stop")
+                        raise ValueError("Ends with CVT, but output stop")
+                    
                     End_loop_cur_path = True
                     thought = response
                     return reasoning_path_LLM_init, refine_time, End_loop_cur_path, thought
                 
-                new_rule_path = response.split("Refined Path:")[-1].strip().strip("\"").strip()
-                thought = response
-                if entity_label not in new_rule_path or "->" not in new_rule_path:
-                    print()
-                    print("entity_label or -> is not in path")
-                    raise ValueError("entity_label or -> is not in path")
-                
-                # 没什么变化 不用refine了
-                if init_path == new_rule_path:
-                    if refine_time > 5:
-                        End_loop_cur_path = True
-                        thought = response
-                        return reasoning_path_LLM_init, refine_time, End_loop_cur_path, thought
+                functions = function_calls.split("\n")
+                new_path = init_path
+
+                for fun in functions:
+                    if fun.startswith("replace_relation(") and fun.endswith(")"):
+                        fun = fun.replace("replace_relation(","").replace(")", "").strip()
+                        origin_relation = fun.split(",")[0].strip().strip("\'").strip("\"").strip()
+                        refine_relation = fun.split(",")[-1].strip().strip("\'").strip("\"").strip()
+                        new_path = new_path.replace(origin_relation, refine_relation)
+                    elif fun.startswith("trim_relation(") and fun.endswith(")"):
+                        fun = fun.replace("trim_relation(","").replace(")", "").strip()
+                        relation = fun.strip().strip("\'").strip("\"").strip()
+                        start_index = new_path.find("-> "+relation)
+                        if start_index==-1:
+                            start_index = new_path.find("->"+relation)
+                            if start_index==-1:
+                                print("bad function call")
+                                print(functions)
+                                raise ValueError("bad function call")
+                        new_path = new_path[:start_index].strip()
+                    elif fun.startswith("add_relation(") and fun.endswith(")"):
+                        fun = fun.replace("add_relation(","").replace(")", "").strip()
+                        relation = fun.strip().strip("\'").strip("\"").strip()
+                        new_path = new_path.strip() + " -> " + relation
                     else:
-                        refine_time +=3
-                        print("same path as before")
-                        raise ValueError("same path as before")
-                reasoning_path_LLM_init[entity_label] = new_rule_path
-                refine_time += 1
+                        print("bad function call")
+                        print(functions)
+                        raise ValueError("bad function call")
+                    
+                if new_path==init_path:
+                    print(functions)
+                    raise ValueError("function call no changing origin plan")
+                
+                if "->" not in new_path:
+                    print("****************************************************************")
+                    print(functions)
+                    print("new path:",new_path)
+                    print("****************************************************************")
+                    raise ValueError("function call no changing origin plan")
+                    
+                reasoning_path_LLM_init[entity_label] = new_path
+
+                # if "***STOP REFINE***" in response:
+                #     if Ends_with_cvt:
+                #         print("Ends with CVT, but output stop")
+                #         raise ValueError("Ends with CVT, but output stop")
+                    
+                #     End_loop_cur_path = True
+                #     thought = response
+                #     return reasoning_path_LLM_init, refine_time, End_loop_cur_path, thought
+                
+                # new_rule_path = response.split("Refined Path:")[-1].strip().strip("\"").strip()
+                # thought = response
+                # if entity_label not in new_rule_path or "->" not in new_rule_path:
+                #     print()
+                #     print("entity_label or -> is not in path")
+                #     raise ValueError("entity_label or -> is not in path")
+                
+                # # 没什么变化 不用refine了
+                # if init_path == new_rule_path:
+                #     if refine_time > 5:
+                #         End_loop_cur_path = True
+                #         thought = response
+                #         return reasoning_path_LLM_init, refine_time, End_loop_cur_path, thought
+                #     else:
+                #         refine_time +=3
+                #         print("same path as before")
+                #         raise ValueError("same path as before")
+                # reasoning_path_LLM_init[entity_label] = new_rule_path
+
+
+
 
                 # new_reasoning_path_LLM_init=eval(response.split("Refined Path:")[-1].strip())
                 # if type(new_reasoning_path_LLM_init) != dict:
@@ -597,17 +682,19 @@ class PromptBuilder(object):
                 # else:
                 #     reasoning_path_LLM_init = new_reasoning_path_LLM_init
 
+
                 break
             except:
+                print("****************************************************************************************")
                 print(response)
                 print("****************************************************************************************")
-                time.sleep(5)
+                time.sleep(3)
 
         return reasoning_path_LLM_init, refine_time, End_loop_cur_path, thought
 
 
     # Refine framework
-    def get_graph_knowledge_LLM_revised_engine(self, question_dict):
+    def get_graph_knowledge_LLM_revised_engine(self, question_dict, llm_engine):
         reasoning_path_LLM_init = question_dict['relation_path_candidates']
         question = question_dict['question']
         entities = question_dict['topic_entity']
@@ -644,39 +731,32 @@ class PromptBuilder(object):
                     # result_path表示 grounding过程中的path,如果是空的,说明当前grounding遇到了问题,需要refine
                     result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict = self.apply_rules_LLM_one_path_engine(reasoning_path_LLM_init[entity_label], [entity_id,entity_label], grounded_relations)
 
-                    print(result_paths)
-                    print(grounded_knowledge_current)
-                    print(ungrounded_neighbor_relation_dict)
+                    print("refine time", refine_time)
+                    print("result paths",result_paths)
+                    print("grounded knowledge current", grounded_knowledge_current)
+                    print("ungrounded neighbor relation dict",ungrounded_neighbor_relation_dict)
 
                     End_loop_cur_path = False
-
+                    Ends_with_cvt = False
                     # # 硬性判断什么时候停   后续考虑加上LLM来判断是否停下
-                    # if len(result_paths) > 0:
-                    #     max_path_len =  len(result_paths[-1])
-                    #     for path in result_paths:
-                    #         if len(path) < max_path_len:
-                    #             continue
-                    #         # 最后一个知识以m.结尾 说明遇到了空白节点
-                    #         if path[-1][-1].startswith("m."):
-                    #             End_loop_cur_path = False
-                    # else:
-                    #     End_loop_cur_path = False        
+                    if len(result_paths) > 0:
+                        max_path_len =  len(result_paths[-1])
+                        if max_path_len == 0:
+                            continue
+                        for path in result_paths:
+                            if len(path) < max_path_len:
+                                continue
+                            # 最后一个知识以m.结尾 说明遇到了空白节点
+                            if path[-1][-1].startswith("m."):
+                                Ends_with_cvt = True
+     
 
                     # llm refine and stop condition
                     if End_loop_cur_path == False:
                         # reasoning_path_LLM_init, refine_time, End_loop_cur_path, thought = self.LLM_refine(reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time, End_loop_cur_path)
-                        reasoning_path_LLM_init, refine_time, End_loop_cur_path, thought = self.LLM_refine_and_stop_condition(reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time, End_loop_cur_path)
+                        reasoning_path_LLM_init, refine_time, End_loop_cur_path, thought = self.LLM_refine_and_stop_condition(llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time, End_loop_cur_path, Ends_with_cvt)
 
-                    # if len(result_paths) > 0:
-                    #     max_path_len =  len(result_paths[-1])
-                    #     for path in result_paths:
-                    #         if len(path) < max_path_len:
-                    #             continue
-                    #         # 最后一个知识以m.结尾 说明遇到了空白节点
-                    #         if path[-1][-1].startswith("m."):
-                    #             End_loop_cur_path = False
-
-                    if End_loop_cur_path or refine_time > 16:
+                    if End_loop_cur_path or refine_time >= 6:
                         reasoning_paths.extend(result_paths)
                         grounded_revised_knowledge[entity_label] = result_paths
 
@@ -710,18 +790,21 @@ class PromptBuilder(object):
 
                     # context = "\n".join([utils.path_to_string(p) for p in reasoning_paths])
 
-            # # TODO 遍历完了所有的路径 应该merge一下
+            # # TODO 遍历完了所有的路径 应该merge一下  
             if len(entities) > 1:
                 print("*****************merge*********************")
                 entity_sets={}
+                knowledeg_len_dict={}
                 for k, v in grounded_revised_knowledge.items():
                     if not k in entity_sets.keys():
                         entity_sets[k]=set()
-
-                    for paths in v:
+                    knowledge_len = 0
+                    for paths in v:                        
+                        knowledge_len += len(paths)
                         for triples in paths:
                             entity_sets[k].add(triples[0])
                             entity_sets[k].add(triples[2])
+                    knowledeg_len_dict[k] = knowledge_len
 
                 intersec_set = ""
                 for key in entity_sets.keys():
@@ -730,17 +813,31 @@ class PromptBuilder(object):
                     else:
                         intersec_set = intersec_set.intersection(entity_sets[key]) 
 
-                # 说明有交集
-                if len(intersec_set)>0:
-                    new_reasoning_paths = []
-                    lists_of_paths = []
-                    for path in reasoning_paths:
-                        for i in intersec_set:
-                            if i in str(path):
-                                new_reasoning_paths.append(path)
-                                lists_of_paths.append(utils.path_to_string(path))
-                    reasoning_paths = new_reasoning_paths
-                    
+                        # 说明有交集  每次有交集就先给他们取个交集
+                        if len(intersec_set) > 0:
+                            new_reasoning_paths = []
+                            lists_of_paths = []
+                            for path in reasoning_paths:
+                                for i in intersec_set:
+                                    if i in str(path):
+                                        new_reasoning_paths.append(path)
+                                        lists_of_paths.append(utils.path_to_string(path))
+                            reasoning_paths = new_reasoning_paths
+                        else:
+                            if len(reasoning_paths) > 30:
+                                for k, v in knowledeg_len_dict.items():
+                                    # 这个实体开头的知识太多了 并且没有交集,说明他八成没用
+                                    if v > 50:
+                                        new_reasoning_paths = []
+                                        lists_of_paths = []
+                                        for path in reasoning_paths:
+                                            string_path = str(path).strip("[").strip("(").strip("\'").strip()
+                                            if not string_path.startswith(k):
+                                                new_reasoning_paths.append(path)
+                                                lists_of_paths.append(utils.path_to_string(path))
+
+                                        reasoning_paths = new_reasoning_paths
+
         return reasoning_paths, lists_of_paths, thought
 
 
@@ -981,4 +1078,5 @@ class PromptBuilder(object):
                 if self.tokenize(tmp_all_tokens) > maximun_token:
                     return "\n".join(new_list_of_paths)
                 new_list_of_paths.append(p)
-            
+
+"xxxxx"

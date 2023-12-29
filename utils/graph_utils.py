@@ -244,6 +244,9 @@ def bfs_with_rule_LLM_engine(entity_id, entity_label, target_rule, grounded_reas
                                 queue.append((neighbor, current_path + [(utils.id2entity_name_or_type_en(current_node), relation, utils.id2entity_name_or_type_en(neighbor))], current_position + 1))
                             else:
                                 break
+                            
+        if len(ungrounded_neighbor_relation_dict.keys()) == 0 and len(grounded_knowledge_current)==1 and grounded_knowledge_current[-1][-1]==0:
+            ungrounded_neighbor_relation_dict[utils.id2entity_name_or_type_en(grounded_knowledge_current[-1][0])] = utils.get_ent_one_hop_rel(grounded_knowledge_current[-1][0])
 
     return result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict
 

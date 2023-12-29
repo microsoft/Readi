@@ -307,7 +307,7 @@ def entity_search(entity, relation, head=True):
             tail_entities_extract = sparql_tail_entities_extract% (entity, relation)
             entities = table_result_to_list(execute_sparql(tail_entities_extract))
     else:
-        head_entities_extract = sparql_head_entities_extract% (entity, relation)
+        head_entities_extract = sparql_head_entities_extract% (relation, entity)
         entities = table_result_to_list(execute_sparql(head_entities_extract))
 
     if entities!=[]:

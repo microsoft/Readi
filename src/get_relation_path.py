@@ -45,6 +45,7 @@ def reasoning(file_index):
 
 
 def get_relation_path(input_file="/home/v-sitaocheng/demos/dangle_over_ground/data/datasets/cwq_test.json", output_file="/home/v-sitaocheng/demos/dangle_over_ground/data/initial_plan/cwq_test_1221.json"):
+    
     cwq=readjson_50(input_file)[100]
     for index, item in enumerate(tqdm(cwq)):
         topic_ent = [v for k,v in item['topic_entity'].items()]
@@ -142,7 +143,7 @@ if __name__ == '__main__':
     parser.add_argument("--dataset", type=str,
                         default="cwq", help="choose the dataset.")
     parser.add_argument("--max_length", type=int,
-                        default=1024, help="the max length of LLMs output.")
+                        default=4096, help="the max length of LLMs output.")
     parser.add_argument("--temperature_exploration", type=float,
                         default=0.4, help="the temperature in exploration stage.")
     parser.add_argument("--temperature_reasoning", type=float,

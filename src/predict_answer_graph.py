@@ -98,7 +98,7 @@ def prediction_graph(data, processed_list, input_builder, reasoning_path_LLM):
 
 
 # 前处理 后处理 存文件
-def prediction_graph_engine(processed_list, input_builder, reasoning_path_LLM):
+def prediction_graph_engine(processed_list, input_builder, reasoning_path_LLM, llm_engine):
     question = reasoning_path_LLM["question"]
     answer = reasoning_path_LLM["answer"]
     id = reasoning_path_LLM["ID"]
@@ -106,7 +106,7 @@ def prediction_graph_engine(processed_list, input_builder, reasoning_path_LLM):
     if id in processed_list:
         return None
 
-    kg_triples, kg_paths, thought = input_builder.get_graph_knowledge_LLM_revised_engine(reasoning_path_LLM)
+    kg_triples, kg_paths, thought = input_builder.get_graph_knowledge_LLM_revised_engine(reasoning_path_LLM, llm_engine)
 
     process_ed_kg = ""
     kg_triple_set = []
@@ -224,7 +224,7 @@ def main(args, LLM):
     with open(os.path.join(output_dir, "args.txt"), "w") as f:
         json.dump(args.__dict__, f, indent=2)
 
-    output_file = os.path.join(output_dir, f"predictions_kg_with_input_llm_cwq100_path_onePath_gpt35_1225_llm_stop.jsonl")
+    output_file = os.path.join(output_dir, f"predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_1227_llm_stop.jsonl")
     fout, processed_list = get_output_file(output_file, force=args.force)
 
     if args.n > 1:
@@ -320,15 +320,14 @@ def main_engine(args, LLM):
     with open(os.path.join(output_dir, "args.txt"), "w") as f:
         json.dump(args.__dict__, f, indent=2)
 
-    output_file = os.path.join(output_dir, f"predictions_kg_with_input_llm_cwq100_path_onePath_gpt35_1226_llm_stop_longest_only_multi_merge.jsonl")
+    output_file = os.path.join(output_dir, args.output_file_name)
     fout, processed_list = get_output_file(output_file, force=args.force)
 
     with open(args.init_plan_path, 'r') as f:
         reasoning_path = json.load(f)
 
     for index, data in enumerate(tqdm(reasoning_path)):
-
-        res = prediction_graph_engine(processed_list, input_builder, data)
+        res = prediction_graph_engine(processed_list, input_builder, data, args.llm_engine)
         if res is not None:
             if args.debug:
                 print(json.dumps(res))
@@ -376,8 +375,11 @@ if __name__ == "__main__":
     argparser.add_argument("-n", default=1, type=int, help="number of processes")
     argparser.add_argument("--filter_empty", action="store_true")
     argparser.add_argument("--debug", action="store_true")
+    # argparser.add_argument("--llm_engine", type=str, default="gpt-4-32k-20230321")
+    argparser.add_argument("--llm_engine", type=str, default="gpt-35-turbo-16k-20230613")
     argparser.add_argument("--init_plan_path", type=str, default="/home/v-sitaocheng/demos/dangle_over_ground/data/initial_plan/cwq_test_1221.json")
-
+    argparser.add_argument("--output_file_name", type=str, default="predictions_kg_with_input_llm_cwq100_path_onePath_gpt35_1228_llm_stop_longest_only_multi_merge_function_cvt_goal_progress.jsonl")
+        
     args, _ = argparser.parse_known_args()
     if args.model_name != "no-llm":
         LLM = get_registed_model(args.model_name)

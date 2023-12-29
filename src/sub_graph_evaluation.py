@@ -245,38 +245,54 @@ def match(s1: str, s2: str) -> bool:
     return s2 in s1
 
 
-def calculate_answer_coverage_rate():
+def calculate_answer_coverage_rate(file_path, golden_file_path):
     # sr_graph = read_jsonl_file_50("/home/v-sitaocheng/demos/llm_hallu/reasoning-on-graphs/results/gen_rule_path/RoG-cwq/RoG/test/predictions_kg.jsonl")
-    # sr_graph = read_jsonl_file_50("/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/RoG/test/_home_v-sitaocheng_demos_llm_hallu_reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt35_1225_llm_stop.jsonl")
-    sr_graph = read_jsonl_file_50("/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/RoG/test/_home_v-sitaocheng_demos_llm_hallu_reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt35_1226_llm_stop_longest_only_multi_merge.jsonl")
+    # sr_graph = read_jsonl_file_50("/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/RoG /test/_home_v-sitaocheng_demos_llm_hallu_reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt35_1225_llm_stop.jsonl")
+    sr_graph = read_jsonl_file_50(file_path)
     # cwq = readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1127.json")
-    cwq = readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/data/cwq.json")
+    cwq = readjson_50(golden_file_path)
     all_recall=0
     all_recall=0
     non_zero_num=0
     all_knowledge_len=0
     predict_knowledge_len=0
     all_knowledge_num = 0
+    all_knowledge_one_path_num_questions = 0
     all_knowledge_one_path_num = 0
+    recall_one_path = 0
+    all_knowledge_multi_path_num_questions = 0
+    all_knowledge_multi_path_num = 0
+    recall_multi_path = 0
 
     for index, lines in enumerate(tqdm(sr_graph)):
+        # topic实体 (数量对应 路径数量)
         topic_entity = cwq[index]['topic_entity']
         num_of_path = len(topic_entity.keys())
-        if num_of_path == 1:
-            continue
-        # print(topic_entity.values())
-        all_knowledge_one_path_num += 1
+        lines['kg_triples'] = "\n".join(list(set(lines['kg_triples_str'].split("\n"))))
+        # 拿答案 也可以在golden文件拿
+        if type(lines['ground_truth'])==str:
+            answer_list = [lines['ground_truth']]
+        elif type(lines['ground_truth']) == list:
+            answer_list = lines['ground_truth']
 
-        knowledge_seq = lines['kg_triples_str'].replace(", ",",").replace(" ,",",").strip()
+
+        knowledge_seq = lines['kg_triples'].replace(", ",",").replace(" ,",",").strip()
         all_knowledge_num += len(knowledge_seq.split("\n"))
-        answer_list = lines['ground_truth']
+        if num_of_path == 1:
+            all_knowledge_one_path_num_questions += 1
+            all_knowledge_one_path_num += len(knowledge_seq.split("\n"))
+        else:
+            all_knowledge_multi_path_num_questions += 1
+            all_knowledge_multi_path_num += len(knowledge_seq.split("\n"))
+
 
         recall=0
         for ans in answer_list:
             # if ","+ans.strip() in knowledge_seq or ans+"," in knowledge_seq:
             if match(knowledge_seq, ans):
                 recall+=1
-                print(lines['kg_triples_str'])
+                # print(lines['kg_triples_str'])
+
         if recall == 0:
             print(lines['question'])
             print(topic_entity)
@@ -285,12 +301,22 @@ def calculate_answer_coverage_rate():
             print("********************************************************************************************************************")
        
         all_recall+=recall/len(answer_list)
+        if num_of_path == 1:
+            recall_one_path += recall/len(answer_list)
+        else:
+            recall_multi_path += recall/len(answer_list)
 
-    # print("coverage rate:" , all_recall/len(sr_graph))    
-    print(all_knowledge_one_path_num)
-    print("coverage rate one path:" , all_recall/all_knowledge_one_path_num)    
-    # print("number of knowledge:" , all_knowledge_num/len(sr_graph))    
-    print("number of knowledge:" , all_knowledge_num/all_knowledge_one_path_num)    
+    print("# knowledge one path:", all_knowledge_one_path_num_questions)
+    print("# knowledge multi path:", all_knowledge_multi_path_num_questions)
+
+    print("coverage rate overall:" , all_recall/len(sr_graph))    
+
+    print("coverage rate one path:" , recall_one_path/all_knowledge_one_path_num_questions)    
+    print("coverage rate multi path:" , recall_multi_path/all_knowledge_multi_path_num_questions)  
+
+    print("avg number of knowledge overall :" , all_knowledge_num/len(sr_graph))    
+    print("avg number of knowledge one path:" , all_knowledge_one_path_num/all_knowledge_one_path_num_questions)    
+    print("avg number of knowledge multi path:" , all_knowledge_multi_path_num/all_knowledge_multi_path_num_questions)    
 
 
 def calculate_graph_recall():
@@ -402,5 +428,6 @@ if __name__ == '__main__':
     # instantiate_knowledge()
     # calculate_contract_recall()
     # calculate_graph_recall()
-
-    calculate_answer_coverage_rate()
+    file_path="/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/RoG/test/_home_v-sitaocheng_demos_llm_hallu_reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt35_1228_llm_stop_longest_only_multi_merge_function_cvt_goal_progress.jsonl"
+    golden_path="/home/v-sitaocheng/demos/llm_hallu/ToG/data/cwq.json"
+    calculate_answer_coverage_rate(file_path,golden_path)
