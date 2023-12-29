@@ -46,7 +46,7 @@ def reasoning(file_index):
 
 def get_relation_path(input_file="/home/v-sitaocheng/demos/dangle_over_ground/data/datasets/cwq_test.json", output_file="/home/v-sitaocheng/demos/dangle_over_ground/data/initial_plan/cwq_test_1221.json"):
     
-    cwq=readjson_50(input_file)[100]
+    cwq=readjson_50(input_file)[:100]
     for index, item in enumerate(tqdm(cwq)):
         topic_ent = [v for k,v in item['topic_entity'].items()]
         prompts = relation_reasoning_prompt_new  + "Question: " + item['question'] + "\nTopic Entities:" + str(topic_ent)+ "\nThought:"
@@ -155,7 +155,8 @@ if __name__ == '__main__':
     parser.add_argument("--remove_unnecessary_rel", type=bool,
                         default=True, help="whether removing unnecessary relations.")
     parser.add_argument("--LLM_type", type=str,
-                        default="gpt-35-turbo-16k-20230613", help="base LLM model.")
+                        default="gpt-4-32k-20230321", help="base LLM model.")
+                        # default="gpt-35-turbo-16k-20230613", help="base LLM model.")
     parser.add_argument("--opeani_api_keys", type=str,
                         default="", help="if the LLM_type is gpt-3.5-turbo or gpt-4, you need add your own openai api keys.")
     parser.add_argument("--num_retain_entity", type=int,
@@ -164,6 +165,6 @@ if __name__ == '__main__':
                         default="llm", help="prune tools for ToG, can be llm (same as LLM_type), bm25 or sentencebert.")
     args = parser.parse_args()
 
-    get_relation_path(input_file="/home/v-sitaocheng/demos/dangle_over_ground/data/datasets/cwq_test.json", output_file="/home/v-sitaocheng/demos/dangle_over_ground/data/initial_plan/cwq_test_1221.json")
+    get_relation_path(input_file="/home/v-sitaocheng/demos/dangle_over_ground/data/datasets/cwq_test.json", output_file="/home/v-sitaocheng/demos/dangle_over_ground/data/initial_plan/cwq_test_gpt4_1229.json")
     # grounding_relations()
     # run()

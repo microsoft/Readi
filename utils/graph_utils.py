@@ -235,12 +235,12 @@ def bfs_with_rule_LLM_engine(entity_id, entity_label, target_rule, grounded_reas
                 # 当前层的当前节点有交集，说明grounded到了  加入队列（等待下一层)
                 else:
                     for relation in intersection:
-                        if len(queue)>=1000:
+                        if len(queue)>=500:
                             break
                         # 前向 后向关系
                         neighbors_with_relation = [neighbor for neighbor in utils.entity_search(current_node, relation, True) + utils.entity_search(current_node, relation, False)]
                         for neighbor in neighbors_with_relation:
-                            if len(queue) < 1000:
+                            if len(queue) < 500:
                                 queue.append((neighbor, current_path + [(utils.id2entity_name_or_type_en(current_node), relation, utils.id2entity_name_or_type_en(neighbor))], current_position + 1))
                             else:
                                 break

@@ -343,7 +343,8 @@ Here are some practical tips for you to refine the plan (just some tips for you 
 4. Necessity: If the Grounded Knowledge is empty or is [[]], or relations of a topic entity is shown in Candidate Relations, this means no relations is grounded, something necessarily to answer the question is not given in the Initial Plan. So you should choose a relevant relation from the Candidate Relations of the topic entity, and reconstruct the whole plan in order to get the answer.
 
 Let me show you some examples.
-# Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
+#
+Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
 
 Initial Path: Miley Cyrus -> film.film.actor -> film.film.performance
 
@@ -436,7 +437,8 @@ Here are some practical tips for you to refine the plan (just some tips for you 
 4. Necessity: If the Grounded Knowledge is empty, or relations of a topic entity is shown in Candidate Relations, this means no relations is grounded, something necessarily to answer the question is not given in the Initial Plan. So you should choose a relevant relation from the Candidate Relations of the topic entity,(or based on your own) to reconstruct the whole plan in order to get the answer.
 
 Let me show you some examples.
-# Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
+#
+Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
 
 Initial Path: Miley Cyrus -> film.film.actor -> film.film.performance -> performance.performance.movies
 
@@ -529,7 +531,8 @@ Here are some practical tips for you to refine the plan (just some tips for you 
 4. Necessity: If the Grounded Knowledge is empty, and relations of topic entity is shown in Candidate Relations, this means no relations is grounded, something necessarily to answer the question is not given in the Initial Plan. So you should choose a relevant relation from the Candidate Relations,(or based on your own) to refine.
 
 Let me show you some examples.
-# Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
+#
+Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
 
 Initial Path: Miley Cyrus -> film.film.actor -> film.film.performance
 
@@ -630,7 +633,8 @@ A simple use can be "trim_relation("music.concert_tour.artist"), which will trim
 This function will stop the whole refining process. This cannot be used with other functions! So if you think the Grounded Knowledge is sufficient to locate the answer, just call this function.
 
 Let me show you some examples.
-# Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
+#
+Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
 
 Initial Path: Miley Cyrus -> film.film.actor -> film.film.performance
 
@@ -733,11 +737,12 @@ Remeber the following RULES:
 1. The end of a path must not be a cvt node, i.e. <cvt></cvt>, if so, donnot call stop_refine()!
 
 Let me show you some examples.
-# Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
+#
+Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
 
 Initial Path: Miley Cyrus -> film.film.actor -> film.film.performance
 
-Grounded Knowledge: Miley Cyrus -> film.actor.film -> m.010tw6z6 -> film.performance.film -> Wizards on Deck with Hannah Montana
+Grounded Knowledge: Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Wizards on Deck with Hannah Montana
 Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> The World According to Miley Cyrus
 Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Bolt
 Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> So Undercover
@@ -837,7 +842,7 @@ add_relation("location.country.currency_used")
 #
 """
 
-refine_prompt_path_one_path_add_stop_condition_func_cvt_deal_goal_progress_1228 = """Given some information from executing a plan, please call some tools to refine this path to get the answer of a question.
+refine_prompt_path_one_path_add_stop_condition_func_cvt_deal_goal_progress_1228 = """Given some information from executing a plan, please call some tools to refine an initial path to get the answer of a question.
 
 Here are the given information:
 1. Question: a question constrained by some paths.
@@ -866,11 +871,12 @@ Remeber the following RULES:
 1. The end of a path must not be a cvt node, i.e. <cvt></cvt>, if so, donnot call stop_refine()!
 
 Let me show you some examples.
-# Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
+#
+Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
 
 Initial Path: Miley Cyrus -> film.film.actor -> film.film.performance
 
-Grounded Knowledge: Miley Cyrus -> film.actor.film -> m.010tw6z6 -> film.performance.film -> Wizards on Deck with Hannah Montana
+Grounded Knowledge: Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Wizards on Deck with Hannah Montana
 Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> The World According to Miley Cyrus
 Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Bolt
 Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> So Undercover
@@ -972,6 +978,695 @@ trim_relation("place.location.geolocation")
 add_relation("location.country.currency_used")
 #
 """
+
+
+refine_prompt_path_one_path_add_stop_condition_func_cvt_deal_goal_progress_1229 = """Given some information from executing a plan, please call some tools to refine an initial path to get the answer of a question.
+
+You can only choose tools from these set:
+1. replace_relation(origin_relation: str, refined_relation: str)
+The variable origin_relation should be relations in the Inital Path, and the variable refined_relation can be either a relation from Candidate Relations (i.e., relations connected to current end of Grounded Knowledge) or a relation generated by yourself (Neither the candidates nor current grounded knowledge are relevant to the question). 
+This function helps to replace the origin_relation in Initial Plan with refined_relation. 
+A simple use can be "replace_relation("people.cause_of_death.people","people.person.places_lived"), which will replace relation "people.cause_of_death.people" in Inital Path to "people.person.places_lived"."
+
+2. add_relation(new_relation: str)
+You can call this function to add a new_relation (either from Candidate Relations or generated by yourself) to current path.
+A simple use can be "add_relation("location.country.languages_spoken"), which will add the relation "location.country.languages_spoken" to the end of Inital Path"
+
+3. trim_relation(irrelevant_relation: str)
+The variable irrelevant_relation means this relation is irrelevant to the question. This function will delete the path from this relation. So if you find all Grounded Knowledge is irrelevant from a relation, you can call this function.
+A simple use can be "trim_relation("music.concert_tour.artist"), which will trim all the relation from "music.concert_tour.artist" in the Inital Path"
+
+4. stop_refine()
+This function will stop the whole refining process. This cannot be used with other functions! So if you think the Grounded Knowledge is sufficient to locate the answer, just call this function.
+
+Remeber the following RULES:
+1. The end of a path must not be a cvt node, i.e. <cvt></cvt>, if so, donnot call stop_refine()!
+
+Let me show you some examples.
+#
+Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
+
+Initial Path: Miley Cyrus -> film.film.actor -> film.film.performance
+
+Grounded Knowledge: Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Wizards on Deck with Hannah Montana
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> The World According to Miley Cyrus
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Bolt
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> So Undercover
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> The Last Song
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Hannah Montana and Miley Cyrus: Best of Both Worlds Concert
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Super Rhino
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Big Fish
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Sonic the Hedgehog
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> LOL
+
+Candidate Relations: ['dataworld.gardening_hint.last_referenced_by', 'dataworld.gardening_hint.replaced_by', 'film.director.film', 'film.film.country', 'film.film.directed_by', 'film.film.genre', 'film.film.initial_release_date', 'film.film.language', 'film.film.prequel', 'film.film.release_date_s', 'film.film.runtime', 'film.film.sequel', 'film.film.starring', 'film.film.written_by', 'film.film_cut.film', 'film.film_genre.films_in_this_genre', 'film.film_regional_release_date.film', 'film.performance.film', 'film.writer.film', 'imdb.topic.title_id', 'kg.object_profile.prominent_type', 'tv.tv_director.episodes_directed', 'tv.tv_program.episodes', 'tv.tv_series_episode.air_date', 'tv.tv_series_episode.director', 'tv.tv_series_episode.episode_number', 'tv.tv_series_episode.next_episode', 'tv.tv_series_episode.season', 'tv.tv_series_episode.season_number', 'tv.tv_series_episode.series', 'tv.tv_series_episode.writer']
+
+Goal: The question is contrained by 2 paths from Miley Cyrus and Tobin Armbrust. According to the initial path, this path starts from "Miley Cyrus". Based on the Question, this path should cover the films acted by Miley Cyrus, to reach the answer.
+
+Thought: In Grounded Knowledge, firstly, I find that Miley Cyrus is connected to some cvt nodes, and through "film.actor.film", they seem some films, which is relevant to my Goal.
+So I call replace_relation("film.film.actor","film.actor.film") to ground the relation.
+Secondly, I find that the cvt nodes are connected to some films, through "film.performance.film", they seem some films performed by Miley Cyrus.
+So I call replace_relation("film.film.performance","film.performance.film") to ground the relation.
+
+Progress: From Grounded Knowledge, I can already know the films acted by Miley Cyrus, which are {Wizards on Deck with Hannah Montana, The World According to Miley Cyrus, Bolt, So Undercover,The Last Song, Hannah Montana and Miley Cyrus: Best of Both Worlds Concert, Super Rhino, Big Fish, Sonic the Hedgehog, LOL}! So no refine is needed for Initial Plan, I will just call stop_refine().
+
+Function Call: stop_refine()
+#
+Question: What major religion in the UK has a place of worship named St. Mary's Cathedral, Batticaloa?
+
+Initial Path: United Kingdom -> location.location.religions -> place.religion.major_religions
+
+Grounded Knowledge: United Kingdom -> location.statistical_region.religions -> <cvt></cvt>
+United Kingdom -> location.location.contains -> Heaton railway station
+United Kingdom -> location.location.contains -> Bakersfield, Nottingham
+United Kingdom -> location.location.contains -> Knockloughrim
+United Kingdom -> location.location.contains -> Oakenshaw
+
+Candidate Relations: ['location.location.containedby', 'location.location.geolocation', 'location.religion_percentage.date', 'location.religion_percentage.percentage', 'location.religion_percentage.religion', 'type.object.type']
+
+Goal: The question is contrained by 2 paths from United Kingdom and St. Mary's Cathedral, Batticaloa. According to Initial Plan, this path starts from "United Kingdom". Based on the Question, this path should cover the major religion in "United Kingdom", to reach the answer.
+
+Thought: In Grounded Knowledge, first, I find that United Kingdom is connected to a cvt node, through "location.location.religions", they seem some religions, which is relevant to my goal.
+So I call replace_relation("location.location.religions","location.statistical_region.religions") to ground the relation.
+Secondly, the cvt node is in the end, which violates the RULES. Some Candidate Relations are given, and I find "location.religion_percentage.religion" is relevant to obtain major religions, and the relation "place.religion.major_religions" is not grounded.
+so I call trim_relation("place.religion.major_religions") and add_relation("location.religion_percentage.religion") to get the major religion and connect the cvt node. 
+
+Progress: From Grounded Knowledge, I know some religions in United Kingdom. But <cvt></cvt> must not be the end of Knowledge. And I still donnot know the majority religion. So I will refine the Initial Plan.
+
+Function Call: replace_relation("location.location.religions","location.statistical_region.religions")
+trim_relation("place.religion.major_religions")
+add_relation("location.religion_percentage.religion")
+#
+Question: The country with the National Anthem of Bolivia borders which nations?
+
+Initial Path: National Anthem of Bolivia -> country.country.composer -> person.person.nationality -> location.location.adjoins -> location.location.country
+
+Grounded Knowledge: 
+
+Candidate Relations: ['dataworld.gardening_hint.last_referenced_by', 'government.national_anthem.national_anthem_of', 'government.national_anthem_of_a_country.anthem', 'kg.object_profile.prominent_type', 'music.composer.compositions', 'music.composition.composer', 'music.composition.lyricist', 'music.composition.recordings', 'music.lyricist.lyrics_written', 'music.recording.song']
+
+Goal: The question is contrained by one path from the National Anthem of Bolivia. According to the initial path, this path starts from "National Anthem of Bolivia". Based on the Question, this path should firstly cover the country with the national anthem "National Anthem of Bolivia ", and then, the nations bordering this country.
+
+Thought: The Grounded Knowledge is empty, which means no relations is grounded, and the initial plan seems irrelevant to my Goal.
+So I should first call trim_relation("country.country.composer") to remove the irrelevant part.
+In Candidate Relations, I find that "government.national_anthem.national_anthem_of" is the most relevant to get the country with that national anthem.
+So I call add_relation("government.national_anthem.national_anthem_of") to get the country.
+And then, relations about bordering countries are not given, so I add some relations on my own to get the countries bordering this country.
+So I call add_relation("location.location.adjoins") and add_relation("location.location.adjoins").
+
+Progress: From Grounded Knowledge, I know nothing because it is empty. So I will refine the Initial Plan.
+
+Function Call: trim_relation("country.country.composer")
+add_relation("government.national_anthem.national_anthem_of")
+add_relation("location.location.adjoins")
+add_relation("location.location.adjoins")
+#
+Question: What bordering countries are to the country that uses Bolivian Boliviano as its currency??
+
+Initial Path: Bolivian boliviano -> country.country.currency
+
+Grounded Knowledge: Bolivian boliviano -> finance.currency.countries_used -> Bolivia
+
+Candidate Relations: []
+
+Goal: The question is contrained by one path from Bolivian Boliviano. According to the initial path, this path starts from "Bolivian boliviano". Based on the Question, this path should firstly cover the country using this currency, and then the countries bordering this country.
+
+Thought: In Grounded Knowledge, first, I find that Bolivian boliviano is connected to Bolivia, through "finance.currency.countries_used", which tells the country using Bolivian boliviano as currency is Bolivia, which is relevant to my Goal.
+So I call replace_relation("country.country.currency", "finance.currency.countries_used") to ground the relation.
+And then Bolivia is the end of Grounded Knowledge and no Candidate Relations is given, which means the plan is fully grounded. But I should know the bordering countries of Bolivia, so I should add some relations on my own to the path.
+So I call add_relation("location.location.adjoins") to get the bordering countries of Bolivia.
+
+Progress: From Grounded Knowledge, I know that the country using Bolivian boliviano is {Bolivia}. But I still donnot know the countries bordering Bolivia. So I will refine the Inial Plan.
+
+Function Call: replace_relation("country.country.currency", "finance.currency.countries_used")
+add_relation("location.location.adjoins")
+#
+Question: Rift Valley Province is located in a nation that uses which form of currency?
+
+Initial Path: Rift Valley Province -> place.administrative_division.country -> place.location.geolocation -> location.mailing_address.state_province_region -> place.country.currency_used
+
+Grounded Knowledge: Rift Valley Province -> location.administrative_division.country -> Kenya -> location.location.geolocation -> <cvt></cvt>
+
+Candidate Relations: ['location.geocode.latitude', 'location.geocode.longitude']
+
+Goal: The question is contrained by one path fromRift Valley Province. According to the initial path, this path starts from "Rift Valley Province". Based on the Question, this path should firstly cover the nation where "Rift Valley Province" located, and then, the form of currency used in this nation, to reach the answer.
+
+Thought: In Grounded Knowledge, first, I find that Rift Valley Province is connected to Kenya, through "location.administrative_division.country", which means Rift Valley Province is located in the nation Kenya, this is relevant to my Goal. 
+So I call replace_relation("place.administrative_division.country", "location.administrative_division.country") to ground the relation.
+Secondly, I find that Kenya is connected to a cvt node, through "location.location.geolocation", which seem a geolocation. Some Candidate Relations are given, but I find that they are irrelevant to by Goal. 
+So I call trim_relation("place.location.geolocation") to remove relations from "place.location.geolocation".
+And I should add some relations on my own to get the currency of Kenya.
+So I call add_relation("location.country.currency_used") to get the currency of Kenya.
+
+Progress: From Grounded Knowledge, I know that Rift Valley Province is located in {Kenya}. But I still donnot know the currency used in Kenya. So I will refine the Inial Plan.
+
+Function Call: replace_relation("place.administrative_division.country", "location.administrative_division.country")
+trim_relation("place.location.geolocation")
+add_relation("location.country.currency_used")
+#
+"""
+
+
+refine_prompt_path_one_path_add_stop_condition_func_cvt_deal_goal_progress_1229_new = """Given some information from executing a plan, please call some tools to refine an initial path to get the answer of a question.
+
+You can only choose tools from these set:
+1. replace_relation(origin_relation: str, refined_relation: str)
+The variable origin_relation should be relations in the Inital Path, and the variable refined_relation can be either a relation from Candidate Relations (i.e., relations connected to current end of Grounded Knowledge) or a relation generated by yourself (Neither the candidates nor current grounded knowledge are relevant to the question). 
+This function helps to replace the origin_relation in Initial Plan with refined_relation. 
+A simple use can be "replace_relation("people.cause_of_death.people","people.person.places_lived"), which will replace relation "people.cause_of_death.people" in Inital Path to "people.person.places_lived"."
+
+2. add_relation(new_relation: str)
+You can call this function to add a new_relation (either from Candidate Relations or generated by yourself) to current path.
+A simple use can be "add_relation("location.country.languages_spoken"), which will add the relation "location.country.languages_spoken" to the end of Inital Path"
+
+3. trim_relation(irrelevant_relation: str)
+The variable irrelevant_relation means this relation is irrelevant to the question. This function will delete the path from this relation. So if you find all Grounded Knowledge is irrelevant from a relation, you can call this function.
+A simple use can be "trim_relation("music.concert_tour.artist"), which will trim all the relation from "music.concert_tour.artist" in the Inital Path"
+
+4. stop_refine()
+This function will stop the whole refining process. This cannot be used with other functions! So if you think the Grounded Knowledge is sufficient to locate the answer, just call this function.
+
+Remeber the following RULES:
+1. The end of a knowledge must not be a cvt node, i.e. <cvt></cvt>, if so, refine the initial plan and donnot call stop_refine()!
+
+Let me show you some examples.
+#
+Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
+
+Initial Path: Miley Cyrus -> film.film.actor -> film.film.performance
+
+Grounded Knowledge: Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Wizards on Deck with Hannah Montana
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> The World According to Miley Cyrus
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Bolt
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> So Undercover
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> The Last Song
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Hannah Montana and Miley Cyrus: Best of Both Worlds Concert
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Super Rhino
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Big Fish
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Sonic the Hedgehog
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> LOL
+
+Candidate Relations: ['dataworld.gardening_hint.last_referenced_by', 'dataworld.gardening_hint.replaced_by', 'film.director.film', 'film.film.country', 'film.film.directed_by', 'film.film.genre', 'film.film.initial_release_date', 'film.film.language', 'film.film.prequel', 'film.film.release_date_s', 'film.film.runtime', 'film.film.sequel', 'film.film.starring', 'film.film.written_by', 'film.film_cut.film', 'film.film_genre.films_in_this_genre', 'film.film_regional_release_date.film', 'film.performance.film', 'film.writer.film', 'imdb.topic.title_id', 'kg.object_profile.prominent_type', 'tv.tv_director.episodes_directed', 'tv.tv_program.episodes', 'tv.tv_series_episode.air_date', 'tv.tv_series_episode.director', 'tv.tv_series_episode.episode_number', 'tv.tv_series_episode.next_episode', 'tv.tv_series_episode.season', 'tv.tv_series_episode.season_number', 'tv.tv_series_episode.series', 'tv.tv_series_episode.writer']
+
+Goal: The question is contrained by 2 paths from Miley Cyrus and Tobin Armbrust. According to the initial path, this path starts from "Miley Cyrus". Based on the Question, this path should cover the films acted by Miley Cyrus, to reach the answer.
+
+Thought: In Grounded Knowledge I know that Miley Cyrus acts some films, described by some cvt nodes. And the name of the films are Wizards on Deck with Hannah Montana, The World According to Miley Cyrus, Bolt, So Undercover,The Last Song, Hannah Montana and Miley Cyrus: Best of Both Worlds Concert, Super Rhino, Big Fish, Sonic the Hedgehog, LOL. These Knowledge meets my goal.
+
+Progress: From Grounded Knowledge, I know the films acted by Miley Cyrus, which are {Wizards on Deck with Hannah Montana, The World According to Miley Cyrus, Bolt, So Undercover,The Last Song, Hannah Montana and Miley Cyrus: Best of Both Worlds Concert, Super Rhino, Big Fish, Sonic the Hedgehog, LOL}! So no refine is needed for Initial Plan, I will just call stop_refine().
+
+Function Call: stop_refine()
+#
+Question: What major religion in the UK has a place of worship named St. Mary's Cathedral, Batticaloa?
+
+Initial Path: United Kingdom -> location.location.religions -> place.religion.major_religions
+
+Grounded Knowledge: United Kingdom -> location.location.contains -> Heaton railway station
+United Kingdom -> location.statistical_region.religions -> <cvt></cvt>
+United Kingdom -> location.location.contains -> Bakersfield, Nottingham
+United Kingdom -> location.location.contains -> Knockloughrim
+United Kingdom -> location.location.contains -> Oakenshaw
+
+Candidate Relations: ['location.location.containedby', 'location.location.geolocation', 'location.religion_percentage.date', 'location.religion_percentage.percentage', 'location.religion_percentage.religion', 'type.object.type']
+
+Goal: The question is contrained by 2 paths from United Kingdom and St. Mary's Cathedral, Batticaloa. According to Initial Plan, this path starts from "United Kingdom". Based on the Question, this path should cover the major religion in "United Kingdom", to reach the answer.
+
+Thought: In Grounded Knowledge, I find that United Kingdom has some religions, described by a cvt node，and it is in the end of knowledge, violating the RULES. And I still donnot know the major religion.
+And I find that "place.religion.major_religions" is not grounded, and some candidates are given. I find "location.religion_percentage.religion" relevant to major religions.
+so I call replace_relation("place.religion.major_religions", "location.religion_percentage.religion") to get the major religion and connect the cvt node. 
+
+Progress: From Grounded Knowledge, I know some religions in United Kingdom. But <cvt></cvt> must not be the end of Knowledge. And I still donnot know the majority religion. So I will refine the Initial Plan.
+
+Function Call: replace_relation("place.religion.major_religions", "location.religion_percentage.religion")
+#
+Question: The country with the National Anthem of Bolivia borders which nations?
+
+Initial Path: National Anthem of Bolivia -> country.country.composer -> person.person.nationality -> location.location.adjoins -> location.location.country
+
+Grounded Knowledge: 
+
+Candidate Relations: ['dataworld.gardening_hint.last_referenced_by', 'government.national_anthem.national_anthem_of', 'government.national_anthem_of_a_country.anthem', 'kg.object_profile.prominent_type', 'music.composer.compositions', 'music.composition.composer', 'music.composition.lyricist', 'music.composition.recordings', 'music.lyricist.lyrics_written', 'music.recording.song']
+
+Goal: The question is contrained by one path from the National Anthem of Bolivia. According to the initial path, this path starts from "National Anthem of Bolivia". Based on the Question, this path should firstly cover the country with the national anthem "National Anthem of Bolivia ", and then, the nations bordering this country.
+
+Thought: The Grounded Knowledge is empty, the path is not grounded from "country.country.composer", and some candidates are given. Besides, I think "country.country.composer" is irelevant to my go.
+So I first call trim_relation("country.country.composer") to remove the irrelevant part.
+In Candidate Relations, I find "government.national_anthem.national_anthem_of"  the most relevant to get the country with that national anthem.
+So I call add_relation("government.national_anthem.national_anthem_of") to get the country.
+And then, relations about bordering countries are not given, so I add some relations on my own to get the countries bordering this country.
+So I call add_relation("location.location.adjoin_s") and add_relation("location.adjoining_relationship.adjoins").
+
+Progress: From Grounded Knowledge, I know nothing. So I will refine the Initial Plan.
+
+Function Call: trim_relation("country.country.composer")
+add_relation("government.national_anthem.national_anthem_of")
+add_relation("location.location.adjoins")
+add_relation("location.location.adjoins")
+#
+Question: What bordering countries are to the country that uses Bolivian Boliviano as its currency?
+
+Initial Path: Bolivian boliviano -> country.country.currency
+
+Grounded Knowledge: Bolivian boliviano -> finance.currency.countries_used -> Bolivia
+
+Candidate Relations: []
+
+Goal: The question is contrained by one path from Bolivian Boliviano. According to the initial path, this path starts from "Bolivian boliviano". Based on the Question, this path should firstly cover the country using this currency, and then the countries bordering this country.
+
+Thought: In Grounded Knowledge, I find that Bolivian boliviano is the currency used in Bolivia. But I donnot know the bordering countries of Bolivia. No candidates are given, so I should add some relations to Initial Path on my own.
+So I call add_relation("location.location.adjoin_s") and add_relation("location.adjoining_relationship.adjoins") to get the bordering countries of Bolivia.
+
+Progress: From Grounded Knowledge, I know the country using Bolivian boliviano is {Bolivia}. But I still donnot know the countries bordering Bolivia. So I will refine the Inial Plan.
+
+Function Call: add_relation("location.location.adjoins")
+#
+Question: Rift Valley Province is located in a nation that uses which form of currency?
+
+Initial Path: Rift Valley Province -> place.administrative_division.country -> place.location.geolocation -> location.mailing_address.state_province_region -> place.country.currency_used
+
+Grounded Knowledge: Rift Valley Province -> location.administrative_division.country -> Kenya -> location.location.geolocation -> <cvt></cvt>
+
+Candidate Relations: ['location.geocode.latitude', 'location.geocode.longitude']
+
+Goal: The question is contrained by one path fromRift Valley Province. According to the initial path, this path starts from "Rift Valley Province". Based on the Question, this path should firstly cover the nation where "Rift Valley Province" located, and then, the form of currency used in this nation, to reach the answer.
+
+Thought: In Grounded Knowledge, I find that Rift Valley Province is located in Kenya. And Kenya has some geolocations, described by a cvt node, and it is the end of knowledge, violating the RULES.
+I find that "location.mailing_address.state_province_region" is not grounded, and some candidates are given. However, the geolocation and the candidates are irrelevant to the currency of Kenya.
+I think I should trim the relation from "place.location.geolocation" and try to reach the currency of Kenya.  
+So I call trim_relation("place.location.geolocation") to remove relations from "place.location.geolocation".
+And I should add some relations to get the currency of Kenya on my own.
+So I call add_relation("location.country.currency_used") to get the currency of Kenya.
+
+Progress: From Grounded Knowledge, I know that Rift Valley Province is located in {Kenya}. But I still donnot know the currency used in Kenya. So I will refine the Inial Plan.
+
+Function Call: trim_relation("place.location.geolocation")
+add_relation("location.country.currency_used")
+#
+"""
+
+
+
+refine_prompt_path_one_path_func_cvt_deal_goal_progress_1229_new = """Given some information from executing a plan, please call some tools to refine an initial path to get the answer of a question.
+
+You can only choose tools from these set:
+1. replace_relation(origin_relation: str, refined_relation: str)
+The variable origin_relation should be relations in the Inital Path, and the variable refined_relation can be either a relation from Candidate Relations (i.e., relations connected to current end of Grounded Knowledge) or a relation generated by yourself. 
+If you find some relations in Initial Plan irrelevant to the Question, this function helps to replace the relation. 
+A simple use can be "replace_relation("people.cause_of_death.people","people.person.places_lived")", which will replace relation "people.cause_of_death.people" in Inital Path to "people.person.places_lived".
+
+2. add_relation(new_relation: str)
+You can call this function to add a new_relation (either from Candidate Relations or generated by yourself) to current path.
+A simple use can be "add_relation("location.country.languages_spoken")", which will add the relation "location.country.languages_spoken" to the end of Inital Path.
+
+3. trim_relation(irrelevant_relation: str)
+The variable irrelevant_relation means this relation is irrelevant to the question. This function will delete the path from this relation. 
+So if you find the path irrelevant from a relation, you can call this function.
+A simple use can be "trim_relation("music.concert_tour.artist")", which will trim all the relation from "music.concert_tour.artist" to the end in the Inital Path.
+
+Remeber the following RULES:
+1. The end of a knowledge must not be a cvt node, i.e. <cvt></cvt>, if so, add some relations or trim or replace previous irrelevant relations!
+2. You must not change the topic entity in the Initial Path.
+
+Let me show you some examples.
+#
+Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
+
+Initial Path: Miley Cyrus -> film.film.actor -> film.film.performance -> film.film.producer
+
+Grounded Knowledge: Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Wizards on Deck with Hannah Montana
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> The World According to Miley Cyrus
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Bolt
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> So Undercover
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> The Last Song
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Hannah Montana and Miley Cyrus: Best of Both Worlds Concert
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Super Rhino
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Big Fish
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Sonic the Hedgehog
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> LOL
+
+Candidate Relations: ['dataworld.gardening_hint.last_referenced_by', 'dataworld.gardening_hint.replaced_by', 'film.director.film', 'film.film.country', 'film.film.directed_by', 'film.film.genre', 'film.film.initial_release_date', 'film.film.language', 'film.film.prequel', 'film.film.release_date_s', 'film.film.runtime', 'film.film.sequel', 'film.film.starring', 'film.film.written_by', 'film.film_cut.film', 'film.film_genre.films_in_this_genre', 'film.film_regional_release_date.film', 'film.performance.film', 'film.writer.film', 'imdb.topic.title_id', 'kg.object_profile.prominent_type', 'tv.tv_director.episodes_directed', 'tv.tv_program.episodes', 'tv.tv_series_episode.air_date', 'tv.tv_series_episode.director', 'tv.tv_series_episode.episode_number', 'tv.tv_series_episode.next_episode', 'tv.tv_series_episode.season', 'tv.tv_series_episode.season_number', 'tv.tv_series_episode.series', 'tv.tv_series_episode.writer']
+
+Goal: The question is contrained by 2 paths from Miley Cyrus and Tobin Armbrust. The path from Miley Cyrus should cover the films acted by Miley Cyrus. And the path from Tobin Armbrust should cover the films produced by Tobin Armbrust.
+According to the initial path, this path starts from "Miley Cyrus". So this path should cover the films acted by Miley Cyrus.
+
+Thought: In Grounded Knowledge I know that Miley Cyrus acts some films, described by some cvt nodes. And the name of the films are Wizards on Deck with Hannah Montana, The World According to Miley Cyrus, Bolt, So Undercover,The Last Song, Hannah Montana and Miley Cyrus: Best of Both Worlds Concert, Super Rhino, Big Fish, Sonic the Hedgehog, LOL. These Knowledge meets my goal.
+But the relation "film.film.producer" is not grounded and some candidates are given. However, my goal is just films acted by Miley Cyrus, not the producer.
+So I call trim("film.film.producer") to remove the relation.
+
+Progress: From Grounded Knowledge, I know the films acted by Miley Cyrus, which are {Wizards on Deck with Hannah Montana, The World According to Miley Cyrus, Bolt, So Undercover,The Last Song, Hannah Montana and Miley Cyrus: Best of Both Worlds Concert, Super Rhino, Big Fish, Sonic the Hedgehog, LOL}! 
+
+Function Call: trim("film.film.producer")
+#
+Question: What major religion in the UK has a place of worship named St. Mary's Cathedral, Batticaloa?
+
+Initial Path: United Kingdom -> location.location.religions -> place.religion.major_religions
+
+Grounded Knowledge: United Kingdom -> location.location.contains -> Heaton railway station
+United Kingdom -> location.statistical_region.religions -> <cvt></cvt>
+United Kingdom -> location.location.contains -> Bakersfield, Nottingham
+United Kingdom -> location.location.contains -> Knockloughrim
+United Kingdom -> location.location.contains -> Oakenshaw
+
+Candidate Relations: ['location.location.containedby', 'location.location.geolocation', 'location.religion_percentage.date', 'location.religion_percentage.percentage', 'location.religion_percentage.religion', 'type.object.type']
+
+Goal: The question is contrained by 2 paths from United Kingdom and St. Mary's Cathedral, Batticaloa. The path from United Kingdom should should cover the major religion in "United Kingdom". And the path from St. Mary's Cathedral, Batticaloa should cover religions that has a place of worship named St. Mary's Cathedral, Batticaloa.
+According to the initial path, this path starts from United Kingdom. So this path should cover the major religion in "United Kingdom".
+
+Thought: In Grounded Knowledge, I find that United Kingdom has some religions, described by a cvt node，and it is in the end of knowledge, violating the RULES. And I want to know the major religion.
+And I find that "place.religion.major_religions" is not grounded, and some candidates are given. I find "location.religion_percentage.religion" relevant to major religions.
+so I call replace_relation("place.religion.major_religions", "location.religion_percentage.religion") to get the major religion and connect the cvt node. 
+
+Progress: From Grounded Knowledge, I know some religions in United Kingdom. And I donnot know the majority religion. So I will refine the Initial Plan.
+
+Function Call: replace_relation("place.religion.major_religions", "location.religion_percentage.religion")
+#
+Question: The country with the National Anthem of Bolivia borders which nations?
+
+Initial Path: National Anthem of Bolivia -> country.country.composer -> person.person.nationality -> location.location.adjoins -> location.location.country
+
+Grounded Knowledge: 
+
+Candidate Relations: ['dataworld.gardening_hint.last_referenced_by', 'government.national_anthem.national_anthem_of', 'government.national_anthem_of_a_country.anthem', 'kg.object_profile.prominent_type', 'music.composer.compositions', 'music.composition.composer', 'music.composition.lyricist', 'music.composition.recordings', 'music.lyricist.lyrics_written', 'music.recording.song']
+
+Goal: The question is contrained by one path from the National Anthem of Bolivia. The path from National Anthem of Bolivia should firstly cover the country with the national anthem "National Anthem of Bolivia ", and then, the nations bordering this country.
+According to the initial path, this path starts from "National Anthem of Bolivia". So this path should firstly cover the country with the national anthem "National Anthem of Bolivia ", and then, the nations bordering this country.
+
+Thought: The Grounded Knowledge is empty, the path is not grounded from "country.country.composer", and some candidates are given. Besides, I think "country.country.composer" is irrelevant to my goal.
+So I first call trim_relation("country.country.composer") to remove the irrelevant part.
+In Candidate Relations, I find "government.national_anthem.national_anthem_of" the most relevant to get the country with that national anthem.
+So I call add_relation("government.national_anthem.national_anthem_of") to get the country.
+And then, relations about bordering countries are not given, so I add some relations on my own to get the countries bordering this country.
+So I call add_relation("location.location.adjoin_s") and add_relation("location.adjoining_relationship.adjoins").
+
+Progress: From Grounded Knowledge, I know nothing. So I will refine the Initial Plan.
+
+Function Call: trim_relation("country.country.composer")
+add_relation("government.national_anthem.national_anthem_of")
+add_relation("location.location.adjoins")
+add_relation("location.location.adjoins")
+#
+Question: What bordering countries are to the country that uses Bolivian Boliviano as its currency?
+
+Initial Path: Bolivian boliviano -> country.country.currency
+
+Grounded Knowledge: Bolivian boliviano -> finance.currency.countries_used -> Bolivia
+
+Candidate Relations: []
+
+Goal: The question is contrained by one path from Bolivian Boliviano. The path from Bolivian Boliviano should firstly cover the country using this currency, and then the countries bordering this country.
+According to the initial path, this path starts from "Bolivian boliviano". So this path should firstly cover the country using this currency, and then the countries bordering this country.
+
+Thought: In Grounded Knowledge, I find that Bolivian boliviano is the currency used in Bolivia. But I donnot know the bordering countries of Bolivia. No candidates are given, so I should add some relations to Initial Path on my own.
+So I call add_relation("location.location.adjoin_s") to get the bordering countries of Bolivia.
+
+Progress: From Grounded Knowledge, I know the country using Bolivian boliviano is {Bolivia}. And I donnot know the countries bordering Bolivia. So I will refine the Inial Plan.
+
+Function Call: add_relation("location.location.adjoin_s")
+#
+Question: Rift Valley Province is located in a nation that uses which form of currency?
+
+Initial Path: Rift Valley Province -> place.administrative_division.country -> place.location.geolocation -> location.mailing_address.state_province_region -> place.country.currency_used
+
+Grounded Knowledge: Rift Valley Province -> location.administrative_division.country -> Kenya -> location.location.geolocation -> <cvt></cvt>
+
+Candidate Relations: ['location.geocode.latitude', 'location.geocode.longitude']
+
+Goal: The question is contrained by one path from Rift Valley Province. The path from Rift Valley Province should firstly cover the nation where "Rift Valley Province" located, and then, the form of currency used in this nation.
+According to the initial path, this path starts from "Rift Valley Province". So this path should firstly cover the nation where "Rift Valley Province" located, and then, the form of currency used in this nation.
+
+Thought: In Grounded Knowledge, I find that Rift Valley Province is located in Kenya. And Kenya has some geolocations, described by a cvt node, and it is the end of knowledge, violating the RULES.
+I find that "location.mailing_address.state_province_region" is not grounded, and some candidates are given. However, the geolocation and the candidates are irrelevant to the currency of Kenya.I think I should trim the relation from "place.location.geolocation" and try to reach the currency of Kenya.  
+So I call trim_relation("place.location.geolocation") to remove relations from "place.location.geolocation".
+And I should add some relations to get the currency of Kenya on my own.
+So I call add_relation("location.country.currency_used") to get the currency of Kenya.
+
+Progress: From Grounded Knowledge, I know that Rift Valley Province is located in {Kenya}. And I donnot know the currency used in Kenya. So I will refine the Inial Plan.
+
+Function Call: trim_relation("place.location.geolocation")
+add_relation("location.country.currency_used")
+#
+"""
+
+
+refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_1229_2052 = """Given some information from executing a plan, please call some tools to refine an initial path to get the answer of a question.
+
+You can only choose tools from these set:
+1. replace_relation(origin_relation: str, refined_relation: str)
+The variable origin_relation should be relations in the Inital Path, and the variable refined_relation can be either a relation from Candidate Relations (i.e., relations connected to current end of Grounded Knowledge) or a relation generated by yourself. 
+If you find some relations in Initial Plan irrelevant to the Question, this function helps to replace the relation. 
+A simple use can be "replace_relation("people.cause_of_death.people","people.person.places_lived")", which will replace relation "people.cause_of_death.people" in Inital Path to "people.person.places_lived".
+
+2. add_relation(new_relation: str)
+You can call this function to add a new_relation (either from Candidate Relations or generated by yourself) to current path.
+A simple use can be "add_relation("location.country.languages_spoken")", which will add the relation "location.country.languages_spoken" to the end of Inital Path.
+
+3. trim_relation(irrelevant_relation: str)
+The variable irrelevant_relation means this relation is irrelevant to the question. This function will delete the path from this relation. 
+So if you find the path irrelevant from a relation, you can call this function.
+A simple use can be "trim_relation("music.concert_tour.artist")", which will trim all the relation from "music.concert_tour.artist" to the end in the Inital Path.
+
+Remeber the following RULES:
+1. The end of a knowledge must not be a cvt node, i.e. <cvt></cvt>, if so, add some relations or trim or replace previous irrelevant relations!
+2. You must not change the topic entity in the Initial Path.
+
+Let me show you some examples.
+#
+Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
+
+Initial Path: Miley Cyrus -> film.film.actor -> film.film.performance -> film.film.producer
+
+Grounded Knowledge: Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Wizards on Deck with Hannah Montana
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> The World According to Miley Cyrus
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Bolt
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> So Undercover
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> The Last Song
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Hannah Montana and Miley Cyrus: Best of Both Worlds Concert
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Super Rhino
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Big Fish
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Sonic the Hedgehog
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> LOL
+
+Candidate Relations: ['dataworld.gardening_hint.last_referenced_by', 'dataworld.gardening_hint.replaced_by', 'film.director.film', 'film.film.country', 'film.film.directed_by', 'film.film.genre', 'film.film.initial_release_date', 'film.film.language', 'film.film.prequel', 'film.film.release_date_s', 'film.film.runtime', 'film.film.sequel', 'film.film.starring', 'film.film.written_by', 'film.film_cut.film', 'film.film_genre.films_in_this_genre', 'film.film_regional_release_date.film', 'film.performance.film', 'film.writer.film', 'imdb.topic.title_id', 'kg.object_profile.prominent_type', 'tv.tv_director.episodes_directed', 'tv.tv_program.episodes', 'tv.tv_series_episode.air_date', 'tv.tv_series_episode.director', 'tv.tv_series_episode.episode_number', 'tv.tv_series_episode.next_episode', 'tv.tv_series_episode.season', 'tv.tv_series_episode.season_number', 'tv.tv_series_episode.series', 'tv.tv_series_episode.writer']
+
+Goal: The Initial Path is from Miley Cyrus. Information needed in this path is from Miley Cyrus to the filmed featured by her.
+
+Thought: In Grounded Knowledge I know that Miley Cyrus acts some films, described by some cvt nodes. And the name of the films are Wizards on Deck with Hannah Montana, The World According to Miley Cyrus, Bolt, So Undercover,The Last Song, Hannah Montana and Miley Cyrus: Best of Both Worlds Concert, Super Rhino, Big Fish, Sonic the Hedgehog, LOL. These Knowledge meets my goal.
+But the relation "film.film.producer" is not grounded and some candidates are given. However, my goal is just films acted by Miley Cyrus, not the producer.
+So I call trim("film.film.producer") to remove the relation.
+
+Progress: I know the films acted by Miley Cyrus are {Wizards on Deck with Hannah Montana, The World According to Miley Cyrus, Bolt, So Undercover,The Last Song, Hannah Montana and Miley Cyrus: Best of Both Worlds Concert, Super Rhino, Big Fish, Sonic the Hedgehog, LOL}! 
+
+Function Call: trim("film.film.producer")
+#
+Question: What major religion in the UK has a place of worship named St. Mary's Cathedral, Batticaloa?
+
+Initial Path: United Kingdom -> location.location.religions -> place.religion.major_religions
+
+Grounded Knowledge: United Kingdom -> location.location.contains -> Heaton railway station
+United Kingdom -> location.statistical_region.religions -> <cvt></cvt>
+United Kingdom -> location.location.contains -> Bakersfield, Nottingham
+United Kingdom -> location.location.contains -> Knockloughrim
+United Kingdom -> location.location.contains -> Oakenshaw
+
+Candidate Relations: ['location.location.containedby', 'location.location.geolocation', 'location.religion_percentage.date', 'location.religion_percentage.percentage', 'location.religion_percentage.religion', 'type.object.type']
+
+Goal: The Initial Path is from United Kingdom. Information needed in the path is from United Kingdom to the major religion in United Kingdom.
+
+Thought: In Grounded Knowledge, I find that United Kingdom has some religions, described by a cvt node，and it is in the end of knowledge, violating the RULES. And I want to know the major religion.
+And I find that "place.religion.major_religions" is not grounded, and some candidates are given. I find "location.religion_percentage.religion" relevant to major religions.
+so I call replace_relation("place.religion.major_religions", "location.religion_percentage.religion") to get the major religion and connect the cvt node. 
+
+Progress: I know some religions in United Kingdom, and its a cvt node. And I donnot know the majority religion.
+
+Function Call: replace_relation("place.religion.major_religions", "location.religion_percentage.religion")
+#
+Question: The country with the National Anthem of Bolivia borders which nations?
+
+Initial Path: National Anthem of Bolivia -> country.country.composer -> person.person.nationality -> location.location.adjoins -> location.location.country
+
+Grounded Knowledge: 
+
+Candidate Relations: ['dataworld.gardening_hint.last_referenced_by', 'government.national_anthem.national_anthem_of', 'government.national_anthem_of_a_country.anthem', 'kg.object_profile.prominent_type', 'music.composer.compositions', 'music.composition.composer', 'music.composition.lyricist', 'music.composition.recordings', 'music.lyricist.lyrics_written', 'music.recording.song']
+
+Goal: The Inital Path is from National Anthem of Bolivia. Information needed in this path is from National Anthem of Bolivia to the country with the national anthem National Anthem of Bolivia, and the nations bordering that country.
+
+Thought: The Grounded Knowledge is empty, the path is not grounded from "country.country.composer", and some candidates are given.
+In Candidate Relations, I find "government.national_anthem.national_anthem_of" the most relevant to get the country with that national anthem.
+So I call replace_relation("country.country.composer", "government.national_anthem.national_anthem_of") to get the country.
+
+Progress: Nothing is grounded by now.
+
+Function Call: replace_relation("country.country.composer", "government.national_anthem.national_anthem_of")
+#
+Question: What bordering countries are to the country that uses Bolivian Boliviano as its currency?
+
+Initial Path: Bolivian boliviano -> country.country.currency
+
+Grounded Knowledge: Bolivian boliviano -> finance.currency.countries_used -> Bolivia
+
+Candidate Relations: []
+
+Goal: The Initial Path is from Bolivian boliviano. Information needed in this path is from Bolivian boliviano to the country that uses Bolivian boliviano as currency, and then to the countries bordering this country.
+
+Thought: In Grounded Knowledge, I find that Bolivian boliviano is the currency used in Bolivia. But I donnot know the bordering countries of Bolivia. No candidates are given, so I should add some relations to Initial Path on my own.
+So I call add_relation("location.location.adjoin_s") to get the bordering countries of Bolivia.
+
+Progress: I know the country using Bolivian boliviano is {Bolivia}. And I donnot know the countries bordering Bolivia.
+
+Function Call: add_relation("location.location.adjoin_s")
+#
+Question: Rift Valley Province is located in a nation that uses which form of currency?
+
+Initial Path: Rift Valley Province -> place.administrative_division.country -> place.location.geolocation -> location.mailing_address.state_province_region -> place.country.currency_used
+
+Grounded Knowledge: Rift Valley Province -> location.administrative_division.country -> Kenya -> location.location.geolocation -> <cvt></cvt>
+
+Candidate Relations: ['location.geocode.latitude', 'location.geocode.longitude']
+
+Goal: The Initial Plan is from Rift Valley Province. Information needed in this path is from Rift Valley Province to the nation it is located in and then the form of currency used in this nation.
+
+Thought: In Grounded Knowledge, I find that Rift Valley Province is located in Kenya. And Kenya has some geolocations, described by a cvt node, and it is the end of knowledge, violating the RULES.
+I find that "location.mailing_address.state_province_region" is not grounded, and some candidates are given. However, the geolocation and the candidates are irrelevant to the currency of Kenya. I think I should trim the relation from "place.location.geolocation" and try to reach the currency of Kenya.  
+So I call trim_relation("place.location.geolocation") to remove relations from "place.location.geolocation".
+And I should add some relations to get the currency of Kenya on my own.
+So I call add_relation("location.country.currency_used") to get the currency of Kenya.
+
+Progress: From Grounded Knowledge, I know that Rift Valley Province is located in {Kenya}. And I donnot know the currency used in Kenya. So I will refine the Inial Plan.
+
+Function Call: trim_relation("place.location.geolocation")
+add_relation("location.country.currency_used")
+#
+"""
+
+
+refine_agent_prompt = """Given some information from executing a plan, please call some tools to refine an initial path to get the answer of a question.
+
+You can only choose tools from these set:
+1. replace_relation(origin_relation: str, refined_relation: str)
+The variable origin_relation should be relations in the Inital Path, and the variable refined_relation can be either a relation from Candidate Relations (i.e., relations connected to current end of Grounded Knowledge) or a relation generated by yourself. 
+If you find some relations in Initial Plan irrelevant to the Question, this function helps to replace the relation. 
+A simple use can be "replace_relation("people.cause_of_death.people","people.person.places_lived")", which will replace relation "people.cause_of_death.people" in Inital Path to "people.person.places_lived".
+
+2. add_relation(new_relation: str)
+You can call this function to add a new_relation (either from Candidate Relations or generated by yourself) to current path.
+A simple use can be "add_relation("location.country.languages_spoken")", which will add the relation "location.country.languages_spoken" to the end of Inital Path.
+
+3. trim_relation(irrelevant_relation: str)
+The variable irrelevant_relation means this relation is irrelevant to the question. This function will delete the path from this relation. 
+So if you find the path irrelevant from a relation, you can call this function.
+A simple use can be "trim_relation("music.concert_tour.artist")", which will trim all the relation from "music.concert_tour.artist" to the end in the Inital Path.
+
+Remeber the following RULES:
+1. The end of a knowledge must not be a cvt node, i.e. <cvt></cvt>, if so, add some relations or trim or replace previous irrelevant relations!
+2. You must not change the topic entity in the Initial Path.
+
+Let me show you some examples.
+
+Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
+Initial Path: Miley Cyrus -> film.film.features -> film.film.performance -> film.film.producer
+
+Grounded Knowledge 1:
+Candidate Relations 1: ['base.parody.parodied_subject.parodies', 'base.parody.parody.parody_of', 'base.popstra.celebrity.breakup', 'base.popstra.celebrity.dated', 'base.popstra.celebrity.friendship', 'celebrities.celebrity.celebrity_friends', 'celebrities.celebrity.sexual_orientation', 'celebrities.celebrity.sexual_relationships', 'celebrities.celebrity.substance_abuse_problems', 'celebrities.friendship.friend', 'celebrities.romantic_relationship.celebrity', 'celebrities.sexual_orientation_phase.celebrity', 'celebrities.substance_abuse_problem.celebrity', 'film.actor.film', 'film.film.music', 'film.film.subjects', 'film.film_featured_song.performed_by', 'film.film_subject.films', 'film.music_contributor.film', 'film.performance.actor', 'film.person_or_entity_appearing_in_film.films', 'film.personal_film_appearance.person', 'music.album.featured_artists', 'music.artist.concert_tours', 'music.artist.contribution', 'music.featured_artist.albums', 'music.featured_artist.recordings', 'music.genre.artists', 'music.lyricist.lyrics_written', 'music.music_video.artist', 'music.music_video_performance.music_video_performer', 'music.music_video_performer.music_video_performances', 'music.recording.featured_artists', 'tv.regular_tv_appearance.actor', 'tv.tv_actor.starring_roles']
+
+Goal: The Initial Path is from Miley Cyrus. Information needed in this path is from Miley Cyrus to the filmed featured by her.
+Thought: The Grounded Knowledge is empty, the path is not grounded from "film.film.features", and some candidates are given.
+In Candidate Relations, I find "film.actor.film" the most relevant to films acted by Miley Cyrus.
+So I call replace_relation("film.film.features", "film.actor.film") to get the films.
+Progress: Nothing is grounded by now.
+Function Call: replace_relation("film.film.features", "film.actor.film")
+
+Refined Path 1: Miley Cyrus -> film.actor.film -> film.film.performance -> film.film.producer
+
+Grounded Knowledge 2: Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Wizards on Deck with Hannah Montana
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> The World According to Miley Cyrus
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Bolt
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> So Undercover
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> The Last Song
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Hannah Montana and Miley Cyrus: Best of Both Worlds Concert
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Super Rhino
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Big Fish
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> Sonic the Hedgehog
+Miley Cyrus -> film.actor.film -> <cvt></cvt> -> film.performance.film -> LOL
+Candidate Relations 2: ['dataworld.gardening_hint.last_referenced_by', 'dataworld.gardening_hint.replaced_by', 'film.director.film', 'film.film.country', 'film.film.directed_by', 'film.film.genre', 'film.film.initial_release_date', 'film.film.language', 'film.film.prequel', 'film.film.release_date_s', 'film.film.runtime', 'film.film.sequel', 'film.film.starring', 'film.film.written_by', 'film.film_cut.film', 'film.film_genre.films_in_this_genre', 'film.film_regional_release_date.film', 'film.performance.film', 'film.writer.film', 'imdb.topic.title_id', 'kg.object_profile.prominent_type', 'tv.tv_director.episodes_directed', 'tv.tv_program.episodes', 'tv.tv_series_episode.air_date', 'tv.tv_series_episode.director', 'tv.tv_series_episode.episode_number', 'tv.tv_series_episode.next_episode', 'tv.tv_series_episode.season', 'tv.tv_series_episode.season_number', 'tv.tv_series_episode.series', 'tv.tv_series_episode.writer']
+
+Goal: The Initial Path is from Miley Cyrus. Information needed in this path is from Miley Cyrus to the filmed featured by her.
+Thought: In Grounded Knowledge 2, I know that Miley Cyrus acts some films, described by some cvt nodes. And the name of the films are Wizards on Deck with Hannah Montana, The World According to Miley Cyrus, Bolt, So Undercover,The Last Song, Hannah Montana and Miley Cyrus: Best of Both Worlds Concert, Super Rhino, Big Fish, Sonic the Hedgehog, LOL. These Knowledge meets my goal.
+But the relation "film.film.producer" is not grounded and some candidates are given. However, my goal is just films acted by Miley Cyrus, not the producer.
+So I call trim("film.film.producer") to remove the relation.
+Progress: I know the films acted by Miley Cyrus are {Wizards on Deck with Hannah Montana, The World According to Miley Cyrus, Bolt, So Undercover,The Last Song, Hannah Montana and Miley Cyrus: Best of Both Worlds Concert, Super Rhino, Big Fish, Sonic the Hedgehog, LOL}! 
+Function Call: trim("film.film.producer")
+
+Refined Path 2: Miley Cyrus -> film.actor.film -> film.film.performance
+
+The Path is successfully grounded! Great job!
+#
+Question: What major religion in the UK has a place of worship named St. Mary's Cathedral, Batticaloa?
+Initial Path: United Kingdom -> location.location.religions -> place.religion.major_religions -> place.religious_place.place_of_worshop
+
+Grounded Knowledge 1: United Kingdom -> location.location.contains -> Heaton railway station
+United Kingdom -> location.statistical_region.religions -> <cvt></cvt>
+United Kingdom -> location.location.contains -> Bakersfield, Nottingham
+United Kingdom -> location.location.contains -> Knockloughrim
+United Kingdom -> location.location.contains -> Oakenshaw
+United Kingdom -> location.location.contains -> Hindhead
+United Kingdom -> location.location.contains -> Church of SS Peter & Paul, Aston
+United Kingdom -> location.location.contains -> RAF East Fortune
+United Kingdom -> location.location.contains -> York Racecourse
+United Kingdom -> location.location.contains -> Allt yr Esgair
+United Kingdom -> location.location.contains -> Bowden, Dorset
+United Kingdom -> location.location.contains -> St Augustine Watling Street
+United Kingdom -> location.location.contains -> Buerton
+United Kingdom -> location.location.contains -> Royal Birmingham Society of Artists   
+United Kingdom -> location.location.contains -> Allt yr Esgai
+United Kingdom -> location.location.contains -> Maxey, Cambridgeshire
+United Kingdom -> location.location.contains -> Selborne Priory
+Candidate Relations 1: ['location.location.containedby', 'location.location.geolocation', 'location.religion_percentage.date', 'location.religion_percentage.percentage', 'location.religion_percentage.religion', 'type.object.type']
+
+Goal: The Initial Path is from United Kingdom. Information needed in the path is from United Kingdom to the major religion in United Kingdom.
+Thought: In Grounded Knowledge, I find that United Kingdom has some religions, described by a cvt node，and it is in the end of knowledge, violating the RULES. And I want to know the major religion.
+And I find that "place.religion.major_religions" is not grounded, and some candidates are given. I find "location.religion_percentage.religion" relevant to major religions.
+so I call replace_relation("place.religion.major_religions", "location.religion_percentage.religion") to get the major religion and connect the cvt node. 
+Progress: I know some religions in United Kingdom, and its a cvt node. And I donnot know the majority religion.
+Function Call: replace_relation("place.religion.major_religions", "location.religion_percentage.religion")
+
+Refined Path 1:  United Kingdom -> location.location.religions -> location.religion_percentage.religion -> place.religious_place.place_of_worshop
+
+Grounded Knowledge 2: United Kingdom -> location.statistical_region.religions -> <cvt></cvt> -> location.religion_percentage.religion -> Catholicism -> religion.religion.places_of_worship -> St. Mary's Cathedral, Batticaloa
+Candidate Relations 2: []
+
+Goal: The Initial Path is from United Kingdom. Information needed in the path is from United Kingdom to the major religion in United Kingdom.
+Thought: In Grounded Knowledge, I find that United Kingdom's major religion is Catholicism. It meets my goal. I donnot need to know the place of worshop of Catholicism.
+So I call trim_relation("place.religious_place.place_of_worshop").
+Progress: I know the major religion in UK is Catholicism.
+Function Call: trim_relation("place.religious_place.place_of_worshop")
+
+Refined Path 2: United Kingdom -> location.location.religions -> location.religion_percentage.religion
+
+The Path is successfully grounded! Great job!
+#
+Question: Rift Valley Province is located in a nation that uses which form of currency?
+Initial Path: Rift Valley Province -> place.administrative_division.country -> place.location.geolocation -> location.mailing_address.state_province_region -> place.country.currency_used
+
+Grounded Knowledge 1: Rift Valley Province -> location.administrative_division.country -> Kenya -> location.location.geolocation -> <cvt></cvt>
+Candidate Relations 1: ['location.geocode.latitude', 'location.geocode.longitude']
+
+Goal: The Initial Plan is from Rift Valley Province. Information needed in this path is from Rift Valley Province to the nation it is located in and then the form of currency used in this nation.
+
+Thought: In Grounded Knowledge, I find that Rift Valley Province is located in Kenya. And Kenya has some geolocations, described by a cvt node, and it is the end of knowledge, violating the RULES.
+I find that "location.mailing_address.state_province_region" is not grounded, and some candidates are given. However, the geolocation and the candidates are irrelevant to the currency of Kenya. I think I should trim the relation from "place.location.geolocation" and try to reach the currency of Kenya.  
+So I call trim_relation("place.location.geolocation") to remove relations from "place.location.geolocation".
+And I should add some relations to get the currency of Kenya on my own.
+So I call add_relation("location.country.currency_used") to get the currency of Kenya.
+Progress: From Grounded Knowledge, I know that Rift Valley Province is located in {Kenya}. And I donnot know the currency used in Kenya. So I will refine the Inial Plan.
+Function Call: trim_relation("place.location.geolocation")
+add_relation("location.country.currency_used")
+
+Refined Path 1: Rift Valley Province -> place.administrative_division.country -> location.country.currency_used
+
+The Path is successfully grounded! Great job!
+#
+"""
+
+
 
 
 
@@ -1831,6 +2526,104 @@ Path: {
 "St. Mary's Cathedral, Batticaloa":[
     "St. Mary's Cathedral, Batticaloa -> religion.religious_organization.places_of_worship",
     "St. Mary's Cathedral, Batticaloa -> religion.religious_event.worship -> religion.religious_place.places"
+]
+}
+#
+Question: Rift Valley Province is located in a nation that uses which form of currency?
+Topic Entities:["Rift Valley Province"]
+Thought: There is only one topic entity, the answer is constrained by one path. 
+For the path from "Rift Valley Province", firstly, it should cover the nation where "Rift Valley Province" is located. Second, it should cover the form of currency used by the nation.
+Path: {
+"Rift Valley Province":[
+    "Rift Valley Province -> location.administrative_division.country -> location.location.geolocation -> location.mailing_address.state_province_region -> location.country.currency_used", 
+    "Rift Valley Province -> location.country.administrative_divisions -> location.country.currency",
+    "Rift Valley Province -> location.administrative_division.country -> location.country.currency_used"
+]
+}
+#
+Question: The country with the National Anthem of Bolivia borders which nations?
+Topic Entities:["National Anthem of Bolivia"],
+Thought: There is only one topic entity, the answer is constrained by one path. 
+For the path from "National Anthem of Bolivia", firstly, it should cover the country with the national athem "National Anthem of Bolivia". Second, it should cover the nations bordering that country.
+Path: {
+"National Anthem of Bolivia":[
+    "National Anthem of Bolivia -> government.national_anthem_of_a_country.anthem -> location.country.national_anthem -> location.adjoining_relationship.adjoins", 
+    "National Anthem of Bolivia -> location.country.national_anthem -> government.national_anthem_of_a_country.anthem -> location.location.adjoin_s -> location.adjoining_relationship.adjoins",
+    "National Anthem of Bolivia -> location.country.national_anthem -> location.location.adjoin_s"
+]
+}
+#
+"""
+
+
+relation_reasoning_prompt_onepath = """Given a question and some Topic Entities in the Question, output possible freebase Relation Paths starting from each Topic Entities in order to answer the question. 
+Here are some RULES you must obey:
+1. Use a json dict as output format, the key of which are Topic Entities of the Question and the value of each key is an array of array, each inner array is a relation path from the Topic Entity (key) to the answer of the question. You should output different Relation Paths for each Topic Entities, according to the question. The Paths are stored in an array.
+2. For each topic entity, you must output at least 2 different possible relation paths starting from this topic entity to get the answer. The differences between the paths can be different relations or the number of relations in the path.
+3. For your information, the Freebase knowledge base stores knowledge in different structures from the natural language. In other words, a relation in natural language can be represented by several (one or two or more) relations in the knowledge base. That is why I want you to output several different possible paths.
+4. Please think step by step, before you output the Path.
+Let me show you some examples.
+#
+Question: Find the person who said \"Taste cannot be controlled by law\", where did this person die from?
+Topic Entities: ["\"Taste cannot be controlled by law\""]
+Thought: There is only one topic entity, the answer is constrained by one path. 
+For, the path from "\"Taste cannot be controlled by law\"", firstly, it should cover the person quote it. Second, I should cover the place where the person died.
+Path: {
+"\"Taste cannot be controlled by law\"":[
+    "\"Taste cannot be controlled by law\" -> people.person.quotations -> people.deceased_person.place_of_death",
+    "\"Taste cannot be controlled by law\" -> media_common.quotation.author -> people.deceased_person.place_of_death",
+    "\"Taste cannot be controlled by law\" -> quotations.quotation.author -> people.die.place_of_death"
+]
+}
+#
+Question: Who is the director of the movie featured Miley Cyrus and was produced by Tobin Armbrust?
+Topic Entities: ["Miley Cyrus", "Tobin Armbrust"]\
+Thought: There are two topic entities, so the answer should be constrained by two relation paths. 
+For the path starting from "Miley Cyrus", firstly, it should cover the movies featured Miley Crus. Second, it should cover the directors of the movies.
+For the path starting from "Tobin Armbrust", firstly, it should cover the movies produced by Tobin Armbrust. Second, it should cover the directors of the movies.
+Finally, the answer of the question should be the intersection of the two paths. 
+Path: {
+"Miley Cyrus":[
+    "Miley Cyrus -> movies.movies.starring -> film.film.director", 
+    "Miley Cyrus -> film.film.starring -> film.film_staff.director", 
+    "Miley Cyrus -> film.performance.actor -> film.film_maker.director",
+    "Miley Cyrus -> movies.performance.actor -> movies.movies.director",
+],
+"Tobin Armbrust":[
+    "Tobin Armbrust -> film.film.produced_by -> film.film.director",
+    "Tobin Armbrust -> movies.movies.produced_by -> film.film_maker.director",
+    "Tobin Armbrust -> movies.movies.executor -> film.film.director",
+    "Tobin Armbrust -> film.film.executor -> film.film_staff.director",
+    "Tobin Armbrust -> movies.movies.maker -> film.film.director",
+]
+}
+#
+Question: The artist nominated for The Long Winter lived where?
+Topic Entities:["The Long Winter lived"]
+Thought: There is only one topic entity, the answer is constrained by one path. 
+For the path from "The Long Winter lived", firstly, it should cover the artist nominated for "The Long Winter lived". Second, it should cover where the artist lived.
+Path: {
+"The Long Winter lived":[
+    "The Long Winter lived -> book.written_work.author -> people.person.places_lived -> people.place_lived.location", 
+    "The Long Winter lived -> award.award_nominee.award_nominations -> award.award_nomination.nominated_for -> people.person.places_lived -> people.place_lived.location",
+    "The Long Winter lived -> award.award_nomination.nominated_for -> people.person.places_lived -> people.place_lived.location"
+]
+}
+#
+Question: What major religion in the UK has a place of worship named St. Mary's Cathedral, Batticaloa?
+Topic Entities:["United Kingdom", "St. Mary's Cathedral, Batticaloa"]
+Thought: There are two topic entities, so the answer should be constrained by two relation paths. 
+For the path starting from "United Kingdom", firstly, it should cover the religions in "United Kingdom". Second, it should cover the majority of the religions. Third, it should cover the place of worship of this religion.
+For the path starting from "St. Mary's Cathedral, Batticaloa", first, it should cover the religion with a place of worship named "St. Mary's Cathedral, Batticaloa". Second, it should cover the location of which this religion is the major religion.
+Finally, the answer of the question should be the intersection of the two paths.
+Path: {
+"United Kingdom":[
+    "United Kingdom -> location.statistical_region.religions -> location.religion_percentage.religion -> religion.religion_place.place_of_worship", 
+    "United Kingdom -> location.local.religions_religions -> location.religion.major_religions -> religion.religion_place.place_of_worship", 
+],
+"St. Mary's Cathedral, Batticaloa":[
+    "St. Mary's Cathedral, Batticaloa -> religion.religious_organization.places_of_worship -> location.religion.major_religions",
+    "St. Mary's Cathedral, Batticaloa -> religion.religious_event.worship -> religion.religious_place.places -> location.religion.major_religions"
 ]
 }
 #

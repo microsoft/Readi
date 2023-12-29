@@ -458,8 +458,8 @@ if __name__ == '__main__':
                         default="llm", help="prune tools for ToG, can be llm (same as LLM_type), bm25 or sentencebert.")
     args = parser.parse_args()
 
-    file_name='/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/RoG/test/_home_v-sitaocheng_demos_llm_hallu_reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt35_1228_llm_stop_longest_only_multi_merge_function_cvt_goal_progress.jsonl'
-    file_index="1229_GPT4_engine_triple_cvt_goal_progress"
+    file_name='/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/RoG/test/_home_v-sitaocheng_demos_llm_hallu_reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt35_1229_longest_only_multi_merge_function_cvt_new_goal_progress.jsonl'
+    file_index="1229_GPT4_engine_triple_cvt_new_goal_progress_hard_stop"
 
     # 用golden知识来reasoning
     # golden
