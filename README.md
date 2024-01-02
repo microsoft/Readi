@@ -97,6 +97,14 @@
 
         直接运行会输出 over\one path\multi path的子图召回情况(覆盖率+子图大小)
 
+    6. eval文件夹eval.py文件  QA结果的evaluation
+
+        这块我目前用的是ToG的测评代码（感觉有问题，所以专门放在eval文件夹中）
+    
+    要注意修改两个地方 1. eval.py第12行，替换成结果文件的目录（结果文件中要包含results字段）
+                      2. utils.py第7行，替换成对应数据集的路径
+    
+
 
 
 

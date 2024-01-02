@@ -586,7 +586,7 @@ class PromptBuilder(object):
         candidate_rel.sort()
         # prompts = refine_prompt_path_one_path_1222  + "\nQuestion: " + question + "\nInitial Path:" + str(init_path) + "\nGrounded Knowledge:" + grounded_know_string +"\nCandidate Relations:" + str(ungrounded_cand_rel) + "\nThought:"
         # prompts = refine_prompt_path_one_path_1224  + "\nQuestion: " + question + "\nInitial Path:" + str(init_path) + "\nGrounded Knowledge:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel) + "\nThought:"
-        prompts = refine_prompt_path_one_path_func_cvt_deal_goal_progress_1229_new  + "Question: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
+        prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_1229_2052  + "Question: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
         # prompts = refine_agent_prompt  + "\nQuestion: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
        
         while refine_time <= 5:

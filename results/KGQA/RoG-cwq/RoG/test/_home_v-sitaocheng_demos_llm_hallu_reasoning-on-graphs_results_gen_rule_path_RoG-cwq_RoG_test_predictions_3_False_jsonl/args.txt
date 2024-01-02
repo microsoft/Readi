@@ -18,7 +18,7 @@
   "debug": false,
   "llm_engine": "gpt-35-turbo-16k-20230613",
   "init_plan_path": "/home/v-sitaocheng/demos/dangle_over_ground/data/initial_plan/cwq_test_1221.json",
-  "output_file_name": "predictions_kg_with_input_llm_cwq100_path_onePath_gpt35_1229_agent.jsonl",
+  "output_file_name": "predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_1230_engine_triple_cvt_new_goal_progess_hard_stop.jsonl",
   "model_path": "meta-llama/Llama-2-7b-chat-hf",
   "max_new_tokens": 512,
   "dtype": "fp16"

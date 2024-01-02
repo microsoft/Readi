@@ -378,7 +378,7 @@ if __name__ == "__main__":
     # argparser.add_argument("--llm_engine", type=str, default="gpt-4-32k-20230321")
     argparser.add_argument("--llm_engine", type=str, default="gpt-35-turbo-16k-20230613")
     argparser.add_argument("--init_plan_path", type=str, default="/home/v-sitaocheng/demos/dangle_over_ground/data/initial_plan/cwq_test_1221.json")
-    argparser.add_argument("--output_file_name", type=str, default="predictions_kg_with_input_llm_cwq100_path_onePath_gpt35_1229_agent.jsonl")
+    argparser.add_argument("--output_file_name", type=str, default="predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_1230_engine_triple_cvt_new_goal_progess_hard_stop.jsonl")
         
     args, _ = argparser.parse_known_args()
     if args.model_name != "no-llm":
