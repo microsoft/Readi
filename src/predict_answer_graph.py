@@ -8,7 +8,7 @@ from tqdm import tqdm
 from llms.language_models import get_registed_model
 import os
 from datasets import load_dataset
-from evaluate_results import eval_result
+from eval.evaluate_results import eval_result
 import json
 from multiprocessing import Pool
 from build_qa_input import PromptBuilder
@@ -107,6 +107,8 @@ def prediction_graph_engine(processed_list, input_builder, reasoning_path_LLM, l
         return None
 
     kg_triples, kg_paths, thought = input_builder.get_graph_knowledge_LLM_revised_engine(reasoning_path_LLM, llm_engine)
+    # 只要init plan
+    # kg_triples, kg_paths, thought = input_builder.get_graph_knowledge_LLM_init_plan(reasoning_path_LLM, llm_engine)
 
     process_ed_kg = ""
     kg_triple_set = []
@@ -373,12 +375,13 @@ if __name__ == "__main__":
         "--force", "-f", action="store_true", help="force to overwrite the results"
     )
     argparser.add_argument("-n", default=1, type=int, help="number of processes")
+    argparser.add_argument("-init_path_only", default=False, type=bool, help="whether use init path only")
     argparser.add_argument("--filter_empty", action="store_true")
     argparser.add_argument("--debug", action="store_true")
     # argparser.add_argument("--llm_engine", type=str, default="gpt-4-32k-20230321")
     argparser.add_argument("--llm_engine", type=str, default="gpt-35-turbo-16k-20230613")
-    argparser.add_argument("--init_plan_path", type=str, default="/home/v-sitaocheng/demos/dangle_over_ground/data/initial_plan/cwq_test_1221.json")
-    argparser.add_argument("--output_file_name", type=str, default="predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_1230_engine_triple_cvt_new_goal_progess_hard_stop.jsonl")
+    argparser.add_argument("--init_plan_path", type=str, default="/home/v-sitaocheng/demos/dangle_over_ground/data/initial_plan/cwq_test_gpt35_0103.json")
+    argparser.add_argument("--output_file_name", type=str, default="predictions_kg_init_GPT35_cwq100_path_onePath_gpt35_0103_engine_triple_cvt_goal_progress_hard_stop_new_fun.jsonl")
         
     args, _ = argparser.parse_known_args()
     if args.model_name != "no-llm":

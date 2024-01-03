@@ -9,7 +9,7 @@ if __name__ == '__main__':
     parser.add_argument("--dataset", type=str,
                         default="cwq", help="choose the dataset.")
     parser.add_argument("--output_file", type=str,
-                        default="/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/QA_result/cwq_100examples1229_GPT4_engine_triple_cvt_new_goal_progress_hard_stop.json", help="the output file name.")
+                        default="/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/QA_result/cwq_100examples0103_init_GPT4_graph_GPT35_engine_triple_cvt_new_goal_progress_hard_stop_newfun_reason_GPT4.json", help="the output file name.")
     parser.add_argument("--constraints_refuse", type=bool,
                         default=True, help="LLM may have refuse erorr, enable this option to skip current sample.")
     args = parser.parse_args()
@@ -43,7 +43,7 @@ if __name__ == '__main__':
             if response=="NULL":
                 response = results
             else:
-                if exact_match(response, answers):
+                if response!="" and exact_match(response, answers):
                     num_right+=1
                 else:
                     if 'cot' in args.output_file:
@@ -63,7 +63,7 @@ if __name__ == '__main__':
             response = results
             if args.constraints_refuse and check_string(response):
                 continue
-            if exact_match(response, answers):
+            if response!="" and exact_match(response, answers):
                 num_right+=1
             else:
                 if 'cot' in args.output_file:

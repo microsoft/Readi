@@ -1,5 +1,6 @@
 import json
 import re
+import string
 
 
 def prepare_dataset_for_eval(dataset_name, output_file):
@@ -139,14 +140,27 @@ def check_refuse(string):
     return any(word in string.lower() for word in refuse_words)
 
 
+def normalize(s: str) -> str:
+    """Lower text and remove punctuation, articles and extra whitespace."""
+    s = s.lower()
+    exclude = set(string.punctuation)
+    s = "".join(char for char in s if char not in exclude)
+    s = re.sub(r"\b(a|an|the)\b", " ", s)
+    # remove <pad> token:
+    s = re.sub(r"\b(<pad>)\b", " ", s)
+    s = " ".join(s.split())
+    return s
+
+
 def exact_match(response, answers):
-    clean_result = response.strip().replace(" ","").lower()
+    clean_result = normalize(response.strip().replace(" ","").lower())
     for answer in answers:
-        clean_answer = answer.strip().replace(" ","").lower()
-        if clean_result == clean_answer or clean_result in clean_answer or clean_answer in clean_result:
-        # if clean_result == clean_answer or clean_result in clean_answer:
+        clean_answer = normalize(answer.strip().replace(" ","").lower())
+        # if clean_result == clean_answer or clean_result in clean_answer or clean_answer in clean_result:
+        if clean_result == clean_answer or clean_answer in clean_result or clean_result in clean_answer:
             return True
     return False
+
 
 def save_result2json(dataset_name, num_right, num_error, total_nums, method="ToG"):
     results_data = {

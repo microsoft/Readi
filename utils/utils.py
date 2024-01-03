@@ -62,9 +62,13 @@ def run_llm(prompt, temperature, max_tokens, opeani_api_keys, engine="gpt-35-tur
             f = 10
         except:
             print("openai error, retry")
-            f += 1
-            messages[-1] = {"role":"user","content": prompt[:16384]}
             print(len(messages[1]["content"]))
+
+            f += 1
+            if "gpt-4" in engine:
+                messages[-1] = {"role":"user","content": prompt[:32767]}
+            else:
+                messages[-1] = {"role":"user","content": prompt[:16384]}
             time.sleep(2)
     # print("end openai")
     return result

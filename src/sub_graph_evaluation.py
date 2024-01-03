@@ -428,6 +428,6 @@ if __name__ == '__main__':
     # instantiate_knowledge()
     # calculate_contract_recall()
     # calculate_graph_recall()
-    file_path="/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/RoG/test/_home_v-sitaocheng_demos_llm_hallu_reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt35_1229_agent.jsonl"
+    file_path="/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/RoG/test/_home_v-sitaocheng_demos_llm_hallu_reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_init_GPT4_cwq100_path_onePath_gpt4_0103_engine_triple_cvt_goal_progress_hard_stop_new_fun.jsonl"
     golden_path="/home/v-sitaocheng/demos/llm_hallu/ToG/data/cwq.json"
     calculate_answer_coverage_rate(file_path,golden_path)

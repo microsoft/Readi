@@ -15,6 +15,7 @@
 
 
 # 跑通流程    
+
     1. ***查询引擎搭建*** (注: 略费事,需要下载很大的文件)
     ## 根据这个教程 https://github.com/dki-lab/Freebase-Setup (先clone他的代码, 按照他们的readme - 下载一个freebase opensource, 并且要下载一个他们的virtuoso_db文件, 然后在一个指定端口上运行python命令)
 
@@ -29,10 +30,13 @@
     get_relation_path(input_file="/home/v-sitaocheng/demos/dangle_over_ground/data/datasets/cwq_test.json", output_file="/home/v-sitaocheng/demos/dangle_over_ground/data/initial_plan/cwq_test_1221.json")
 
 
+
     3. 运行predict_answer_graph.py得到子图. (主要的refine流程在这里,  因为是在RoG的基础上修改的  代码写的也比较杂乱 请见谅 )
         目前在优化这个模块(目标是recall越高越好 且 子图规模越低越好)
 
-    注意两个地方
+    注意四个地方
+        到KB-Binder官方下载freebase关系的embedding（没训练过的 ） https://github.com/ltl3A87/KB-BINDER/tree/main/contriever_fb_relation  下载完后，把目录更新到build_qa_input.py的43-46行！！！ 这一步是用来grounding relation的
+
         修改 args.init_plan_path(initial Plan的位置, 这个文件在get_relation_path时已经存了必要的信息(topic entity 和initial plan))
         修改 args.output_file_name(输出文件的名字)
         修改 args.llm_engine(指定用gpt3.5还是gpt4来refine)

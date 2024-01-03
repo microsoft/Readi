@@ -35,7 +35,7 @@ def run_llm(prompt, temperature, max_tokens, opeani_api_keys, engine="gpt-35-tur
     messages.append(message_prompt)
     # print("start openai")
     f = 0
-    result = ""
+    result = "the answer is \{None\}"
     while(f <= 5):
         try:
             response = openai.ChatCompletion.create(
@@ -46,18 +46,22 @@ def run_llm(prompt, temperature, max_tokens, opeani_api_keys, engine="gpt-35-tur
                     frequency_penalty=0,
                     presence_penalty=0)
             result = response["choices"][0]['message']['content']
-            f = 10
+            if len(result) == 0:
+                f +=1
+                continue
+            break
         except:
             print("openai error, retry")
             f += 1
             print(prompt)
+            print("len of prompt", len(messages[0]["content"]))
+
             if "gpt-4" in engine:
                 messages[-1] = {"role":"user","content": prompt[:32767]}
+                time.sleep(10)
             else:
                 messages[-1] = {"role":"user","content": prompt[:16384]}
-
-            print(len(messages[0]["content"]))
-            time.sleep(2)
+                time.sleep(5)
     # print("end openai")
     return result
 
@@ -216,12 +220,19 @@ def reasoning_with_ROG(file_name, file_index):
                 prompts = answer_prompt_kb_interwined_nointer + "Q: " + lines['question'] + "\nKnowledge Triplets: " + lines['kg_triples_str'] + "\nA: "
                 response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
 
-                if len(response)==0 or times == 4:
+                if len(response)==0:
+                    print("*********empty_results results*******************************************************")
+                    print("Q: " + lines['question'])
+                    print("*******************************************************************************")
+                    times += 1
+                    continue
+                elif times == 4:
                     prompts = cot_prompt + "\n\nQ: " + lines['question'] + "\nA: "
                     response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
                     lines['kg_triples_str'] = "COT"
                     break
                 elif "{" not in response or "}" not in response:
+                    print("*********invalid results*******************************************************")
                     print(response)
                     print("*******************************************************************************")
                     times += 1
@@ -448,8 +459,8 @@ if __name__ == '__main__':
     parser.add_argument("--remove_unnecessary_rel", type=bool,
                         default=True, help="whether removing unnecessary relations.")
     parser.add_argument("--LLM_type", type=str,
-                        default="gpt-4-32k-20230321", help="base LLM model.")
-                        # default="gpt-35-turbo-16k-20230613", help="base LLM model.")
+                        # default="gpt-4-32k-20230321", help="base LLM model.")
+                        default="gpt-35-turbo-16k-20230613", help="base LLM model.")
     parser.add_argument("--opeani_api_keys", type=str,
                         default="", help="if the LLM_type is gpt-3.5-turbo or gpt-4, you need add your own openai api keys.")
     parser.add_argument("--num_retain_entity", type=int,
@@ -458,8 +469,8 @@ if __name__ == '__main__':
                         default="llm", help="prune tools for ToG, can be llm (same as LLM_type), bm25 or sentencebert.")
     args = parser.parse_args()
 
-    file_name='/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/RoG/test/_home_v-sitaocheng_demos_llm_hallu_reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt35_1229_longest_only_multi_merge_function_cvt_new_goal_progress.jsonl'
-    file_index="1229_GPT4_engine_triple_cvt_new_goal_progress_hard_stop"
+    file_name='/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/RoG/test/_home_v-sitaocheng_demos_llm_hallu_reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_init_GPT4_cwq100_path_onePath_gpt4_0103_engine_triple_cvt_goal_progress_hard_stop_new_fun.jsonl'
+    file_index="0103_init_GPT35_graph_GPT35_engine_triple_cvt_new_goal_progress_hard_stop_newfun_reason_GPT35"
 
     # 用golden知识来reasoning
     # golden
