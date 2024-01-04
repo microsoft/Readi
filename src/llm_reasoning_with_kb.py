@@ -14,6 +14,7 @@ from tqdm import tqdm
 import argparse
 import pickle
 import os
+from config import *
 
 def run_llm(prompt, temperature, max_tokens, opeani_api_keys, engine="gpt-35-turbo-20230613"):
     if "llama" not in engine.lower():
@@ -65,7 +66,7 @@ def run_llm(prompt, temperature, max_tokens, opeani_api_keys, engine="gpt-35-tur
     # print("end openai")
     return result
 
-def generate_answer(question, cluster_chain_of_entities, args): 
+def generate_answer(question, cluster_chain_of_entities, args):
     prompt = answer_prompt + question + '\n'
     chain_prompt = '\n'.join([', '.join([str(x) for x in chain]) for sublist in cluster_chain_of_entities for chain in sublist])
     prompt += "\nKnowledge Triplets: " + chain_prompt + 'A: '
@@ -96,7 +97,7 @@ def savejson(file_name, new_data):
 def trim_sparql():
     with open("/home/v-sitaocheng/demos/llm_hallu/KB-Binder/LLM-KBQA/data/cwq/data/cwq/cwq_dev.json", encoding='utf-8') as f:
         data=json.load(f)
-    
+
     new_data=[]
     for data_items in tqdm(data):
         sparql = data_items['sparql']
@@ -120,7 +121,7 @@ def trim_sparql():
             new_sparql=new_sparql.replace("ns:"+key, entity_label_map[key])
 
         data_items['trimed_sparql']=new_sparql
-    
+
         new_data.append({"question":data_items['question'], "results": answer, "sparql": sparql, 'trimed_sparql': new_sparql})
 
     savejson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/trimed_dev_{}.json".format('cwq'), new_data)
@@ -184,7 +185,7 @@ def reasoning_with_egpsr(file_index):
             lines['knowledge_triples_egpsr_top1_nointer'] = "COT"
 
         save_2_jsonl(lines['question'], response, lines['knowledge_triples_egpsr_top1_nointer'], 'egpsr_cwq_top1_nointer'+file_index)
-    
+
 
 def reasoning_with_egpsr_contract(file_index):
     print("reasoning_with_egpsr_contract  file: ", "/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_"+file_index+".json", " field  knowledge_triples_ppr_contract_top1")
@@ -200,7 +201,7 @@ def reasoning_with_egpsr_contract(file_index):
             lines['knowledge_triples_egpsr_contract_top1_nointer_reasoning'] = "COT"
 
         save_2_jsonl(lines['question'], response, lines['knowledge_triples_egpsr_contract_top1_nointer_reasoning'], 'egpsr_contract_cwq_100sample_top1_nointer_reasoning'+file_index, file_index)
-  
+
 
 
 def reasoning_with_ROG(file_name, file_index):
@@ -242,9 +243,11 @@ def reasoning_with_ROG(file_name, file_index):
 
         reasoning_result.append({"question":lines['question'], "results": response, "reasoning_chains": lines['kg_triples_str']})
 
-        savejson('/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/QA_result/cwq_100examples'+file_index+".json", reasoning_result)
+        output_dir = os.path.split(file_name)[0]
+        # savejson('results/KGQA/RoG-cwq/QA_result/cwq_100examples'+file_index+".json", reasoning_result)
+        savejson(os.path.join(output_dir, file_index+".json"), reasoning_result)
         # save_2_jsonl(lines['question'], response, lines['kg_triples_str'], 'ROG_cwq_top1_'+file_index)
-    
+
 
 
 def extract_egprs_graph(file_index):
@@ -252,7 +255,7 @@ def extract_egprs_graph(file_index):
     # entities=readlines("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/cwq_subgraph/entities.txt")
     # relations=readlines("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/cwq_subgraph/relations.txt")
     # test_simple=read_jsonl_file_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/cwq_subgraph/test_simple.jsonl")
-    
+
     subgraph_file_name = "/home/v-sitaocheng/demos/llm_hallu/subgraph_retrieval/sr_cwq/SubgraphRetrievalKBQA/tmp/CWQ_NSM/"
     subgraph_file_name = "/home/v-sitaocheng/demos/llm_hallu/subgraph_retrieval/sr_cwq/SubgraphRetrievalKBQA/debug/cwq_retrieved_graph_cache/data/cwq/SubgraphRetrievalKBQA/src/tmp/reader_data/CWQ/"
 
@@ -277,7 +280,7 @@ def extract_egprs_graph(file_index):
         new_entity_set_id = [entity_index2id[i] for i in ent]
         # new_entity_set_id = [i.replace("ns:", "") for i in test_simple[index]["node_cgs"].keys()]
         new_entity_label_map = {}
-        
+
         num_UnName_Entity = 0
         for e in new_entity_set_id:
             # print(e)
@@ -318,7 +321,7 @@ def build_knowledge_triple_egpsr(file_index):
         ent_label_map=subgraph['ent_id_label_map']
         for know in subgraph['knowledges']:
             triples += "(" + ent_label_map[know[0].replace("ns:","")] + ", " + know[1].replace("ns:", "") + ", " + ent_label_map[know[2].replace("ns:", "")] + ")\n"
-        
+
         triples.strip('\n')
         lines['knowledge_triples_egpsr_top1_nointer'] = triples
     print("save to ", "/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_"+file_index+".json")
@@ -344,7 +347,7 @@ def egpsr_contract(file_index):
             lines['knowledge_egpsr_contract_reasoning'] = response
             # lines['knowledge_triples_egpsr_contract_top1_nointer'] = response
             lines['knowledge_triples_egpsr_contract_top1_nointer_reasoning'] = response.split("Refined Knowledge:")[-1].strip()
-    
+
     print("save egpsr_contract to: ", "/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_"+file_index+".json")
     savejson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_"+file_index+".json", epgsr)
     # savejson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/egpsr/kb_egpsr_dev_cwq_1112.json", epgsr)
@@ -364,11 +367,11 @@ def rog_contract(input_file):
             lines['kg_triples_contract'] = lines['kg_triples_str']
         else:
             lines['kg_triples_contract'] = response
-    
+
     print("save ROG contract to: ", input_file.split(".")[0]+"_contracted.json")
     savejson(input_file.split(".")[0]+"_contracted.json", epgsr)
     # savejson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/egpsr/kb_egpsr_dev_cwq_1112.json", epgsr)
- 
+
 
 
 def trim_cwq_ToG():
@@ -409,7 +412,7 @@ def calculate_avg_kb(file_index):
         golden_kb_len += golden_len
         egpsr_kb_len += egpsr_len
         egpsr_contract_kb_len += egpsr_contract_len
-    
+
     print("golden avg knowledge: ", golden_kb_len/len(data))
     print("egpsr avg knowledge: ", egpsr_kb_len/len(data))
     print("egpsr contract avg knowledge: ", egpsr_contract_kb_len/len(data))
@@ -418,13 +421,13 @@ def calculate_avg_kb(file_index):
 
 def calculate_avg_kb_egpse():
     data=read_jsonl_file_50("/home/v-sitaocheng/demos/llm_hallu/reasoning-on-graphs/results/gen_rule_path/RoG-cwq/RoG/test/predictions_kg.jsonl")
-    
+
     egpsr_kb_len = 0
     for lines in tqdm(data):
         if len(lines['kg_triples']) == 0:
             continue
         egpsr_kb_len += len(lines['kg_triples'].split("\n"))
-    
+
     print("egpsr avg knowledge: ", egpsr_kb_len/len(data))
 
 
@@ -458,19 +461,26 @@ if __name__ == '__main__':
                         default=3, help="choose the search depth of ToG.")
     parser.add_argument("--remove_unnecessary_rel", type=bool,
                         default=True, help="whether removing unnecessary relations.")
-    parser.add_argument("--LLM_type", type=str,
+    # parser.add_argument("--LLM_type", type=str,
                         # default="gpt-4-32k-20230321", help="base LLM model.")
-                        default="gpt-35-turbo-16k-20230613", help="base LLM model.")
+                        # default="gpt-35-turbo-16k-20230613", help="base LLM model.")
+    parser.add_argument("--llm", type=str,default='gpt4', choices=LLM_BASE.keys(), help="base LLM model")
     parser.add_argument("--opeani_api_keys", type=str,
                         default="", help="if the LLM_type is gpt-3.5-turbo or gpt-4, you need add your own openai api keys.")
     parser.add_argument("--num_retain_entity", type=int,
                         default=5, help="Number of entities retained during entities search.")
     parser.add_argument("--prune_tools", type=str,
                         default="llm", help="prune tools for ToG, can be llm (same as LLM_type), bm25 or sentencebert.")
+
+    parser.add_argument("--input_file", type=str, required=True)
+    # parser.add_argument("--output_file", type=str, required=True)
     args = parser.parse_args()
 
-    file_name='/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/RoG/test/_home_v-sitaocheng_demos_llm_hallu_reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_init_GPT4_cwq100_path_onePath_gpt4_0103_engine_triple_cvt_goal_progress_hard_stop_new_fun.jsonl'
-    file_index="0103_init_GPT35_graph_GPT35_engine_triple_cvt_new_goal_progress_hard_stop_newfun_reason_GPT35"
+    args.LLM_type = LLM_BASE[args.llm]
+    args.output_file = f"{os.path.splitext(os.path.split(args.input_file)[1])[0]}_{args.llm}_reasoning"
+
+    # file_name='results/KGQA/RoG-cwq/RoG/test/___reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_0101_agent.jsonl'
+    # file_index="0103_GPT4_engine_triple_cvt_new_goal_progress_hard_stop"
 
     # 用golden知识来reasoning
     # golden
@@ -492,9 +502,10 @@ if __name__ == '__main__':
     # 知识压缩 存在kg_triples_contract字段
     # rog_contract(input_file='/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/RoG/test/_home_v-sitaocheng_demos_llm_hallu_reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_1223.jsonl')
     # 答案推理 可以改相应的prompt和对应的字段
-    reasoning_with_ROG(file_name, file_index)
+    # reasoning_with_ROG(file_name, file_index)
+    reasoning_with_ROG(args.input_file, args.output_file)
 
-    # analyse    
+    # analyse
     # trim_cwq_ToG()
     # calculate_avg_kb(file_index)
     # calculate_avg_kb_egpse()

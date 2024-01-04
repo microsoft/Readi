@@ -41,17 +41,17 @@ class PromptBuilder(object):
         self.each_line = each_line
 
         query_encoder = AutoQueryEncoder(encoder_dir='facebook/contriever', pooling='mean')
-        self.corpus = LuceneSearcher('/home/v-sitaocheng/demos/llm_hallu/KB-Binder/LLM-KBQA/KB-BINDER/contriever_fb_relation/index_relation_fb')
-        bm25_searcher = LuceneSearcher('/home/v-sitaocheng/demos/llm_hallu/KB-Binder/LLM-KBQA/KB-BINDER/contriever_fb_relation/index_relation_fb')
-        contriever_searcher = FaissSearcher('/home/v-sitaocheng/demos/llm_hallu/KB-Binder/LLM-KBQA/KB-BINDER/contriever_fb_relation/freebase_contriever_index', query_encoder)
+        self.corpus = LuceneSearcher('../KB-BINDER/contriever_fb_relation/index_relation_fb')
+        bm25_searcher = LuceneSearcher('../KB-BINDER/contriever_fb_relation/index_relation_fb')
+        contriever_searcher = FaissSearcher('../KB-BINDER/contriever_fb_relation/freebase_contriever_index', query_encoder)
 
         self.hsearcher = HybridSearcher(contriever_searcher, bm25_searcher)
-        
+
     def _read_prompt_template(self, template_file):
         with open(template_file) as fin:
             prompt_template = f"""{fin.read()}"""
         return prompt_template
-    
+
     def apply_rules(self, graph, rules, srouce_entities):
         results = []
         for entity in srouce_entities:
@@ -59,7 +59,7 @@ class PromptBuilder(object):
                 res = utils.bfs_with_rule(graph, entity, rule)
                 results.extend(res)
         return results
-    
+
     def apply_rules_LLM(self, graph, rules, srouce_entities, grounded_relations):
         results = []
         for entity in srouce_entities:
@@ -69,9 +69,9 @@ class PromptBuilder(object):
                     reasoning_set.append(grounded_relations[relation])
                 res = utils.bfs_with_rule_LLM(graph, entity, rule, reasoning_set)
                 results.extend(res)
-                
+
         return results
-    
+
 
 
     def apply_rules_LLM_revised(self, graph, rules, srouce_entities, grounded_relations):
@@ -119,11 +119,11 @@ class PromptBuilder(object):
             # grounding出来是空的 那么就break, 重新, 根据返回结果来 refine 这条路径, 其他路径不变!
             else:
                 return results, result_paths, entity, grounded_knowledge_current, ungrounded_neighbor_relation_dict
-                
-        
+
+
 
         return results, result_paths, entity, grounded_knowledge_current, ungrounded_neighbor_relation_dict
-    
+
 
 
     def apply_rules_LLM_revised_engine(self, rules, srouce_entities, grounded_relations):
@@ -172,11 +172,11 @@ class PromptBuilder(object):
             # grounding出来是空的 那么就break, 重新, 根据返回结果来 refine 这条路径, 其他路径不变!
             else:
                 return results, result_paths, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict
-                
+
 
 
         return results, result_paths, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict
-    
+
 
     def apply_rules_LLM_one_path_engine(self, rules, entity_id_label, grounded_relations):
         # results = []
@@ -209,7 +209,7 @@ class PromptBuilder(object):
         #     return results, result_paths, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict
 
         return result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict
-    
+
 
     def direct_answer(self, question_dict):
         graph = utils.build_graph(question_dict['graph'])
@@ -277,7 +277,7 @@ class PromptBuilder(object):
                     grounded_relations[rel] = relations_no_q
                 else:
                     grounded_relations[rel] = list(set(grounded_relations[rel]+relations_no_q))
-                    
+
         return grounded_relations
 
 
@@ -296,7 +296,7 @@ class PromptBuilder(object):
             else:
                 rules = question_dict['predicted_paths']
             # 这个rules是RoG预测的planning
-                
+
             # if len(rules) > 0:
             if len(reasoning_path_LLM.keys()) > 0:
                 # 这里的rules是LLM生成的路径 plan， 现在取每一个topic的top1
@@ -309,18 +309,18 @@ class PromptBuilder(object):
                 # context = "\n".join([utils.path_to_string(p) for p in reasoning_paths])
             else:
                 lists_of_paths = []
-        
+
         return reasoning_paths, lists_of_paths
 
 
     # def run_llm(self, prompt, temperature, max_tokens, opeani_api_keys, engine="gpt-4-32k-20230321"):
     def run_llm(self, prompt, temperature, max_tokens, opeani_api_keys, engine="gpt-35-turbo-16k-20230613"):
-        if "llama" not in engine.lower():   
+        if "llama" not in engine.lower():
             openai.api_type = "azure"
             openai.api_base = "https://cloudgpt-openai.azure-api.net/"
             openai.api_version = "2023-07-01-preview"
             # to maintain token freshness, we need to acquire a new token every time we use the API
-            openai.api_key = get_openai_token()        
+            openai.api_key = get_openai_token()
 
         else:
             openai.api_key = opeani_api_keys
@@ -357,7 +357,7 @@ class PromptBuilder(object):
                     messages[-1] = {"role":"user","content": prompt[:16384]}
                     time.sleep(5)
                 print(len(messages[-1]["content"]))
-                
+
         # print("end openai")
         return result
 
@@ -416,11 +416,11 @@ class PromptBuilder(object):
                     # cvt的label就是本身 不用转化
                     ungrounded_cand_rel[cvt[0]] = ungrounded_neighbor_relation_dict[cvt[0]]
                 grounded_know.append(cvt[1])
-        
+
         grounded_know = [" -> ".join([i if not i.startswith("m.") else "<cvt></cvt>" for i in utils.path_to_string(knowledge).split(" -> ")]) for knowledge in grounded_know]
         grounded_know = list(set(grounded_know))
         grounded_know_string = "\n".join(grounded_know)
-        
+
         # candidate relation用集合方式 不用dict方式 尝试一下
         candidate_rel = []
         for k, v in ungrounded_cand_rel.items():
@@ -452,7 +452,7 @@ class PromptBuilder(object):
                     print("bad call")
                     print(response)
                     raise ValueError("bad function call")
-                
+
                 functions = function_calls.split("\n")
                 new_path = init_path
 
@@ -486,18 +486,18 @@ class PromptBuilder(object):
                         print("bad function call")
                         print(functions)
                         raise ValueError("bad function call")
-                    
+
                 if new_path==init_path:
                     print(functions)
                     raise ValueError("function call no changing origin plan")
-                
+
                 if "->" not in new_path or entity_label not in new_path:
                     print("****************************************************************")
                     print(functions)
                     print("new path:",new_path)
                     print("****************************************************************")
                     raise ValueError("function call no changing origin plan")
-                    
+
                 reasoning_path_LLM_init[entity_label] = new_path
                 current_prompt_agent += "Refined Path "+ str(agent_time) +": " + new_path
                 agent_time += 1
@@ -568,11 +568,11 @@ class PromptBuilder(object):
                     # cvt的label就是本身 不用转化
                     ungrounded_cand_rel[cvt[0]] = ungrounded_neighbor_relation_dict[cvt[0]]
                 grounded_know.append(cvt[1])
-        
+
         grounded_know = [" -> ".join([i if not i.startswith("m.") else "<cvt></cvt>" for i in utils.path_to_string(knowledge).split(" -> ")]) for knowledge in grounded_know]
         grounded_know = list(set(grounded_know))
         grounded_know_string = "\n".join(grounded_know)
-        
+
         # candidate relation用集合方式 不用dict方式 尝试一下
         candidate_rel = []
         for k, v in ungrounded_cand_rel.items():
@@ -591,7 +591,7 @@ class PromptBuilder(object):
         prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_0103  + "Question: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
 
         # prompts = refine_agent_prompt  + "\nQuestion: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
-       
+
         while refine_time <= 5:
 
             response = self.run_llm(prompts, temperature=0.4, max_tokens=4096, opeani_api_keys="", engine=llm_engine)
@@ -628,7 +628,7 @@ class PromptBuilder(object):
                             print(functions)
                             print("****************************************************************")
                             raise ValueError("bad function call")
-                            
+
                         new_path = new_path[:start_index] + new_path[start_index+len(relation + " -> "):]
                         new_path = new_path.replace("  ", " ").strip()
 
@@ -656,21 +656,18 @@ class PromptBuilder(object):
                         print("bad function call")
                         print(functions)
                         raise ValueError("bad function call")
-                    
-                if new_path == init_path:
-                    print("****************************************************************")
-                    print("----------new path no changing-----------:",functions)
-                    print("****************************************************************")
 
+                if new_path==init_path:
+                    print(functions)
                     raise ValueError("function call no changing origin plan")
-                
+
                 if "->" not in new_path or entity_label not in new_path:
                     print("****************************************************************")
                     print(functions)
                     print("----------new path:", new_path)
                     print("****************************************************************")
                     raise ValueError("function call no changing origin plan")
-                    
+
                 reasoning_path_LLM_init[entity_label] = new_path
                 thought = response + " new_path:" + new_path
 
@@ -684,15 +681,15 @@ class PromptBuilder(object):
                 # if new_rule_path == init_path:
                 #     refine_time += 10
                 #     raise ValueError("entity_label or -> is not in path")
-                
+
 
                 # new_reasoning_path_LLM_init=eval(response.split("Refined Path:")[-1].strip())
                 # if type(new_reasoning_path_LLM_init) != dict:
                 #     raise ValueError("GPT generate type no match, regenerate")
-                
+
                 # if len(new_reasoning_path_LLM_init.keys()) == 0:
                 #     raise ValueError("GPT generate topics entities no match, regenerate")
-                
+
                 # if not path:
                 #     for k, v in new_reasoning_path_LLM_init.items():
                 #         if type(v) != list:
@@ -791,11 +788,11 @@ class PromptBuilder(object):
                     # cvt的label就是本身 不用转化
                     ungrounded_cand_rel[cvt[0]] = ungrounded_neighbor_relation_dict[cvt[0]]
                 grounded_know.append(cvt[1])
-        
+
         grounded_know = [" -> ".join([i if not i.startswith("m.") else "<cvt></cvt>" for i in utils.path_to_string(knowledge).split(" -> ")]) for knowledge in grounded_know]
         grounded_know = list(set(grounded_know))
         grounded_know_string = "\n".join(grounded_know)
-        
+
         # candidate relation用集合方式 不用dict方式 尝试一下
         candidate_rel = []
         for k, v in ungrounded_cand_rel.items():
@@ -831,11 +828,11 @@ class PromptBuilder(object):
                     if Ends_with_cvt:
                         print("Ends with CVT, but output stop")
                         raise ValueError("Ends with CVT, but output stop")
-                    
+
                     End_loop_cur_path = True
                     thought = response
                     return reasoning_path_LLM_init, refine_time, End_loop_cur_path, thought
-                
+
                 functions = function_calls.split("\n")
                 new_path = init_path
 
@@ -864,36 +861,36 @@ class PromptBuilder(object):
                         print("bad function call")
                         print(functions)
                         raise ValueError("bad function call")
-                    
+
                 if new_path==init_path:
                     print(functions)
                     raise ValueError("function call no changing origin plan")
-                
+
                 if "->" not in new_path:
                     print("****************************************************************")
                     print(functions)
                     print("new path:",new_path)
                     print("****************************************************************")
                     raise ValueError("function call no changing origin plan")
-                    
+
                 reasoning_path_LLM_init[entity_label] = new_path
 
                 # if "***STOP REFINE***" in response:
                 #     if Ends_with_cvt:
                 #         print("Ends with CVT, but output stop")
                 #         raise ValueError("Ends with CVT, but output stop")
-                    
+
                 #     End_loop_cur_path = True
                 #     thought = response
                 #     return reasoning_path_LLM_init, refine_time, End_loop_cur_path, thought
-                
+
                 # new_rule_path = response.split("Refined Path:")[-1].strip().strip("\"").strip()
                 # thought = response
                 # if entity_label not in new_rule_path or "->" not in new_rule_path:
                 #     print()
                 #     print("entity_label or -> is not in path")
                 #     raise ValueError("entity_label or -> is not in path")
-                
+
                 # # 没什么变化 不用refine了
                 # if init_path == new_rule_path:
                 #     if refine_time > 5:
@@ -912,10 +909,10 @@ class PromptBuilder(object):
                 # new_reasoning_path_LLM_init=eval(response.split("Refined Path:")[-1].strip())
                 # if type(new_reasoning_path_LLM_init) != dict:
                 #     raise ValueError("GPT generate type no match, regenerate")
-                
+
                 # if len(new_reasoning_path_LLM_init.keys()) == 0:
                 #     raise ValueError("GPT generate topics entities no match, regenerate")
-                
+
                 # if not path:
                 #     for k, v in new_reasoning_path_LLM_init.items():
                 #         if type(v) != list:
@@ -992,7 +989,7 @@ class PromptBuilder(object):
                     End_loop_cur_path = True
                     Ends_with_cvt = False
 
-                    # # 硬性判断什么时候停  
+                    # # 硬性判断什么时候停
                     if len(result_paths) > 0:
                         max_path_len =  len(result_paths[-1])
                         if max_path_len == 0:
@@ -1013,7 +1010,7 @@ class PromptBuilder(object):
                         # reasoning_path_LLM_init, refine_time, thought, current_prompt_agent, agent_time = self.LLM_refine_agent(llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time, current_prompt_agent, agent_time)
                         reasoning_path_LLM_init, refine_time, thought = self.LLM_refine(llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time)
                     #     reasoning_path_LLM_init, refine_time, End_loop_cur_path, thought = self.LLM_refine_and_stop_condition(llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time, End_loop_cur_path, Ends_with_cvt)
-                    
+
 
                     if End_loop_cur_path or refine_time >= 6:
                         reasoning_paths.extend(result_paths)
@@ -1024,11 +1021,11 @@ class PromptBuilder(object):
                         if len(grounded_knowledge_current) > 0:
                             # 只要最长的 可选!!!
                             max_path_len = grounded_knowledge_current[-1][-1]
-                            
+
                             for grounded_path in grounded_knowledge_current:
                                 if grounded_path[-1] < max_path_len:
                                     continue
-                                
+
                                 string_path = utils.path_to_string(grounded_path[1])
                                 if len(string_path) > 0:
                                     if string_path not in lists_of_paths:
@@ -1037,7 +1034,7 @@ class PromptBuilder(object):
                                     if len(reasoning_paths) == 0:
                                         reasoning_paths.append([])
 
-                                    reasoning_paths.extend([grounded_path[1]]) 
+                                    reasoning_paths.extend([grounded_path[1]])
 
                         # 路径集合
                         lists_of_paths = list(set(lists_of_paths))
@@ -1049,7 +1046,7 @@ class PromptBuilder(object):
 
                     # context = "\n".join([utils.path_to_string(p) for p in reasoning_paths])
 
-            # # TODO 遍历完了所有的路径 应该merge一下  
+            # # TODO 遍历完了所有的路径 应该merge一下
             if len(entities) > 1:
                 print("*****************merge*********************")
                 entity_sets={}
@@ -1058,7 +1055,7 @@ class PromptBuilder(object):
                     if not k in entity_sets.keys():
                         entity_sets[k]=set()
                     knowledge_len = 0
-                    for paths in v:                        
+                    for paths in v:
                         knowledge_len += len(paths)
                         for triples in paths:
                             entity_sets[k].add(triples[0])
@@ -1070,7 +1067,7 @@ class PromptBuilder(object):
                     if type(intersec_set) == str:
                         intersec_set = entity_sets[key]
                     else:
-                        intersec_set = intersec_set.intersection(entity_sets[key]) 
+                        intersec_set = intersec_set.intersection(entity_sets[key])
 
                         # 说明有交集  每次有交集就先给他们取个交集
                         if len(intersec_set) > 0:
@@ -1146,7 +1143,7 @@ class PromptBuilder(object):
                     print("ungrounded neighbor relation dict", ungrounded_neighbor_relation_dict)
 
                     End_loop_cur_path = True
-                   
+
                     if End_loop_cur_path or refine_time >= 6:
                         reasoning_paths.extend(result_paths)
                         grounded_revised_knowledge[entity_label] = result_paths
@@ -1156,11 +1153,11 @@ class PromptBuilder(object):
                         if len(grounded_knowledge_current) > 0:
                             # 只要最长的 可选!!!
                             max_path_len = grounded_knowledge_current[-1][-1]
-                            
+
                             for grounded_path in grounded_knowledge_current:
                                 if grounded_path[-1] < max_path_len:
                                     continue
-                                
+
                                 string_path = utils.path_to_string(grounded_path[1])
                                 if len(string_path) > 0:
                                     if string_path not in lists_of_paths:
@@ -1169,7 +1166,7 @@ class PromptBuilder(object):
                                     if len(reasoning_paths) == 0:
                                         reasoning_paths.append([])
 
-                                    reasoning_paths.extend([grounded_path[1]]) 
+                                    reasoning_paths.extend([grounded_path[1]])
 
                         # 路径集合
                         lists_of_paths = list(set(lists_of_paths))
@@ -1180,7 +1177,7 @@ class PromptBuilder(object):
                         break
 
 
-            # # TODO 遍历完了所有的路径 应该merge一下  
+            # # TODO 遍历完了所有的路径 应该merge一下
             if len(entities) > 1:
                 print("*****************merge*********************")
                 entity_sets={}
@@ -1189,7 +1186,7 @@ class PromptBuilder(object):
                     if not k in entity_sets.keys():
                         entity_sets[k]=set()
                     knowledge_len = 0
-                    for paths in v:                        
+                    for paths in v:
                         knowledge_len += len(paths)
                         for triples in paths:
                             entity_sets[k].add(triples[0])
@@ -1201,7 +1198,7 @@ class PromptBuilder(object):
                     if type(intersec_set) == str:
                         intersec_set = entity_sets[key]
                     else:
-                        intersec_set = intersec_set.intersection(entity_sets[key]) 
+                        intersec_set = intersec_set.intersection(entity_sets[key])
 
                         # 说明有交集  每次有交集就先给他们取个交集
                         if len(intersec_set) > 0:
@@ -1274,7 +1271,7 @@ class PromptBuilder(object):
                             grounded_relations[rel] = relations_no_q
                         else:
                             grounded_relations[rel] = list(set(grounded_relations[rel]+relations_no_q))
-            
+
                 # grounding路径
                 # result_path表示 grounding过程中的path,如果是空的,说明当前grounding遇到了问题,需要refine
                 reasoning_paths, result_paths, entity, grounded_knowledge_current, ungrounded_neighbor_relation_dict = self.apply_rules_LLM_revised(graph, reasoning_path_LLM_init, entities, grounded_relations)
@@ -1344,7 +1341,7 @@ class PromptBuilder(object):
                     for know in grounded_knowledge_current:
                         grounded_know.append(know[1])
 
- 
+
                     grounded_know_string = ""
                     for know in grounded_know:
                         if know == []:
@@ -1352,17 +1349,17 @@ class PromptBuilder(object):
                         grounded_know_string+=utils.path_to_string(know) + "\n"
 
                     prompts = refine_prompt_path_one_path_1222  + "\nQuestion: " + question + "\nInitial Path:" + str(init_path) + "\nGrounded Knowledge:" + grounded_know_string +"\nCandidate Relations:" + str(ungrounded_neighbor_relation_dict) + "\nThought:"
-                    
+
                     while True:
                         response = self.run_llm(prompts, temperature=0.4, max_tokens=4096, opeani_api_keys="")
                         try:
                             new_reasoning_path_LLM_init=eval(response.split("Refined Path:")[-1].strip())
                             if type(new_reasoning_path_LLM_init) != dict:
                                 raise ValueError("GPT generate type no match, regenerate")
-                            
+
                             if len(new_reasoning_path_LLM_init.keys()) == 0:
                                 raise ValueError("GPT generate topics entities no match, regenerate")
-                            
+
                             if not path:
                                 for k, v in new_reasoning_path_LLM_init.items():
                                     if type(v) != list:
@@ -1384,7 +1381,7 @@ class PromptBuilder(object):
                             print(response)
                             time.sleep(5)
                 # context = "\n".join([utils.path_to_string(p) for p in reasoning_paths])
-            
+
         return reasoning_paths, lists_of_paths
 
 
@@ -1394,7 +1391,7 @@ class PromptBuilder(object):
         Take question as input and return the input with prompt
         '''
         question = question_dict['question']
-        
+
         if not question.endswith('?'):
             question += '?'
 
@@ -1414,7 +1411,7 @@ class PromptBuilder(object):
             else:
                 lists_of_paths = []
             #input += self.GRAPH_CONTEXT.format(context = context)
-            
+
         input = self.QUESTION.format(question = question)
         # MCQ
         if len(question_dict['choices']) > 0:
@@ -1430,26 +1427,26 @@ class PromptBuilder(object):
                 instruction = self.SAQ_RULE_INSTRUCTION
             else:
                 instruction = self.SAQ_INSTRUCTION
-        
+
         if self.cot:
             instruction += self.COT
-        
+
         if self.explain:
             instruction += self.EXPLAIN
-            
+
         if self.each_line:
             instruction += self.EACH_LINE
-        
+
         if self.add_rule:
             other_prompt = self.prompt_template.format(instruction = instruction, input = self.GRAPH_CONTEXT.format(context = "") + input)
             context = self.check_prompt_length(other_prompt, lists_of_paths, self.maximun_token)
-            
+
             input = self.GRAPH_CONTEXT.format(context = context) + input
-        
+
         input = self.prompt_template.format(instruction = instruction, input = input)
-            
+
         return input
-    
+
 
     def check_prompt_length(self, prompt, list_of_paths, maximun_token):
         '''Check whether the input prompt is too long. If it is too long, remove the first path and check again.'''

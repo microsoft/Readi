@@ -21,6 +21,7 @@ from pyserini.search.faiss import AutoQueryEncoder
 import pandas as pd
 import json
 from utils import *
+from config import *
 import Levenshtein
 
 
@@ -44,8 +45,8 @@ def reasoning(file_index):
 
 
 
-def get_relation_path(input_file="/home/v-sitaocheng/demos/dangle_over_ground/data/datasets/cwq_test.json", output_file="/home/v-sitaocheng/demos/dangle_over_ground/data/initial_plan/cwq_test_1221.json"):
-    
+def get_relation_path(input_file="data/datasets/cwq_test.json", output_file="data/initial_plan/cwq_test_1221.json"):
+
     cwq=readjson_50(input_file)[:100]
     for index, item in enumerate(tqdm(cwq)):
         topic_ent = [v for k,v in item['topic_entity'].items()]
@@ -67,16 +68,16 @@ def get_relation_path(input_file="/home/v-sitaocheng/demos/dangle_over_ground/da
 
 
 def dump():
-    cwq=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/candidate_rel/cwq_test.json")
+    cwq=readjson_50("data/datasets/cwq_test.json")
     for lines in cwq:
         for key in lines['relation_path_candidates']['relation_paths'].keys():
             lines['relation_path_candidates']['relation_paths'][key] = list(set(lines['relation_path_candidates']['relation_paths'][key]))
 
-    savejson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/candidate_rel/cwq_test_new.json", cwq)
+    savejson("data/datasets/cwq_test_new.json", cwq)
 
 
 def grounding_relations():
-    cwq=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/candidate_rel/cwq_test.json")
+    cwq=readjson_50("data/datasets/cwq_test.json")
     query_encoder = AutoQueryEncoder(encoder_dir='facebook/contriever', pooling='mean')
     corpus = LuceneSearcher('/home/v-sitaocheng/demos/llm_hallu/KB-Binder/LLM-KBQA/KB-BINDER/contriever_fb_relation/index_relation_fb')
     bm25_searcher = LuceneSearcher('/home/v-sitaocheng/demos/llm_hallu/KB-Binder/LLM-KBQA/KB-BINDER/contriever_fb_relation/index_relation_fb')
@@ -130,9 +131,9 @@ def run():
             current_path = "" + entity
             ent_rel_one_hop = get_ent_one_hop_rel(entity_id=entity, pre_relations=[], pre_head=-1)
             golden_ent_label = topic_entity_dict[entity]
-            source_entity = most_similar_string(golden_ent_label, predict_topic_entity_labels_list) 
+            source_entity = most_similar_string(golden_ent_label, predict_topic_entity_labels_list)
             cur_path_list = predict_relation_paths_dict[source_entity]
-            
+
             one_hop_connected = []
             # for rel in ent_rel_one_hop:
                 # if rel not in grounding_relations[]
@@ -142,31 +143,23 @@ def run():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str,
-                        default="cwq", help="choose the dataset.")
-    parser.add_argument("--max_length", type=int,
-                        default=4096, help="the max length of LLMs output.")
-    parser.add_argument("--temperature_exploration", type=float,
-                        default=0.4, help="the temperature in exploration stage.")
-    parser.add_argument("--temperature_reasoning", type=float,
-                        default=0.4, help="the temperature in reasoning stage.")
-    parser.add_argument("--width", type=int,
-                        default=3, help="choose the search width of ToG.")
-    parser.add_argument("--depth", type=int,
-                        default=3, help="choose the search depth of ToG.")
-    parser.add_argument("--remove_unnecessary_rel", type=bool,
-                        default=True, help="whether removing unnecessary relations.")
-    parser.add_argument("--LLM_type", type=str,
-                        # default="gpt-4-32k-20230321", help="base LLM model.")
-                        default="gpt-35-turbo-16k-20230613", help="base LLM model.")
-    parser.add_argument("--opeani_api_keys", type=str,
-                        default="", help="if the LLM_type is gpt-3.5-turbo or gpt-4, you need add your own openai api keys.")
-    parser.add_argument("--num_retain_entity", type=int,
-                        default=5, help="Number of entities retained during entities search.")
-    parser.add_argument("--prune_tools", type=str,
-                        default="llm", help="prune tools for ToG, can be llm (same as LLM_type), bm25 or sentencebert.")
+    parser.add_argument("--dataset", type=str, choices=DATASET.keys(), default="cwq", help="choose the dataset.")
+    parser.add_argument("--max_length", type=int, default=4096, help="the max length of LLMs output.")
+    parser.add_argument("--temperature_exploration", type=float, default=0.4, help="the temperature in exploration stage.")
+    parser.add_argument("--temperature_reasoning", type=float, default=0.4, help="the temperature in reasoning stage.")
+    parser.add_argument("--width", type=int, default=3, help="choose the search width of ToG.")
+    parser.add_argument("--depth", type=int, default=3, help="choose the search depth of ToG.")
+    parser.add_argument("--remove_unnecessary_rel", type=bool, default=True, help="whether removing unnecessary relations.")
+    parser.add_argument("--llm", type=str,choices=LLM_BASE.keys(), default="gpt4", help="base LLM model.")
+                        # default="gpt-35-turbo-16k-20230613", help="base LLM model.")
+    parser.add_argument("--opeani_api_keys", type=str, default="", help="if the LLM_type is gpt-3.5-turbo or gpt-4, you need add your own openai api keys.")
+    parser.add_argument("--num_retain_entity", type=int, default=5, help="Number of entities retained during entities search.")
+    parser.add_argument("--prune_tools", type=str, default="llm", help="prune tools for ToG, can be llm (same as LLM_type), bm25 or sentencebert.")
     args = parser.parse_args()
+    args.LLM_type = LLM_BASE[args.llm]
 
-    get_relation_path(input_file="/home/v-sitaocheng/demos/dangle_over_ground/data/datasets/cwq_test.json", output_file="/home/v-sitaocheng/demos/dangle_over_ground/data/initial_plan/cwq_test_gpt35_0103.json")
+    input_file = os.path.join(DATASET_BASE, DATASET[args.dataset])
+    output_file = os.path.join(INIT_PLAN_BASE,f"{args.dataset}_{args.llm}_{get_timestamp()}.json")
+    get_relation_path(input_file=input_file, output_file=output_file)
     # grounding_relations()
     # run()

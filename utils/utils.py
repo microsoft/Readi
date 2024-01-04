@@ -1,4 +1,5 @@
 import sys, os
+import datetime
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/..")
 from .prompt_list import *
 import json
@@ -23,7 +24,7 @@ def get_openai_embedding(input_message):
 
     response = openai.Embedding.create(engine="text-embedding-ada-002",
                                         input=input_message)
-                                        
+
     return response['data']
 
 
@@ -32,7 +33,7 @@ def run_llm(prompt, temperature, max_tokens, opeani_api_keys, engine="gpt-35-tur
         # openai.api_key = "EMPTY"
         # openai.api_base = "http://localhost:8000/v1"  # your local llama server port
         # engine = openai.Model.list()["data"][0]["id"]
-        
+
         openai.api_type = "azure"
         openai.api_base = "https://cloudgpt-openai.azure-api.net/"
         openai.api_version = "2023-07-01-preview"
@@ -134,7 +135,7 @@ def compute_bm25_similarity(query, corpus, width=3):
     tokenized_query = query.split(" ")
 
     doc_scores = bm25.get_scores(tokenized_query)
-    
+
     relations = bm25.get_top_n(tokenized_query, corpus, n=width)
     doc_scores = sorted(doc_scores, reverse=True)[:width]
 
@@ -185,7 +186,7 @@ def clean_relations_bm25_sent(topn_relations, topn_scores, entity_id, head_relat
 #         openai.api_key = "EMPTY"
 #         openai.api_base = "http://localhost:8000/v1"  # your local llama server port
 #         # engine = openai.Model.list()["data"][0]["id"]
-        
+
 #         openai.api_type = "azure"
 #         openai.api_base = "https://cloudgpt-openai.azure-api.net/"
 #         openai.api_version = "2023-07-01-preview"
@@ -220,7 +221,7 @@ def clean_relations_bm25_sent(topn_relations, topn_scores, entity_id, head_relat
 
 def construct_relation_prune_prompt(question, entity_name, total_relations, args):
     return extract_relation_prompt % (args.width, args.width) + question + '\nTopic Entity: ' + entity_name + '\nRelations: '+ '; '.join(total_relations) + "\nA: "
-        
+
 
 def construct_entity_score_prompt(question, relation, entity_candidates, score):
     return score_entity_candidates_prompt.format(question, relation) + "; ".join(entity_candidates) + '\nScore: ' + str(score)
@@ -229,7 +230,7 @@ def construct_entity_score_prompt(question, relation, entity_candidates, score):
 def get_ent_one_hop_rel(entity_id, pre_relations=[], pre_head=-1):
     sparql_relations_extract_head = sparql_head_relations % (entity_id)
     head_relations = table_result_to_list(execute_sparql(sparql_relations_extract_head))
-    
+
     sparql_relations_extract_tail = sparql_tail_relations % (entity_id)
     tail_relations = table_result_to_list(execute_sparql(sparql_relations_extract_tail))
 
@@ -248,23 +249,23 @@ def get_ent_one_hop_rel(entity_id, pre_relations=[], pre_head=-1):
     if remove_unnecessary_rel:
         head_relations = [relation for relation in head_relations if not abandon_rels(relation)]
         tail_relations = [relation for relation in tail_relations if not abandon_rels(relation)]
-    
+
     if len(pre_relations) !=0 and pre_head !=-1:
         head_relations = [rel for rel in pre_relations if not pre_head and rel not in head_relations]
         tail_relations = [rel for rel in pre_relations if pre_head and rel not in tail_relations]
 
     head_relations = list(set(head_relations))
     tail_relations = list(set(tail_relations))
-    total_relations = list(set(head_relations+tail_relations)) 
+    total_relations = list(set(head_relations+tail_relations))
     total_relations.sort()  # make sure the order in prompt is always equal
-    
+
     return total_relations
 
 def relation_search_prune(entity_id, entity_name, pre_relations, pre_head, question, args):
     sparql_relations_extract_head = sparql_head_relations % (entity_id)
     head_relations = execute_sparql(sparql_relations_extract_head)
     head_relations = replace_relation_prefix(head_relations)
-    
+
     sparql_relations_extract_tail= sparql_tail_relations % (entity_id)
     tail_relations = execute_sparql(sparql_relations_extract_tail)
     tail_relations = replace_relation_prefix(tail_relations)
@@ -272,7 +273,7 @@ def relation_search_prune(entity_id, entity_name, pre_relations, pre_head, quest
     if args.remove_unnecessary_rel:
         head_relations = [relation for relation in head_relations if not abandon_rels(relation)]
         tail_relations = [relation for relation in tail_relations if not abandon_rels(relation)]
-    
+
     if len(pre_relations)!=0 and pre_head !=-1:
         tail_relations = [rel for rel in pre_relations if pre_head and rel not in tail_relations]
         head_relations = [rel for rel in pre_relations if not pre_head and rel not in head_relations]
@@ -281,32 +282,32 @@ def relation_search_prune(entity_id, entity_name, pre_relations, pre_head, quest
     tail_relations = list(set(tail_relations))
     total_relations = head_relations+tail_relations
     total_relations.sort()  # make sure the order in prompt is always equal
-    
+
     if args.prune_tools == "llm":
         prompt = construct_relation_prune_prompt(question, entity_name, total_relations, args)
 
         result = run_llm(prompt, args.temperature_exploration, args.max_length, args.opeani_api_keys, args.LLM_type)
-        flag, retrieve_relations_with_scores = clean_relations(result, entity_id, head_relations) 
+        flag, retrieve_relations_with_scores = clean_relations(result, entity_id, head_relations)
 
     elif args.prune_tools == "bm25":
         topn_relations, topn_scores = compute_bm25_similarity(question, total_relations, args.width)
-        flag, retrieve_relations_with_scores = clean_relations_bm25_sent(topn_relations, topn_scores, entity_id, head_relations) 
+        flag, retrieve_relations_with_scores = clean_relations_bm25_sent(topn_relations, topn_scores, entity_id, head_relations)
     else:
         model = SentenceTransformer('sentence-transformers/msmarco-distilbert-base-tas-b')
         topn_relations, topn_scores = retrieve_top_docs(question, total_relations, model, args.width)
-        flag, retrieve_relations_with_scores = clean_relations_bm25_sent(topn_relations, topn_scores, entity_id, head_relations) 
+        flag, retrieve_relations_with_scores = clean_relations_bm25_sent(topn_relations, topn_scores, entity_id, head_relations)
 
     if flag:
         return retrieve_relations_with_scores
     else:
         return [] # format error or too small max_length
-    
-    
+
+
 def entity_search(entity, relation, head=True):
     if head:
         if "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" in relation:
             tail_entities_extract = sparql_tail_entities_extract_with_type% (entity)
-            entities = table_result_to_list(execute_sparql(tail_entities_extract)) 
+            entities = table_result_to_list(execute_sparql(tail_entities_extract))
         else:
             tail_entities_extract = sparql_tail_entities_extract% (entity, relation)
             entities = table_result_to_list(execute_sparql(tail_entities_extract))
@@ -321,7 +322,7 @@ def entity_search(entity, relation, head=True):
 
     # entity_ids = replace_entities_prefix(entities)
     new_entity = [entity for entity in entities if entity.startswith("m.")]
-    
+
     return new_entity
 
 
@@ -334,7 +335,7 @@ def entity_score(question, entity_candidates_id, score, relation, args):
         return [score], entity_candidates, entity_candidates_id
     if len(entity_candidates) == 0:
         return [0.0], entity_candidates, entity_candidates_id
-    
+
     # make sure the id and entity are in the same order
     zipped_lists = sorted(zip(entity_candidates, entity_candidates_id))
     entity_candidates, entity_candidates_id = zip(*zipped_lists)
@@ -355,7 +356,7 @@ def entity_score(question, entity_candidates_id, score, relation, args):
         topn_scores = [float(1/len(topn_scores))] * len(topn_scores)
     return [float(x) * score for x in topn_scores], topn_entities, entity_candidates_id
 
-    
+
 def all_unknown_entity(entity_candidates):
     return all(candidate == "UnName_Entity" for candidate in entity_candidates)
 
@@ -390,7 +391,7 @@ def update_history(entity_candidates, entity, scores, entity_candidates_id, tota
     return total_candidates, total_scores, total_relations, total_entities_id, total_topic_entities, total_head
 
 
-def generate_answer(question, cluster_chain_of_entities, args): 
+def generate_answer(question, cluster_chain_of_entities, args):
     prompt = answer_prompt + question + '\n'
     chain_prompt = '\n'.join([', '.join([str(x) for x in chain]) for sublist in cluster_chain_of_entities for chain in sublist])
     prompt += "\nKnowledge Triplets: " + chain_prompt + 'A: '
@@ -461,7 +462,7 @@ def path_to_string(path: list) -> str:
         else:
             _, r, t = p
             result += f" -> {r} -> {t}"
-            
+
     return result.strip()
 
 def string_to_path(path_string):
@@ -470,7 +471,7 @@ def string_to_path(path_string):
     path_array = path_array[1:]
     for lines in path_array:
         result.append(lines.strip())
-            
+
     return result
 
 class InstructFormater(object):
@@ -479,14 +480,14 @@ class InstructFormater(object):
         _summary_
 
         Args:
-            prompt_template (_type_): 
+            prompt_template (_type_):
             instruct_template (_type_): _description_
         '''
         self.prompt_template = read_prompt(prompt_path)
 
     def format(self, instruction, message):
         return self.prompt_template.format(instruction=instruction, input=message)
-    
+
 
 
 
@@ -497,13 +498,13 @@ def reasoning(question, cluster_chain_of_entities, args):
     prompt += "\nKnowledge Triplets: " + chain_prompt + 'A: '
 
     response = run_llm(prompt, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
-    
+
     result = extract_answer(response)
     if if_true(result):
         return True, response
     else:
         return False, response
-    
+
 
 def extract_answer(text):
     start_index = text.find("{")
@@ -512,7 +513,7 @@ def extract_answer(text):
         return text[start_index+1:end_index].strip()
     else:
         return ""
-    
+
 
 def if_true(prompt):
     if prompt.lower().strip().replace(" ","")=="yes":
@@ -545,12 +546,12 @@ def prepare_dataset(dataset_name):
         question_string = 'question'
     elif dataset_name == 'simpleqa':
         with open('../data/SimpleQA.json',encoding='utf-8') as f:
-            datas = json.load(f)    
+            datas = json.load(f)
         question_string = 'question'
     elif dataset_name == 'qald':
         with open('../data/qald_10-en.json',encoding='utf-8') as f:
-            datas = json.load(f) 
-        question_string = 'question'   
+            datas = json.load(f)
+        question_string = 'question'
     elif dataset_name == 'webquestions':
         with open('../data/WebQuestions.json',encoding='utf-8') as f:
             datas = json.load(f)
@@ -558,11 +559,11 @@ def prepare_dataset(dataset_name):
     elif dataset_name == 'trex':
         with open('../data/T-REX.json',encoding='utf-8') as f:
             datas = json.load(f)
-        question_string = 'input'    
+        question_string = 'input'
     elif dataset_name == 'zeroshotre':
         with open('../data/Zero_Shot_RE.json',encoding='utf-8') as f:
             datas = json.load(f)
-        question_string = 'input'    
+        question_string = 'input'
     elif dataset_name == 'creak':
         with open('../data/creak.json',encoding='utf-8') as f:
             datas = json.load(f)
@@ -594,7 +595,7 @@ def similar_search_list(question, relation_list):
 
     # 计算问题和每个关系的相似度
     similarities = util.pytorch_cos_sim(question_embedding, relation_embeddings)
-    
+
     # 将相似度与关系列表进行配对并按相似度进行排序
     sorted_relations = [(relation, score) for relation, score in zip(relation_list, similarities.tolist()[0])]
     sorted_relations = sorted(sorted_relations, key=lambda x: x[1], reverse=True)
@@ -602,5 +603,9 @@ def similar_search_list(question, relation_list):
     # 仅返回排好序的关系列表，不包括相似度分数
     sorted_relation_list = [relation[0] for relation in sorted_relations]
     return sorted_relation_list
+
+def get_timestamp():
+    now = datetime.datetime.now()
+    return now.strftime(r"%m%d")
 
 get_ent_one_hop_rel("m.0bdxs5")

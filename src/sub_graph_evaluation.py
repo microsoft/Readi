@@ -22,7 +22,7 @@ def read_jsonl_file_50(file_path):
         for line in file:
             json_obj = json.loads(line)
             data.append(json_obj)
-    return data  
+    return data
 
 def readjson_50(file_name):
     with open(file_name, encoding='utf-8') as f:
@@ -39,7 +39,7 @@ def extract_variables_from_sparql_query(query):
     # 匹配以"?x"、"?y"等格式开头的字符串作为变量
     variable_pattern = r'\?[\w]+'
     variables = re.findall(variable_pattern, query)
-    
+
     # 使用set()去除重复的变量，并将其连接为一个字符串
     distinct_variables = ' '.join(set(variables))
 
@@ -51,7 +51,7 @@ def extract_variables_from_sparql_query(query):
     for index, lines in enumerate(splits) :
         if "SELECT" in lines:
             splits[index] = f'SELECT DISTINCT {distinct_variables}'
-        
+
         # if ";" in lines:
         #     if len(lines.split(" "))==4:
         #         lines = lines.replace(";", '.')
@@ -92,7 +92,7 @@ def extract_query_knowledge(sparql_query, sparql_results):
                 # 如果变量值以'http'开头，则去掉前缀只保留'm.'开头的部分
                 if var_value.startswith('http'):
                     var_value = var_value.split('/')[-1]
-                    
+
                 formatted_triplet = formatted_triplet.replace(var, var_value).strip()
                 print(formatted_triplet)
 
@@ -136,7 +136,7 @@ def instantiate_knowledge():
                     label = e
             else:
                 label = e
-            
+
             entity_label_map[e]=label
 
         triples=""
@@ -145,13 +145,13 @@ def instantiate_knowledge():
             if seq_knowledge in triples:
                 continue
             triples += seq_knowledge
-        
+
         triples.strip('\n')
 
         lines['golden_knowledge_enumerate'] = triples
-        lines['entity_ids']=list(entity_set)    
+        lines['entity_ids']=list(entity_set)
         lines['entity_label_map']=entity_label_map
-    
+
         savejson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1127.json", cwq)
 
 
@@ -171,7 +171,7 @@ def deal_egpsr_entity():
                     # label = "intermediate_entity_" + str(num_UnName_Entity)
                     label = e
             else:
-                label = e            
+                label = e
             ent_id_label_map[e]=label
 
         lines['subgraph']['ent_id_label_map'] = ent_id_label_map
@@ -214,7 +214,7 @@ def calculate_contract_recall_natural_language():
         for golden_know in golden_knowledge_set:
             if golden_know in contract_knowledge_set:
                 recall+=1
-        
+
         if len(golden_knowledge_set)==0:
             # all_recall+=1
             continue
@@ -223,7 +223,7 @@ def calculate_contract_recall_natural_language():
             all_recall += recall/len(golden_knowledge_set)
             non_zero_num += 1
             all_knowledge_len += len(golden_knowledge_set)
-    
+
     print("golden knowledge avg recall",all_recall/non_zero_num)
     print("golden knowledge avg len: ", all_knowledge_len/non_zero_num)
 
@@ -299,7 +299,7 @@ def calculate_answer_coverage_rate(file_path, golden_file_path):
             print(lines['kg_paths'])
             print(answer_list)
             print("********************************************************************************************************************")
-       
+
         all_recall+=recall/len(answer_list)
         if num_of_path == 1:
             recall_one_path += recall/len(answer_list)
@@ -309,14 +309,14 @@ def calculate_answer_coverage_rate(file_path, golden_file_path):
     print("# knowledge one path:", all_knowledge_one_path_num_questions)
     print("# knowledge multi path:", all_knowledge_multi_path_num_questions)
 
-    print("coverage rate overall:" , all_recall/len(sr_graph))    
+    print("coverage rate overall:" , all_recall/len(sr_graph))
 
-    print("coverage rate one path:" , recall_one_path/all_knowledge_one_path_num_questions)    
-    print("coverage rate multi path:" , recall_multi_path/all_knowledge_multi_path_num_questions)  
+    print("coverage rate one path:" , recall_one_path/all_knowledge_one_path_num_questions)
+    print("coverage rate multi path:" , recall_multi_path/all_knowledge_multi_path_num_questions)
 
-    print("avg number of knowledge overall :" , all_knowledge_num/len(sr_graph))    
-    print("avg number of knowledge one path:" , all_knowledge_one_path_num/all_knowledge_one_path_num_questions)    
-    print("avg number of knowledge multi path:" , all_knowledge_multi_path_num/all_knowledge_multi_path_num_questions)    
+    print("avg number of knowledge overall :" , all_knowledge_num/len(sr_graph))
+    print("avg number of knowledge one path:" , all_knowledge_one_path_num/all_knowledge_one_path_num_questions)
+    print("avg number of knowledge multi path:" , all_knowledge_multi_path_num/all_knowledge_multi_path_num_questions)
 
 
 def calculate_graph_recall():
@@ -331,7 +331,7 @@ def calculate_graph_recall():
     for index, lines in enumerate(tqdm(sr_graph)):
         contract_knowledge_seq = lines['kg_triples']
         golden_knowledge_seq = cwq[index]['golden_knowledge_enumerate']
-        
+
         golden_knowledge_set = set()
         contract_knowledge_set = set()
 
@@ -362,7 +362,7 @@ def calculate_graph_recall():
         for golden_know in golden_knowledge_set:
             if golden_know in contract_knowledge_set:
                 recall+=1
-        
+
         if len(golden_knowledge_set)==0:
             # all_recall+=1
             continue
@@ -371,7 +371,7 @@ def calculate_graph_recall():
             all_recall += recall/len(golden_knowledge_set)
             non_zero_num += 1
             all_knowledge_len += len(golden_knowledge_set)
-    
+
     print("golden knowledge avg recall",all_recall/non_zero_num)
     print("golden knowledge avg len: ", all_knowledge_len/non_zero_num)
     # print("predict knowledge avg len:", predict_knowledge_len/100)
@@ -390,7 +390,7 @@ def calculate_recall_triple():
         golden_knowledge = cwq[index]['instantiated_knowledge']
         golden_knowledge_set = []
         predict_knowledge_set = []
-        
+
         for lines in golden_knowledge:
             if lines in golden_knowledge_set:
                 continue
@@ -406,7 +406,7 @@ def calculate_recall_triple():
         for golden_know in golden_knowledge_set:
             if golden_know in sub_graph_knowledge:
                 recall+=1
-        
+
         if len(golden_knowledge_set)==0:
             # all_recall+=1
             continue
@@ -414,7 +414,7 @@ def calculate_recall_triple():
             all_recall += recall/len(golden_knowledge_set)
             non_zero_num += 1
             all_knowledge_len += len(golden_knowledge_set)
-        
+
     # print(all_recall/len(sr_graph))
     print("golden knowledge avg recall",all_recall/non_zero_num)
     print("golden knowledge avg len: ",all_knowledge_len/non_zero_num)
@@ -428,6 +428,6 @@ if __name__ == '__main__':
     # instantiate_knowledge()
     # calculate_contract_recall()
     # calculate_graph_recall()
-    file_path="/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/RoG/test/_home_v-sitaocheng_demos_llm_hallu_reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_init_GPT4_cwq100_path_onePath_gpt4_0103_engine_triple_cvt_goal_progress_hard_stop_new_fun.jsonl"
-    golden_path="/home/v-sitaocheng/demos/llm_hallu/ToG/data/cwq.json"
+    file_path="results/KGQA/RoG-cwq/RoG/test/___reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_0101_agent.jsonl"
+    golden_path="../ToG/data/cwq.json"
     calculate_answer_coverage_rate(file_path,golden_path)

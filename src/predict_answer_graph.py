@@ -13,6 +13,8 @@ import json
 from multiprocessing import Pool
 from build_qa_input import PromptBuilder
 from functools import partial
+from config import *
+from utils.utils import get_timestamp
 
 def get_output_file(path, force=False):
     if not os.path.exists(path) or force:
@@ -83,7 +85,7 @@ def prediction_graph(data, processed_list, input_builder, reasoning_path_LLM):
 
     if kg_paths is None:
         return None
-    
+
     result = {
         "id": id,
         "question": question,
@@ -101,7 +103,9 @@ def prediction_graph(data, processed_list, input_builder, reasoning_path_LLM):
 def prediction_graph_engine(processed_list, input_builder, reasoning_path_LLM, llm_engine):
     question = reasoning_path_LLM["question"]
     answer = reasoning_path_LLM["answer"]
-    id = reasoning_path_LLM["ID"]
+
+    id_str = list(set(["qid", "ID"]).intersection(reasoning_path_LLM.keys()))[0]
+    id = reasoning_path_LLM[id_str]
     thought = ""
     if id in processed_list:
         return None
@@ -125,7 +129,7 @@ def prediction_graph_engine(processed_list, input_builder, reasoning_path_LLM, l
 
     if kg_paths is None:
         return None
-    
+
     result = {
         "id": id,
         "question": question,
@@ -191,10 +195,11 @@ def main(args, LLM):
         rule_postfix += "_filter_empty"
     if args.each_line:
         rule_postfix += "_each_line"
-        
+
     print("Load dataset from finished")
     output_dir = os.path.join(
-        args.predict_path, args.d, args.model_name, args.split, rule_postfix
+        # args.predict_path, args.d, args.model_name, args.split, rule_postfix
+        args.predict_path, args.dataset,
     )
     print("Save results to: ", output_dir)
     # Predict
@@ -257,8 +262,8 @@ def main(args, LLM):
         #             print(json.dumps(res))
         #         fout.write(json.dumps(res) + "\n")
         #         fout.flush()
-        # fout.close()    
-           
+        # fout.close()
+
         with open(args.init_plan_path, 'r') as f:
             reasoning_path = json.load(f)
 
@@ -294,10 +299,11 @@ def main_engine(args, LLM):
         rule_postfix += "_filter_empty"
     if args.each_line:
         rule_postfix += "_each_line"
-        
+
     print("Load dataset from finished")
     output_dir = os.path.join(
-        args.predict_path, args.d, args.model_name, args.split, rule_postfix
+        # args.predict_path, args.d, args.model_name, args.split, rule_postfix
+        args.predict_path, args.dataset
     )
     print("Save results to: ", output_dir)
     # Predict
@@ -345,9 +351,10 @@ if __name__ == "__main__":
     argparser.add_argument(
         "--data_path", type=str, default="rmanluo"
     )
-    argparser.add_argument("--d", "-d", type=str, default="RoG-cwq")
+    # argparser.add_argument("--d", "-d", type=str,choices=DATASET.keys(), default='cwq')
+    argparser.add_argument("--dataset", "-d", type=str,choices=DATASET.keys(), default='cwq')
     argparser.add_argument("--split", type=str, default="test")
-    argparser.add_argument("--predict_path", type=str, default="/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA")
+    argparser.add_argument("--predict_path", type=str, default="results/KGQA")
     argparser.add_argument(
         "--model_name",
         type=str,
@@ -358,7 +365,7 @@ if __name__ == "__main__":
         "--prompt_path",
         type=str,
         help="prompt_path",
-        default="/home/v-sitaocheng/demos/llm_hallu/reasoning-on-graphs/prompts/llama2_predict.txt",
+        default="../reasoning-on-graphs/prompts/llama2_predict.txt",
     )
     argparser.add_argument("--add_rule", default=True ,action="store_true")
     argparser.add_argument("--use_true", action="store_true")
@@ -369,7 +376,7 @@ if __name__ == "__main__":
     argparser.add_argument(
         "--rule_path",
         type=str,
-        default="/home/v-sitaocheng/demos/llm_hallu/reasoning-on-graphs/results/gen_rule_path/RoG-cwq/RoG/test/predictions_3_False.jsonl",
+        default="../reasoning-on-graphs/results/gen_rule_path/RoG-cwq/RoG/test/predictions_3_False.jsonl",
     )
     argparser.add_argument(
         "--force", "-f", action="store_true", help="force to overwrite the results"
@@ -378,17 +385,26 @@ if __name__ == "__main__":
     argparser.add_argument("-init_path_only", default=False, type=bool, help="whether use init path only")
     argparser.add_argument("--filter_empty", action="store_true")
     argparser.add_argument("--debug", action="store_true")
+    argparser.add_argument("--llm", type=str, choices=LLM_BASE.keys(), default='gpt35')
     # argparser.add_argument("--llm_engine", type=str, default="gpt-4-32k-20230321")
-    argparser.add_argument("--llm_engine", type=str, default="gpt-35-turbo-16k-20230613")
-    argparser.add_argument("--init_plan_path", type=str, default="/home/v-sitaocheng/demos/dangle_over_ground/data/initial_plan/cwq_test_gpt35_0103.json")
-    argparser.add_argument("--output_file_name", type=str, default="predictions_kg_init_GPT35_cwq100_path_onePath_gpt35_0103_engine_triple_cvt_goal_progress_hard_stop_new_fun.jsonl")
-        
+    # argparser.add_argument("--llm_engine", type=str, default="gpt-35-turbo-16k-20230613")
+    argparser.add_argument("--init_plan_path", type=str, default="/home/v-sitaocheng/demos/dangle_over_ground/data/initial_plan/cwq_test_1221.json")
+    # argparser.add_argument("--output_file_name", type=str, default="predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_1230_engine_triple_cvt_new_goal_progess_hard_stop.jsonl")
+    argparser.add_argument("--name", type=str, default="onePath_CVT_HardStop")
+
     args, _ = argparser.parse_known_args()
+    args.dataset = os.path.split(args.init_plan_path)[1].split('_')[0]
+
+    args.output_file_name = f"{args.dataset}_{args.llm}_{args.name}_{get_timestamp()}.jsonl"
+    print(args.output_file_name)
+
+    args.llm_engine = LLM_BASE[args.llm]
+
     if args.model_name != "no-llm":
         LLM = get_registed_model(args.model_name)
         LLM.add_args(argparser)
     else:
         LLM = None
-    args = argparser.parse_args()
+    # args = argparser.parse_args()
 
     main_engine(args, LLM)
