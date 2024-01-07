@@ -127,7 +127,7 @@ if __name__ == '__main__':
     parser.add_argument("--width", type=int, default=3, help="choose the search width of ToG.")
     parser.add_argument("--depth", type=int, default=3, help="choose the search depth of ToG.")
     parser.add_argument("--remove_unnecessary_rel", type=bool, default=True, help="whether removing unnecessary relations.")
-    parser.add_argument("--llm", type=str,choices=LLM_BASE.keys(), default="gpt4", help="base LLM model.")
+    parser.add_argument("--llm", type=str,choices=LLM_BASE.keys(), default="gpt35", help="base LLM model.")
                         # default="gpt-35-turbo-16k-20230613", help="base LLM model.")
     parser.add_argument("--opeani_api_keys", type=str, default="", help="if the LLM_type is gpt-3.5-turbo or gpt-4, you need add your own openai api keys.")
     parser.add_argument("--num_retain_entity", type=int, default=5, help="Number of entities retained during entities search.")
@@ -137,4 +137,6 @@ if __name__ == '__main__':
 
     input_file = os.path.join(DATASET_BASE, DATASET[args.dataset])
     output_file = os.path.join(INIT_PLAN_BASE,f"{args.dataset}_{args.llm}_{get_timestamp()}.json")
+
+    print("save result to: ",output_file)
     get_relation_path(input_file=input_file, output_file=output_file)

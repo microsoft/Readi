@@ -2,7 +2,9 @@ import os
 import json
 import re
 import sys
+sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/..")
 sys.path.append(os.path.join(os.getcwd(), 'src'))
+sys.path.append(os.path.join(os.getcwd(), 'dangle_over_ground/src'))
 from config import *
 
 

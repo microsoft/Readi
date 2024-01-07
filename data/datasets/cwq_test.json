@@ -9707,7 +9707,9 @@
         "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:music.featured_artist.recordings ns:g.11bbmpspvb . \n?c ns:people.person.place_of_birth ?x .\n}\n",
         "webqsp_ID": "WebQTest-1178",
         "webqsp_question": "where is tupac from originally",
-        "topic_entity": {},
+        "topic_entity": {
+            "g.11bbmpspvb":"Beccause I Got a Girl"
+        },
         "answer": "East Harlem"
     },
     {
@@ -16296,7 +16298,9 @@
         "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:food.beer_country_region.beers_from_here ns:g.1hb_g2v0p . \n?c ns:location.statistical_region.religions ?y .\n?y ns:location.religion_percentage.religion ?x .\n?y ns:location.religion_percentage.percentage ?sk0 .\n}\nORDER BY DESC(xsd:float(?sk0))\nLIMIT 1\n",
         "webqsp_ID": "WebQTest-1384",
         "webqsp_question": "what is the predominant religion in israel",
-        "topic_entity": {},
+        "topic_entity": {
+            "g.1hb_g2v0p": "Goldstar"
+        },
         "answer": "Judaism"
     },
     {
@@ -17859,7 +17863,9 @@
         "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:government.governmental_jurisdiction.governing_officials ?k .\n?k ns:government.government_position_held.office_position_or_title ns:g.120vz7rb . \n?c ns:location.country.currency_used ?x .\n}\n",
         "webqsp_ID": "WebQTrn-2026",
         "webqsp_question": "what currency does the dominican republic",
-        "topic_entity": {},
+        "topic_entity": {
+            "g.120vz7rb": "President of the Dominican Republic"
+        },
         "answer": "Dominican peso"
     },
     {
@@ -18029,7 +18035,9 @@
         "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:music.featured_artist.recordings ns:g.11bbmpspvb . \n?c ns:film.actor.film ?y .\n?y ns:film.performance.film ?x .\n}\n",
         "webqsp_ID": "WebQTrn-2784",
         "webqsp_question": "what movies does tupac act in",
-        "topic_entity": {},
+        "topic_entity": {
+            "g.11bbmpspvb": "Beccause I Got a Girl"
+        },
         "answer": "Bullet"
     },
     {
@@ -19779,7 +19787,9 @@
         "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:biology.breed_origin.breeds_originating_here ns:g.122wt67x . \n?c ns:location.country.languages_spoken ?x .\n}\n",
         "webqsp_ID": "WebQTrn-3384",
         "webqsp_question": "what language does people from denmark speak",
-        "topic_entity": {},
+        "topic_entity": {
+            "g.122wt67x": "Hertha Pointer"
+        },
         "answer": "German Language"
     },
     {
@@ -26389,7 +26399,9 @@
         "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:music.featured_artist.recordings ns:g.11bbmpspvb . \n?c ns:base.popstra.celebrity.dated ?y .\n?y ns:base.popstra.dated.participant ?x .\n}\n",
         "webqsp_ID": "WebQTrn-1278",
         "webqsp_question": "who did tupac shakur date",
-        "topic_entity": {},
+        "topic_entity": {
+            "g.11bbmpspvb":"Beccause I Got a Girl"
+        },
         "answer": "Jada Pinkett Smith"
     },
     {
@@ -32485,7 +32497,9 @@
         "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:biology.breed_origin.breeds_originating_here ns:g.122wt67x . \n?c ns:location.country.languages_spoken ?x .\n}\n",
         "webqsp_ID": "WebQTrn-1069",
         "webqsp_question": "what language do denmark",
-        "topic_entity": {},
+        "topic_entity": {
+            "g.122wt67x":"Hertha Pointer"
+        },
         "answer": "German Language"
     },
     {
@@ -36862,7 +36876,9 @@
         "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:film.actor.film ?k .\n?k ns:film.performance.film ns:g.122h61qh . \n?c ns:film.actor.film ?y .\n?y ns:film.performance.film ?x .\n}\n",
         "webqsp_ID": "WebQTest-1528",
         "webqsp_question": "what movies does logan lerman play in",
-        "topic_entity": {},
+        "topic_entity": {
+            "g.122h61qh": "The Flannerys"
+        },
         "answer": "The Only Living Boy in New York"
     },
     {
@@ -42494,7 +42510,9 @@
         "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:film.actor.film ?k .\n?k ns:film.performance.film ns:g.11b6gq6dl2 . \n?c ns:film.actor.film ?y .\n?y ns:film.performance.film ?x .\n}\n",
         "webqsp_ID": "WebQTest-537",
         "webqsp_question": "what has charlie hunnam been in",
-        "topic_entity": {},
+        "topic_entity": {
+            "g.11b6gq6dl2": "Knights of the Roundtable: King Arthur"
+        },
         "answer": "Cold Mountain"
     },
     {
@@ -42596,7 +42614,9 @@
         "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:food.beer_country_region.beers_from_here ns:g.1hb_g2v0p . \n?c ns:location.country.form_of_government ?x .\n}\n",
         "webqsp_ID": "WebQTrn-1938",
         "webqsp_question": "what type of government does israel",
-        "topic_entity": {},
+        "topic_entity": {
+            "g.1hb_g2v0p": "Goldstar"
+        },
         "answer": "Parliamentary system"
     },
     {
@@ -50001,7 +50021,9 @@
         "sparql": "PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?x\nWHERE {\nFILTER (?x != ?c)\nFILTER (!isLiteral(?x) OR lang(?x) = '' OR langMatches(lang(?x), 'en'))\n?c ns:government.governmental_jurisdiction.governing_officials ?k .\n?k ns:government.government_position_held.office_position_or_title ns:g.121j1m9y . \n?c ns:location.country.currency_used ?x .\n}\n",
         "webqsp_ID": "WebQTrn-1023",
         "webqsp_question": "what is the money of argentina called",
-        "topic_entity": {},
+        "topic_entity": {
+            "g.121j1m9y": "Vice President of Argentina"
+        },
         "answer": "Argentine peso"
     },
     {

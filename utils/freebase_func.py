@@ -5,11 +5,22 @@ SPARQLPATH = "http://127.0.0.1:3001/sparql"  # depend on your own internal addre
 # pre-defined sparqls
 sparql_head_relations = """\nPREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT ?relation\nWHERE {\n  ns:%s ?relation ?x .\n}"""
 sparql_tail_relations = """\nPREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT ?relation\nWHERE {\n  ?x ?relation ns:%s .\n}"""
+
+sparql_head_relations_literal = """\nPREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT ?relation\nWHERE {\n  %s ?relation ?x .\n}"""
+sparql_tail_relations_literal = """\nPREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT ?relation\nWHERE {\n  ?x ?relation %s .\n}"""
+
+sparql_head_relations_values = """\nPREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT ?tail\nWHERE {\n  %s %s ?tail .\n}"""
+sparql_tail_relations_values = """\nPREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT ?relation\nWHERE {\n  ?x ?relation %s .\n}"""
+
 sparql_tail_entities_extract = """PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT ?tailEntity\nWHERE {\nns:%s ns:%s ?tailEntity .\n}""" 
 sparql_tail_entities_extract_with_type = """PREFIX ns: <http://rdf.freebase.com/ns/>\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nSELECT ?tailEntity\nWHERE {\nns:%s rdf:type ?tailEntity .\n}""" 
 sparql_head_entities_extract = """PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT ?tailEntity\nWHERE {\n?tailEntity ns:%s ns:%s  .\n}"""
 sparql_id = """PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?tailEntity\nWHERE {\n  {\n    ?entity ns:type.object.name ?tailEntity .\n    FILTER(?entity = ns:%s)\n  }\n  UNION\n  {\n    ?entity <http://www.w3.org/2002/07/owl#sameAs> ?tailEntity .\n    FILTER(?entity = ns:%s)\n  }\n}"""
     
+sparql_head_entities_extract_values = """PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT ?tailEntity\nWHERE {\n%s %s \n ?tailEntity  %s  %s  .\n}"""
+sparql_tail_entities_extract_values = """PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT ?tailEntity\nWHERE {\n%s %s \n %s %s ?tailEntity .\n}""" 
+
+
 def check_end_word(s):
     words = [" ID", " code", " number", "instance of", "website", "URL", "inception", "image", " rate", " count"]
     return any(s.endswith(word) for word in words)

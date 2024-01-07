@@ -183,6 +183,30 @@ def bfs_with_rule_LLM(graph, start_node, target_rule, grounded_reasoning_set, ma
     return result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict
 
 
+def grounding_with_engine(entity_id, entity_label, target_rule, grounded_reasoning_set):
+    relation_values_dict = {}
+    entity_values_dict = {}
+    size_of_path = len(grounded_reasoning_set)
+    size_of_entities = size_of_path+1
+
+    for i in range(size_of_path):
+        key = "?relation"+str(i)
+        relation_values_dict[key] = ""
+        for relation in grounded_reasoning_set[i]:
+            relation_values_dict[key] += "ns:"+relation + " "
+        relation_values_dict[key] = "VALUES " + key +" {" + relation_values_dict[key].strip() + "}."
+
+    for i in range(size_of_entities):
+        key = "?entity" + str(i)
+        entity_values_dict[key] = ""
+        if i == 0:
+            entity_values_dict[key] += "ns:" + str(entity_id)
+            entity_values_dict[key] = "VALUES " + key +" {" + entity_values_dict[key].strip() + "}."
+
+
+    return result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict
+  
+
 def bfs_with_rule_LLM_engine(entity_id, entity_label, target_rule, grounded_reasoning_set, max_p = 10):
     result_paths = []
     current_position = 0
@@ -205,7 +229,7 @@ def bfs_with_rule_LLM_engine(entity_id, entity_label, target_rule, grounded_reas
             # 先存储当前层grounded过的路径  注意,这里面每一个都是路径 包括从0 到当前长度的所有路径
             grounded_knowledge_current.append((current_node, current_path, current_position))
 
-            if current_position == len(target_rule) and current_path not in result_paths:
+            if current_position == len(target_rule) and current_path not in result_paths and len(current_path)>0:
                 result_paths.append(current_path)
 
             # 如果当前路径长度小于规则长度，继续探索

@@ -30,8 +30,9 @@ class PromptBuilder(object):
     CHOICES = """\nChoices:\n{choices}"""
     EACH_LINE = """ Please return each answer in a new line."""
 
-    def __init__(self, prompt_path, add_rule = True, use_true = False, cot = False, explain = False, use_random = False, each_line = False, maximun_token = 4096, tokenize: Callable = lambda x: len(x)):
-        self.prompt_template = self._read_prompt_template(prompt_path)
+    # def __init__(self, prompt_path, add_rule = True, use_true = False, cot = False, explain = False, use_random = False, each_line = False, maximun_token = 4096, tokenize: Callable = lambda x: len(x)):
+    def __init__(self,  add_rule = True, use_true = False, cot = False, explain = False, use_random = False, each_line = False, maximun_token = 4096, tokenize: Callable = lambda x: len(x)):
+        # self.prompt_template = self._read_prompt_template(prompt_path)
         self.add_rule = add_rule
         self.use_true = use_true
         self.use_random = use_random
@@ -42,9 +43,9 @@ class PromptBuilder(object):
         self.each_line = each_line
 
         query_encoder = AutoQueryEncoder(encoder_dir='facebook/contriever', pooling='mean')
-        self.corpus = LuceneSearcher('../KB-BINDER/contriever_fb_relation/index_relation_fb')
-        bm25_searcher = LuceneSearcher('../KB-BINDER/contriever_fb_relation/index_relation_fb')
-        contriever_searcher = FaissSearcher('../KB-BINDER/contriever_fb_relation/freebase_contriever_index', query_encoder)
+        self.corpus = LuceneSearcher('KB-BINDER/contriever_fb_relation/index_relation_fb')
+        bm25_searcher = LuceneSearcher('KB-BINDER/contriever_fb_relation/index_relation_fb')
+        contriever_searcher = FaissSearcher('KB-BINDER/contriever_fb_relation/freebase_contriever_index', query_encoder)
 
         self.hsearcher = HybridSearcher(contriever_searcher, bm25_searcher)
 
@@ -573,6 +574,9 @@ class PromptBuilder(object):
         grounded_know = [" -> ".join([i if not i.startswith("m.") else "<cvt></cvt>" for i in utils.path_to_string(knowledge).split(" -> ")]) for knowledge in grounded_know]
         grounded_know = list(set(grounded_know))
         grounded_know_string = "\n".join(grounded_know)
+        
+        if len(grounded_know)==0 and len(ungrounded_neighbor_relation_dict)>0:
+            ungrounded_cand_rel = ungrounded_neighbor_relation_dict
 
         # candidate relation用集合方式 不用dict方式 尝试一下
         candidate_rel = []
@@ -590,12 +594,11 @@ class PromptBuilder(object):
         # prompts = refine_prompt_path_one_path_1224  + "\nQuestion: " + question + "\nInitial Path:" + str(init_path) + "\nGrounded Knowledge:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel) + "\nThought:"
         # prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_1229_2052  + "Question: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
         prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_0103  + "Question: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
-
+        # prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_emptyinit_0104  + "Question: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
         # prompts = refine_agent_prompt  + "\nQuestion: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
 
         while refine_time <= 5:
-
-            response = self.run_llm(prompts, temperature=0.4, max_tokens=4096, opeani_api_keys="", engine=llm_engine)
+            response = self.run_llm(prompts, temperature=0.3, max_tokens=4096, opeani_api_keys="", engine=llm_engine)
             try:
                 refine_time+=1
                 function_calls = response.split("Function Call:")[-1].strip().strip("\"").strip()
@@ -639,7 +642,7 @@ class PromptBuilder(object):
                         # new_path = new_path.strip() + " -> " + relation
 
                         relation = fun.split(",")[0].strip().strip("\'").strip("\"").strip()
-                        position = fun.split(",")[-1].strip().strip("\'").strip("\"").strip()
+                        position = (",").join(fun.split(",")[1:]).strip().strip("\'").strip("\"").strip()
 
                         start_index = new_path.find(position)
                         if start_index==-1:
@@ -657,6 +660,12 @@ class PromptBuilder(object):
                         print("bad function call")
                         print(functions)
                         raise ValueError("bad function call")
+                    
+                if new_path == init_path:
+                    print("****************************************************************")
+                    print("----------new path no changing-----------:",functions)
+                    print("----------new path  -----------:", new_path)
+                    print("****************************************************************")
 
                 if new_path==init_path:
                     print(functions)
@@ -715,7 +724,6 @@ class PromptBuilder(object):
                 time.sleep(5)
 
         return reasoning_path_LLM_init, refine_time, thought
-
 
 
     def LLM_refine_and_stop_condition(self, llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time, End_loop_cur_path, Ends_with_cvt):
@@ -941,6 +949,58 @@ class PromptBuilder(object):
         return reasoning_path_LLM_init, refine_time, End_loop_cur_path, thought
 
 
+    def merge_different_path(self, grounded_revised_knowledge, reasoning_paths, lists_of_paths):
+        print("**********************merge*****************************")
+        entity_sets={}
+        knowledeg_len_dict={}
+        for topic_entity, grounded_knowledge in grounded_revised_knowledge.items():
+            if not topic_entity in entity_sets.keys():
+                entity_sets[topic_entity]=set()
+
+            knowledge_len = 0
+            for paths in grounded_knowledge:
+                knowledge_len += len(paths)
+                for triples in paths:
+                    entity_sets[topic_entity].add(triples[0])
+                    entity_sets[topic_entity].add(triples[2])
+            knowledeg_len_dict[topic_entity] = knowledge_len
+
+        intersec_set = ""
+        for topic_entity, entities_in_knowledge in entity_sets.items():
+            if type(intersec_set) == str:
+                intersec_set = entities_in_knowledge
+            else:
+                intersec_set = intersec_set.intersection(entities_in_knowledge)
+
+                # 说明两个topic entity的知识集合有交集  每次有交集就先给他们取个交集
+                if len(intersec_set) > 0:
+                    new_reasoning_paths = []
+                    lists_of_paths = []
+                    for path in reasoning_paths:
+                        for i in intersec_set:
+                            if i in str(path):
+                                new_reasoning_paths.append(path)
+                                lists_of_paths.append(utils.path_to_string(path))
+                    reasoning_paths = new_reasoning_paths
+                else:
+                    # 没有交集 并且当前路径太长了，  想办法剪枝一下
+                    if len(reasoning_paths) > 30:
+                        for k, v in knowledeg_len_dict.items():
+                            # 这个实体开头的知识太多了 并且没有交集,说明他八成没用, 把这个实体开头的路径、知识 全删了
+                            if v > 50:
+                                new_reasoning_paths = []
+                                lists_of_paths = []
+                                for path in reasoning_paths:
+                                    string_path = str(path).strip("[").strip("(").strip("\'").strip("\"").strip()
+                                    if not string_path.startswith(k):
+                                        new_reasoning_paths.append(path)
+                                        lists_of_paths.append(utils.path_to_string(path))
+
+                                reasoning_paths = new_reasoning_paths
+
+        return reasoning_paths, lists_of_paths
+
+
     # Refine framework
     def get_graph_knowledge_LLM_revised_engine(self, args, question_dict):
         reasoning_path_LLM_init = question_dict['relation_path_candidates']
@@ -948,6 +1008,7 @@ class PromptBuilder(object):
         entities = question_dict['topic_entity']
         if not question.endswith('?'):
             question += '?'
+
         print("Question:", question)
         # path表示用"->"分割的路径,prompt的一种尝试  如果用数组的话效果会差一些
         path = True
@@ -961,10 +1022,12 @@ class PromptBuilder(object):
         if len(reasoning_path_LLM_init.keys()) > 0:
             # 准备用这个来存所有的路径 最后merge
             grounded_revised_knowledge = {}
+            len_of_grounded_knowledge = {}
+            len_of_predict_knowledge = {}
             reasoning_paths = []
             thought = ""
             lists_of_paths = []
-
+            predict_path = {}
             current_prompt_agent=""
             agent_time = 1
 
@@ -982,10 +1045,25 @@ class PromptBuilder(object):
                     # result_path表示 grounding过程中的path,如果是空的,说明当前grounding遇到了问题,需要refine
                     result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict = self.apply_rules_LLM_one_path_engine(reasoning_path_LLM_init[entity_label], [entity_id,entity_label], grounded_relations)
 
-                    print("refine time", refine_time)
-                    print("result paths", result_paths)
-                    # print("grounded knowledge current", grounded_knowledge_current)
+                    print("cur refine time", refine_time)
+                    print("len of result paths", len(result_paths))
+                    print("len of grounded knowledge current", len(grounded_knowledge_current))
                     # print("ungrounded neighbor relation dict", ungrounded_neighbor_relation_dict)
+
+                    # record current states
+                    max_path_len = grounded_knowledge_current[-1][-1]
+                    print("max len of grounded knowledge current", max_path_len)
+                    if entity_label not in predict_path.keys():
+                        # 注意！！！初始状态下 reasoning_path_LLM_init[entity_label]是个数组， 后面refine过程中会变成str 。历史原因 抱歉
+                        predict_path[entity_label] = [reasoning_path_LLM_init[entity_label][0]]
+                        len_of_grounded_knowledge[entity_label] = [max_path_len]
+                        print("len of predict path", len(reasoning_path_LLM_init[entity_label][0].split("->"))-1)
+                        len_of_predict_knowledge[entity_label] = [len(reasoning_path_LLM_init[entity_label][0].split("->"))-1]
+                    else:
+                        len_of_grounded_knowledge[entity_label].append(max_path_len)
+                        predict_path[entity_label].append(reasoning_path_LLM_init[entity_label])
+                        print("len of predict path", len(reasoning_path_LLM_init[entity_label].split("->"))-1)
+                        len_of_predict_knowledge[entity_label].append(len(reasoning_path_LLM_init[entity_label].split("->"))-1)
 
                     End_loop_cur_path = True
                     Ends_with_cvt = False
@@ -1012,94 +1090,39 @@ class PromptBuilder(object):
                         reasoning_path_LLM_init, refine_time, thought = self.LLM_refine(args.llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time)
                     #     reasoning_path_LLM_init, refine_time, End_loop_cur_path, thought = self.LLM_refine_and_stop_condition(llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time, End_loop_cur_path, Ends_with_cvt)
 
-
                     if End_loop_cur_path or refine_time >= 6:
                         reasoning_paths.extend(result_paths)
                         grounded_revised_knowledge[entity_label] = result_paths
-
                         lists_of_paths = [utils.path_to_string(p) for p in reasoning_paths]
 
-                        if len(grounded_knowledge_current) > 0:
-                            # 只要最长的 可选!!!
-                            max_path_len = grounded_knowledge_current[-1][-1]
-
+                        # TODO这里应该设置一个开关 ： grounding可能失败了，但是grounding路上的知识可能是有用的，为了分析数据（init path的好坏） 可以关掉； 为了看init path qa的效果 可以开启
+                        if max_path_len > 0:
                             for grounded_path in grounded_knowledge_current:
                                 if grounded_path[-1] < max_path_len:
                                     continue
-
+                                
                                 string_path = utils.path_to_string(grounded_path[1])
                                 if len(string_path) > 0:
                                     if string_path not in lists_of_paths:
                                         lists_of_paths.append(string_path)
 
-                                    if len(reasoning_paths) == 0:
-                                        reasoning_paths.append([])
-
-                                    reasoning_paths.extend([grounded_path[1]])
-
-                        # 路径集合
-                        lists_of_paths = list(set(lists_of_paths))
-                        # 知识集合
-                        if len(reasoning_paths)>0:
-                            reasoning_paths[0] = list(set(reasoning_paths[0]))
-
+                                        if len(reasoning_paths) == 0:
+                                            reasoning_paths=[grounded_path[1]]
+                                        else:
+                                            reasoning_paths.extend([grounded_path[1]])
+                            # 路径集合
+                            lists_of_paths = list(set(lists_of_paths))
                         break
 
-                    # context = "\n".join([utils.path_to_string(p) for p in reasoning_paths])
-
-            # # TODO 遍历完了所有的路径 应该merge一下
+            # merge一下
             if len(entities) > 1:
-                print("*****************merge*********************")
-                entity_sets={}
-                knowledeg_len_dict={}
-                for k, v in grounded_revised_knowledge.items():
-                    if not k in entity_sets.keys():
-                        entity_sets[k]=set()
-                    knowledge_len = 0
-                    for paths in v:
-                        knowledge_len += len(paths)
-                        for triples in paths:
-                            entity_sets[k].add(triples[0])
-                            entity_sets[k].add(triples[2])
-                    knowledeg_len_dict[k] = knowledge_len
-
-                intersec_set = ""
-                for key in entity_sets.keys():
-                    if type(intersec_set) == str:
-                        intersec_set = entity_sets[key]
-                    else:
-                        intersec_set = intersec_set.intersection(entity_sets[key])
-
-                        # 说明有交集  每次有交集就先给他们取个交集
-                        if len(intersec_set) > 0:
-                            new_reasoning_paths = []
-                            lists_of_paths = []
-                            for path in reasoning_paths:
-                                for i in intersec_set:
-                                    if i in str(path):
-                                        new_reasoning_paths.append(path)
-                                        lists_of_paths.append(utils.path_to_string(path))
-                            reasoning_paths = new_reasoning_paths
-                        else:
-                            if len(reasoning_paths) > 30:
-                                for k, v in knowledeg_len_dict.items():
-                                    # 这个实体开头的知识太多了 并且没有交集,说明他八成没用
-                                    if v > 50:
-                                        new_reasoning_paths = []
-                                        lists_of_paths = []
-                                        for path in reasoning_paths:
-                                            string_path = str(path).strip("[").strip("(").strip("\'").strip()
-                                            if not string_path.startswith(k):
-                                                new_reasoning_paths.append(path)
-                                                lists_of_paths.append(utils.path_to_string(path))
-
-                                        reasoning_paths = new_reasoning_paths
-
-        return reasoning_paths, lists_of_paths, thought
+                 reasoning_paths, lists_of_paths = self.merge_different_path(grounded_revised_knowledge, reasoning_paths, lists_of_paths)
+                 
+        return reasoning_paths, lists_of_paths, thought, len_of_predict_knowledge, len_of_grounded_knowledge, predict_path
 
 
     # only init path framework
-    def get_graph_knowledge_LLM_init_plan(self, question_dict, llm_engine):
+    def get_graph_knowledge_LLM_init_plan(self, args, question_dict):
         reasoning_path_LLM_init = question_dict['relation_path_candidates']
         question = question_dict['question']
         entities = question_dict['topic_entity']
@@ -1109,16 +1132,100 @@ class PromptBuilder(object):
         # path表示用"->"分割的路径,prompt的一种尝试  如果用数组的话效果会差一些
         path = True
 
-        one_path = True
-        refine_time = 0
-
-        # while True:
         # 确保有初始路径 or refine过的路径
         if len(reasoning_path_LLM_init.keys()) > 0:
             # 准备用这个来存所有的路径 最后merge
             grounded_revised_knowledge = {}
+            len_of_predict_knowledge = {}
+            len_of_grounded_knowledge = {}
+            predict_path = {}
             reasoning_paths = []
             thought = ""
+            lists_of_paths = []
+
+            # 对每一个entity 引导的路径进行grounding
+            for entity_id, entity_label in entities.items():
+                if entity_label not in reasoning_path_LLM_init.keys():
+                    continue
+                print("Topic entity: ",entity_label)
+                # 获取对所有路径上的relation 做搜索召回 （top5） 结果是dict {relation: grounded array}
+                grounded_relations = self.ground_relations_from_predictions(reasoning_path_LLM_init, question)
+                # result_path表示 grounding过程中的path,如果是空的,说明当前grounding遇到了问题,需要refine
+                result_paths, grounded_knowledge_current, _ = self.apply_rules_LLM_one_path_engine(reasoning_path_LLM_init[entity_label], [entity_id,entity_label], grounded_relations)
+
+                print("len of result paths", len(result_paths))
+                print("len of grounded knowledge current", len(grounded_knowledge_current))
+
+                # record current states
+                max_path_len = grounded_knowledge_current[-1][-1]
+                print("max len of grounded knowledge current", max_path_len)
+                if entity_label not in predict_path.keys():
+                    # 注意！！！初始状态下 reasoning_path_LLM_init[entity_label]是个数组， 后面refine过程中会变成str 。历史原因 抱歉
+                    predict_path[entity_label] = [reasoning_path_LLM_init[entity_label][0]]
+                    len_of_grounded_knowledge[entity_label] = [max_path_len]
+                    print("len of predict path", len(reasoning_path_LLM_init[entity_label][0].split("->"))-1)
+                    len_of_predict_knowledge[entity_label] = [len(reasoning_path_LLM_init[entity_label][0].split("->"))-1]
+                else:
+                    len_of_grounded_knowledge[entity_label].append(max_path_len)
+                    predict_path[entity_label].append(reasoning_path_LLM_init[entity_label])
+                    print("len of predict path", len(reasoning_path_LLM_init[entity_label].split("->"))-1)
+                    len_of_predict_knowledge[entity_label].append(len(reasoning_path_LLM_init[entity_label].split("->"))-1)
+
+                if len(result_paths) > 0:
+                    reasoning_paths.extend(result_paths)
+                    grounded_revised_knowledge[entity_label] = result_paths
+                    lists_of_paths = [utils.path_to_string(p) for p in reasoning_paths]
+
+                # TODO这里应该设置一个开关 ： grounding可能失败了，但是grounding路上的知识可能是有用的，为了分析数据（init path的好坏） 可以关掉； 为了看init path qa的效果 可以开启
+                if max_path_len > 0:
+                    for grounded_path in grounded_knowledge_current:
+                        if grounded_path[-1] < max_path_len:
+                            continue
+                        string_path = utils.path_to_string(grounded_path[1])
+                        if len(string_path) > 0:
+                            if string_path not in lists_of_paths:
+                                lists_of_paths.append(string_path)
+
+                                if len(reasoning_paths) == 0:
+                                    reasoning_paths=[grounded_path[1]]
+                                else:
+                                    reasoning_paths.extend([grounded_path[1]])
+                    # 路径集合
+                    lists_of_paths = list(set(lists_of_paths))
+
+            # merging module
+            if len(entities) > 1:
+                reasoning_paths, lists_of_paths = self.merge_different_path(grounded_revised_knowledge, reasoning_paths, lists_of_paths)
+
+        return reasoning_paths, lists_of_paths, thought, len_of_predict_knowledge, len_of_grounded_knowledge, predict_path
+
+
+    # empty init path framework
+    def get_graph_knowledge_LLM_empty_init(self, args, question_dict):
+        reasoning_path_LLM_init = question_dict['relation_path_candidates']
+        question = question_dict['question']
+        entities = question_dict['topic_entity']
+        if not question.endswith('?'):
+            question += '?'
+            
+        print("Question:", question)
+        # path表示用"->"分割的路径,prompt的一种尝试  如果用数组的话效果会差一些
+        path = True
+        refine_time = 0
+
+        # 为了方便 懒得重新做一个文件了 直接清空吧（doge
+        for k, v in reasoning_path_LLM_init.items():
+            reasoning_path_LLM_init[k] = [k]
+
+        # 确保有初始路径 or refine过的路径
+        if len(reasoning_path_LLM_init.keys()) > 0:
+            # 准备用这个来存所有的路径 最后merge
+            grounded_revised_knowledge = {}
+            len_of_predict_knowledge = {}
+            len_of_grounded_knowledge = {}
+            reasoning_paths = []
+            thought = ""
+            predict_path = {}
             lists_of_paths = []
 
             current_prompt_agent=""
@@ -1135,99 +1242,84 @@ class PromptBuilder(object):
                 while True:
                     grounded_relations = self.ground_relations_from_predictions(reasoning_path_LLM_init, question)
 
-                    # result_path表示 grounding过程中的path,如果是空的,说明当前grounding遇到了问题,需要refine
-                    result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict = self.apply_rules_LLM_one_path_engine(reasoning_path_LLM_init[entity_label], [entity_id,entity_label], grounded_relations)
+                    if refine_time>0:
+                        # result_path表示 grounding过程中的path,如果是空的,说明当前grounding遇到了问题,需要refine
+                        result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict = self.apply_rules_LLM_one_path_engine(reasoning_path_LLM_init[entity_label], [entity_id,entity_label], grounded_relations)
+                    else:
+                        result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict=[],[],{entity_label: utils.get_ent_one_hop_rel(entity_id)}
 
                     print("refine time", refine_time)
-                    print("result paths",result_paths)
-                    print("grounded knowledge current", grounded_knowledge_current)
-                    print("ungrounded neighbor relation dict", ungrounded_neighbor_relation_dict)
+                    print("result paths", result_paths)
+
+                    # record current states
+                    max_path_len = grounded_knowledge_current[-1][-1]
+                    print("max len of grounded knowledge current", max_path_len)
+                    if entity_label not in predict_path.keys():
+                        # 注意！！！初始状态下 reasoning_path_LLM_init[entity_label]是个数组， 后面refine过程中会变成str 。历史原因 抱歉
+                        predict_path[entity_label] = [reasoning_path_LLM_init[entity_label][0]]
+                        len_of_grounded_knowledge[entity_label] = [max_path_len]
+                        print("len of predict path", len(reasoning_path_LLM_init[entity_label][0].split("->"))-1)
+                        len_of_predict_knowledge[entity_label] = [len(reasoning_path_LLM_init[entity_label][0].split("->"))-1]
+                    else:
+                        len_of_grounded_knowledge[entity_label].append(max_path_len)
+                        predict_path[entity_label].append(reasoning_path_LLM_init[entity_label])
+                        print("len of predict path", len(reasoning_path_LLM_init[entity_label].split("->"))-1)
+                        len_of_predict_knowledge[entity_label].append(len(reasoning_path_LLM_init[entity_label].split("->"))-1)
 
                     End_loop_cur_path = True
+                    # # 硬性判断什么时候停
+                    if len(result_paths) > 0:
+                        max_path_len =  len(result_paths[-1])
+                        if max_path_len == 0:
+                            continue
+                        for path in result_paths:
+                            if len(path) < max_path_len:
+                                continue
+                            # 最后一个知识以m.结尾 说明遇到了空白节点
+                            if path[-1][-1].startswith("m."):
+                                End_loop_cur_path=False
+                                # Ends_with_cvt = True
+                    else:
+                        End_loop_cur_path = False
+
+                    # # llm refine and stop condition
+                    # init path是空的 一开始一定要refine
+                    if End_loop_cur_path == False or refine_time==0:
+                        # 硬性停
+                        # reasoning_path_LLM_init, refine_time, thought, current_prompt_agent, agent_time = self.LLM_refine_agent(llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time, current_prompt_agent, agent_time)
+                        reasoning_path_LLM_init, refine_time, thought = self.LLM_refine(args.llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time)
+                    #     reasoning_path_LLM_init, refine_time, End_loop_cur_path, thought = self.LLM_refine_and_stop_condition(llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time, End_loop_cur_path, Ends_with_cvt)
 
                     if End_loop_cur_path or refine_time >= 6:
                         reasoning_paths.extend(result_paths)
                         grounded_revised_knowledge[entity_label] = result_paths
-
                         lists_of_paths = [utils.path_to_string(p) for p in reasoning_paths]
 
-                        if len(grounded_knowledge_current) > 0:
-                            # 只要最长的 可选!!!
-                            max_path_len = grounded_knowledge_current[-1][-1]
-
+                        # 可以留下最长的grounded知识 可选!!!
+                        # TODO这里应该设置一个开关 ： grounding可能失败了，但是grounding路上的知识可能是有用的，为了分析数据（init path的好坏） 可以关掉； 为了看init path qa的效果 可以开启
+                        if max_path_len > 0:
                             for grounded_path in grounded_knowledge_current:
                                 if grounded_path[-1] < max_path_len:
                                     continue
-
+                                
                                 string_path = utils.path_to_string(grounded_path[1])
                                 if len(string_path) > 0:
                                     if string_path not in lists_of_paths:
                                         lists_of_paths.append(string_path)
 
-                                    if len(reasoning_paths) == 0:
-                                        reasoning_paths.append([])
-
-                                    reasoning_paths.extend([grounded_path[1]])
-
-                        # 路径集合
-                        lists_of_paths = list(set(lists_of_paths))
-                        # 知识集合
-                        if len(reasoning_paths)>0:
-                            reasoning_paths[0] = list(set(reasoning_paths[0]))
-
+                                        if len(reasoning_paths) == 0:
+                                            reasoning_paths=[grounded_path[1]]
+                                        else:
+                                            reasoning_paths.extend([grounded_path[1]])
+                            # 路径集合
+                            lists_of_paths = list(set(lists_of_paths))
                         break
-
 
             # # TODO 遍历完了所有的路径 应该merge一下
             if len(entities) > 1:
-                print("*****************merge*********************")
-                entity_sets={}
-                knowledeg_len_dict={}
-                for k, v in grounded_revised_knowledge.items():
-                    if not k in entity_sets.keys():
-                        entity_sets[k]=set()
-                    knowledge_len = 0
-                    for paths in v:
-                        knowledge_len += len(paths)
-                        for triples in paths:
-                            entity_sets[k].add(triples[0])
-                            entity_sets[k].add(triples[2])
-                    knowledeg_len_dict[k] = knowledge_len
+                reasoning_paths, lists_of_paths = self.merge_different_path(grounded_revised_knowledge, reasoning_paths, lists_of_paths)
 
-                intersec_set = ""
-                for key in entity_sets.keys():
-                    if type(intersec_set) == str:
-                        intersec_set = entity_sets[key]
-                    else:
-                        intersec_set = intersec_set.intersection(entity_sets[key])
-
-                        # 说明有交集  每次有交集就先给他们取个交集
-                        if len(intersec_set) > 0:
-                            new_reasoning_paths = []
-                            lists_of_paths = []
-                            for path in reasoning_paths:
-                                for i in intersec_set:
-                                    if i in str(path):
-                                        new_reasoning_paths.append(path)
-                                        lists_of_paths.append(utils.path_to_string(path))
-                            reasoning_paths = new_reasoning_paths
-                        else:
-                            if len(reasoning_paths) > 30:
-                                for k, v in knowledeg_len_dict.items():
-                                    # 这个实体开头的知识太多了 并且没有交集,说明他八成没用
-                                    if v > 50:
-                                        new_reasoning_paths = []
-                                        lists_of_paths = []
-                                        for path in reasoning_paths:
-                                            string_path = str(path).strip("[").strip("(").strip("\'").strip()
-                                            if not string_path.startswith(k):
-                                                new_reasoning_paths.append(path)
-                                                lists_of_paths.append(utils.path_to_string(path))
-
-                                        reasoning_paths = new_reasoning_paths
-
-        return reasoning_paths, lists_of_paths, thought
-
+        return reasoning_paths, lists_of_paths, thought, len_of_predict_knowledge, len_of_grounded_knowledge, predict_path
 
 
     def get_graph_knowledge_LLM_revised(self, question_dict, reasoning_path_LLM_init):
