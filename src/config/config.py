@@ -51,3 +51,4 @@ def get_entity_answer(data, dataset):
     return entity_answer
 
 INIT_PLAN_BASE = "data/initial_plan"
+RESULT_PATH = "results/KGQA"

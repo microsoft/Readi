@@ -126,7 +126,7 @@ def save_result2json(dataset_name, num_right, num_error, total_nums, method="ToG
         'Right Samples': num_right,
         'Error Sampels': num_error
     }
-    with open('ToG_{}_results.json'.format(dataset_name), 'w', encoding='utf-8') as f:
+    with open(os.path.join(RESULT_PATH, dataset_name, 'results.json'), 'w', encoding='utf-8') as f:
         json.dump(results_data, f, ensure_ascii=False, indent=4)
 
 def extract_content(s):
