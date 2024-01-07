@@ -34,7 +34,7 @@ def prepare_dataset_for_eval(dataset_name, output_file):
 def align(dataset_name, question_string, data, ground_truth_datas):
     answer_list= []
     origin_data = [j for j in ground_truth_datas if j[question_string] == data['question']][0]
-    if dataset_name == 'cwq':
+    if dataset_name == CWQ:
         if 'answers' in origin_data:
             answers = origin_data["answers"]
         else:
@@ -52,7 +52,7 @@ def align(dataset_name, question_string, data, ground_truth_datas):
                     alias.append(ans)
                 answer_list.extend(alias)
 
-    elif dataset_name == 'webqsp':
+    elif dataset_name == WEBQSP:
         answers = origin_data["Parses"]
         for answer in answers:
             for name in answer['Answers']:
@@ -61,7 +61,7 @@ def align(dataset_name, question_string, data, ground_truth_datas):
                 else:
                     answer_list.append(name['EntityName'])
 
-    elif dataset_name in ('grailqa', 'grailqa_dev'):
+    elif dataset_name in (GRAILQA, GRAILQA_DEV):
         answers = origin_data["answer"]
         for answer in answers:
             if "entity_name" in answer:
