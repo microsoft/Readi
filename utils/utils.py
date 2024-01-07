@@ -1,13 +1,13 @@
 import sys, os
 import datetime
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/..")
-from .prompt_list import *
+from prompt_list import *
 import json
 from rank_bm25 import BM25Okapi
 from sentence_transformers import util
 from sentence_transformers import SentenceTransformer
-from .cloudgpt_aoai_new import *
-from .freebase_func import *
+from cloudgpt_aoai_new import *
+from freebase_func import *
 import openai
 import re
 import time
@@ -244,7 +244,7 @@ def construct_entity_score_prompt(question, relation, entity_candidates, score):
     return score_entity_candidates_prompt.format(question, relation) + "; ".join(entity_candidates) + '\nScore: ' + str(score)
 
 
-def get_ent_one_hop_rel(entity_id, pre_relations=[], pre_head=-1):
+def get_ent_one_hop_rel(entity_id, pre_relations=[], pre_head=-1, literal=False):
     sparql_relations_extract_head = sparql_head_relations % (entity_id)
     head_relations = table_result_to_list(execute_sparql(sparql_relations_extract_head))
 
@@ -277,6 +277,7 @@ def get_ent_one_hop_rel(entity_id, pre_relations=[], pre_head=-1):
     total_relations.sort()  # make sure the order in prompt is always equal
 
     return total_relations
+
 
 def relation_search_prune(entity_id, entity_name, pre_relations, pre_head, question, args):
     sparql_relations_extract_head = sparql_head_relations % (entity_id)
@@ -318,6 +319,24 @@ def relation_search_prune(entity_id, entity_name, pre_relations, pre_head, quest
         return retrieve_relations_with_scores
     else:
         return [] # format error or too small max_length
+
+def entity_search_values(entity_key, entity_values, relation_key, relation_values, head=True):
+    if head:
+        tail_entities_extract = sparql_tail_entities_extract_values% (entity_values, relation_values, entity_key, relation_key)
+        entities = table_result_to_list(execute_sparql(tail_entities_extract))
+    else:
+        head_entities_extract = sparql_head_entities_extract_values% (relation_values, entity_values, relation_key, entity_key)
+        entities = table_result_to_list(execute_sparql(head_entities_extract))
+
+    if entities!=[]:
+        # if head:
+        entities=entities['tailEntity']
+        entities = [x.replace("http://rdf.freebase.com/ns/", "") for x in entities if 'http://rdf.freebase.com/ns' in x]
+
+    # entity_ids = replace_entities_prefix(entities)
+    new_entity = [entity for entity in entities if entity.startswith("m.")]
+
+    return new_entity
 
 
 def entity_search(entity, relation, head=True):
@@ -624,5 +643,18 @@ def similar_search_list(question, relation_list):
 def get_timestamp():
     now = datetime.datetime.now()
     return now.strftime(r"%m%d")
+
+
+def jsonl_to_json(jsonl_file_path, json_file_path):
+    data = []
+    with open(jsonl_file_path, 'r') as jsonl_file:
+        for line in jsonl_file:
+            data.append(json.loads(line))
+    with open(json_file_path, 'w') as json_file:
+        json.dump(data, json_file, indent=4, sort_keys=False,ensure_ascii=False)
+
+# Usage
+jsonl_to_json('/home/v-sitaocheng/demos/results/KGQA/cwq/cwq_gpt35_init_only_onePath_CVT_HardStop_new_goal_progress_1000example__0107.jsonl', '/home/v-sitaocheng/demos/results/KGQA/cwq/cwq_gpt35_init_only_onePath_CVT_HardStop_new_goal_progress_1000example__0107.json')
+
 
 get_ent_one_hop_rel("m.0bdxs5")

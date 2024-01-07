@@ -396,12 +396,13 @@ if __name__ == '__main__':
     parser.add_argument("--prune_tools", type=str,
                         default="llm", help="prune tools for ToG, can be llm (same as LLM_type), bm25 or sentencebert.")
 
-    parser.add_argument("--input_file", type=str, required=True)
+    # parser.add_argument("--input_file", type=str, required=True)
+    parser.add_argument("--input_file", type=str, default="/home/v-sitaocheng/demos/results/KGQA/cwq/cwq_gpt35_onePath_CVT_HardStop_0104.jsonl")
     # parser.add_argument("--output_file", type=str, required=True)
     args = parser.parse_args()
 
     args.LLM_type = LLM_BASE[args.llm]
-    args.output_file = f"{os.path.splitext(os.path.split(args.input_file)[1])[0]}_{args.llm}_reasoning"
+    args.output_file = f"{os.path.splitext(os.path.split(args.input_file)[1])[0]}_{args.llm}_reasoning_0105_no_init"
 
     # file_name='results/KGQA/RoG-cwq/RoG/test/___reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_0101_agent.jsonl'
     # file_index="0103_GPT4_engine_triple_cvt_new_goal_progress_hard_stop"

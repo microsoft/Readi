@@ -5,12 +5,14 @@ CWQ = 'cwq'
 GRAILQA_DEV = 'grailqa_dev'
 GRAILQA = 'grailqa'
 WEBQSP = 'WebQSP'
+GRAPHQ = 'graphq'
 
 DATASET = {
     CWQ: "cwq_test.json",
     GRAILQA_DEV: "grailqa_dev_pyql_topic_entities.json",
     GRAILQA: "grailqa.json",
     WEBQSP: "WebQSP.json",
+    GRAPHQ: "graphquestions_v1_fb15_test_091420.json",
 }
 
 LLM_BASE = {
@@ -23,6 +25,7 @@ QUESTION_STRING = {
     WEBQSP: 'RawQuestion',
     GRAILQA: 'question',
     GRAILQA_DEV: 'question',
+    GRAPHQ: 'question',
     'simpleqa': 'question',
     'qald': 'question',
     'webquestions': 'question',

@@ -78,9 +78,15 @@ def prediction_graph_engine(args, processed_list, input_builder, data):
     if id in processed_list:
         return None
 
-    kg_triples, kg_paths, thought = input_builder.get_graph_knowledge_LLM_revised_engine(args, data)
+    if args.refine_strategy=="llm_refine":
+        kg_triples, kg_paths, thought, len_of_predict_knowledge, len_of_grounded_knowledge, predict_path = input_builder.get_graph_knowledge_LLM_revised_engine(args, data)
     # 只要init plan
-    # kg_triples, kg_paths, thought = input_builder.get_graph_knowledge_LLM_init_plan(reasoning_path_LLM, llm_engine)
+    elif args.refine_strategy=="init_only":
+        kg_triples, kg_paths, thought, len_of_predict_knowledge, len_of_grounded_knowledge, predict_path = input_builder.get_graph_knowledge_LLM_init_plan(args, data)
+    
+    # init plan为空
+    elif args.refine_strategy =="init_empty":
+        kg_triples, kg_paths, thought, len_of_predict_knowledge, len_of_grounded_knowledge, predict_path = input_builder.get_graph_knowledge_LLM_empty_init(args, data)
 
     process_ed_kg = ""
     kg_triple_set = []
@@ -104,6 +110,9 @@ def prediction_graph_engine(args, processed_list, input_builder, data):
         "kg_triples_str": process_ed_kg,
         "kg_triples_set": kg_triple_set,
         "kg_paths": "\n".join(kg_paths),
+        "len_of_predict_knowledge": len_of_predict_knowledge,
+        "len_of_grounded_knowledge": len_of_grounded_knowledge,
+        "predict_path": predict_path,
         "ground_truth": answer,
         "LLM-thoughts":thought,
         "input": question,
@@ -142,7 +151,7 @@ def main_engine(args, LLM):
 
     model = LLM(args)
     input_builder = PromptBuilder(
-        args.prompt_path,
+        # args.prompt_path,
         args.add_rule,
         use_true=args.use_true,
         cot=args.cot,
@@ -190,24 +199,27 @@ if __name__ == "__main__":
     argparser.add_argument("--explain", action="store_true")
     argparser.add_argument("--use_random", action="store_true")
     argparser.add_argument("--each_line", action="store_true")
-    argparser.add_argument( "--rule_path", type=str,
-        default="../reasoning-on-graphs/results/gen_rule_path/RoG-cwq/RoG/test/predictions_3_False.jsonl",
+    argparser.add_argument(
+        "--rule_path",
+        type=str,
+        default="reasoning-on-graphs/results/gen_rule_path/RoG-cwq/RoG/test/predictions_3_False.jsonl",
     )
     argparser.add_argument( "--force", "-f", action="store_true", help="force to overwrite the results")
     argparser.add_argument("-n", default=1, type=int, help="number of processes")
-    argparser.add_argument("-init_path_only", default=False, type=bool, help="whether use init path only")
     argparser.add_argument("--filter_empty", action="store_true")
     argparser.add_argument("--debug", action="store_true")
+
+    argparser.add_argument("--refine_strategy", type=str, choices={"llm_refine", "init_only", "init_empty"}, default="llm_refine")
     argparser.add_argument("--llm", type=str, choices=LLM_BASE.keys(), default='gpt35')
     argparser.add_argument("--init_plan_path", type=str, default=None)
     # argparser.add_argument("--output_file_name", type=str, default="predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_1230_engine_triple_cvt_new_goal_progess_hard_stop.jsonl")
-    argparser.add_argument("--name", type=str, default="onePath_CVT_HardStop")
+    argparser.add_argument("--name", type=str, default="onePath_CVT_HardStop_new_goal_progress_0103prompt_")
 
     args, _ = argparser.parse_known_args()
     if args.dataset is None:
         args.dataset = os.path.split(args.init_plan_path)[1].split('_')[0]
 
-    args.output_file_name = f"{args.dataset}_{args.llm}_{args.name}_{get_timestamp()}.jsonl"
+    args.output_file_name = f"{args.dataset}_{args.llm}_{args.refine_strategy}_{args.name}_{get_timestamp()}.jsonl"
     print(args.output_file_name)
 
     args.llm_engine = LLM_BASE[args.llm]
