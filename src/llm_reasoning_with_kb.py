@@ -2,69 +2,15 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/..")
 from utils.freebase_func import *
 from utils.prompt_list import *
+from utils.utils import run_llm, savejson, read_jsonl, readjson
 import json
-from rank_bm25 import BM25Okapi
-from sentence_transformers import util
-from sentence_transformers import SentenceTransformer
-from utils.cloudgpt_aoai import get_openai_token
-import openai
-import re
-import time
 from tqdm import tqdm
 import argparse
 import pickle
 import os
 from config import *
 
-def run_llm(prompt, temperature, max_tokens, opeani_api_keys, engine="gpt-35-turbo-20230613"):
-    if "llama" not in engine.lower():
-        # openai.api_key = "EMPTY"
-        # openai.api_base = "http://localhost:8000/v1"  # your local llama server port
-        # engine = openai.Model.list()["data"][0]["id"]
-        openai.api_type = "azure"
-        openai.api_base = "https://cloudgpt-openai.azure-api.net/"
-        openai.api_version = "2023-07-01-preview"
-        openai.api_key = get_openai_token()
-    else:
-        openai.api_key = opeani_api_keys
-        openai.api_key = get_openai_token()
-    messages = []
-    # messages = [{"role":"system","content":"You are an AI assistant that helps people find information."}]
-    # rules放在这里  Q: K: A:
 
-    message_prompt = {"role":"user","content":prompt}
-    messages.append(message_prompt)
-    # print("start openai")
-    f = 0
-    result = "the answer is \{None\}"
-    while(f <= 5):
-        try:
-            response = openai.ChatCompletion.create(
-                    engine=engine,
-                    messages = messages,
-                    temperature=temperature,
-                    max_tokens=max_tokens,
-                    frequency_penalty=0,
-                    presence_penalty=0)
-            result = response["choices"][0]['message']['content']
-            if len(result) == 0:
-                f +=1
-                continue
-            break
-        except:
-            print("openai error, retry")
-            f += 1
-            print(prompt)
-            print("len of prompt", len(messages[0]["content"]))
-
-            if "gpt-4" in engine:
-                messages[-1] = {"role":"user","content": prompt[:32767]}
-                time.sleep(10)
-            else:
-                messages[-1] = {"role":"user","content": prompt[:16384]}
-                time.sleep(5)
-    # print("end openai")
-    return result
 
 def generate_answer(question, cluster_chain_of_entities, args):
     prompt = answer_prompt + question + '\n'
@@ -72,26 +18,6 @@ def generate_answer(question, cluster_chain_of_entities, args):
     prompt += "\nKnowledge Triplets: " + chain_prompt + 'A: '
     result = run_llm(prompt, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
     return result
-
-
-def read_jsonl_file_50(file_path):
-    data = []
-    with open(file_path, 'r', encoding='utf-8') as file:
-        for line in file:
-            # print(line)
-            json_obj = json.loads(line)
-            data.append(json_obj)
-    return data
-
-def readjson_50(file_name):
-    with open(file_name, encoding='utf-8') as f:
-        data=json.load(f)
-    return data
-
-
-def savejson(file_name, new_data):
-    with open(file_name, mode='w',encoding='utf-8') as fp:
-        json.dump(new_data, fp, indent=4, sort_keys=False,ensure_ascii=False)
 
 
 def trim_sparql():
@@ -129,9 +55,8 @@ def trim_sparql():
     #     json.dump(new_data, fp, indent=4, sort_keys=False,ensure_ascii=False)
 
 
-
 def get_knowledge_triple_golden():
-    data=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/trimed_test_cwq.json")
+    data=readjson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/trimed_test_cwq.json")
     # with open("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/trimed_test_cwq.jsonl", encoding='utf-8') as f:
     #     data=json.load(f)
     new_data=[]
@@ -158,7 +83,7 @@ def reasoning_with_golden(file_index):
     print("reasoning_with_egpsr  file: ", "/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_"+file_index+".json", " field  knowledge_triple")
 
     # data=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_"+file_index+".json")
-    data=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1115.json")
+    data=readjson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1115.json")
     for lines in tqdm(data):
         prompts = answer_prompt_kb_interwined + "Q: " + lines['question'] + "\nKnowledge Triplets: " + lines['golden_knowledge_enumerate'] + "\nA: "
         response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
@@ -173,7 +98,7 @@ def reasoning_with_golden(file_index):
 def reasoning_with_egpsr(file_index):
     print("reasoning_with_egpsr  file: ", "/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_"+file_index+".json", " field knowledge_triples_ppr_top1")
     # data=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_"+file_index+".json")
-    data=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_"+file_index+".json")
+    data=readjson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_"+file_index+".json")
     for lines in tqdm(data):
         prompts = answer_prompt_kb_interwined + "Q: " + lines['question'] + "\nKnowledge Triplets: " + lines['knowledge_triples_egpsr_top1_nointer'] + "\nA: "
         # prompts = answer_prompt_kb_interwined_q_first + "Knowledge Triplets: " + lines['knowledge_triples_egpsr_top1'] + "\nQ: " + lines['question']  + "\nA: "
@@ -189,7 +114,7 @@ def reasoning_with_egpsr(file_index):
 
 def reasoning_with_egpsr_contract(file_index):
     print("reasoning_with_egpsr_contract  file: ", "/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_"+file_index+".json", " field  knowledge_triples_ppr_contract_top1")
-    data=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_"+file_index+".json")
+    data=readjson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_"+file_index+".json")
     # data=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1115.json")
     for lines in tqdm(data):
         prompts = answer_prompt_kb_interwined_nointer + "Q: " + lines['question'] + "\nKnowledge Triplets: " + lines['knowledge_triples_egpsr_contract_top1_nointer_reasoning'] + "\nA: "
@@ -203,45 +128,44 @@ def reasoning_with_egpsr_contract(file_index):
         save_2_jsonl(lines['question'], response, lines['knowledge_triples_egpsr_contract_top1_nointer_reasoning'], 'egpsr_contract_cwq_100sample_top1_nointer_reasoning'+file_index, file_index)
 
 
-
 def reasoning_with_ROG(file_name, file_index):
     print("reasoning with ROG file: ", file_name)
     # data=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_"+file_index+".json")
     reasoning_result=[]
-    data=read_jsonl_file_50(file_name)
-    for lines in tqdm(data):
-        if len(lines['kg_triples_str'])==0:
-            prompts = cot_prompt + "\n\nQ: " + lines['question'] + "\nA: "
+    data=read_jsonl(file_name)
+    for line in tqdm(data):
+        if len(line['kg_triples_str'])==0:
+            prompts = cot_prompt + "\n\nQ: " + line['question'] + "\nA: "
             response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
-            lines['kg_triples_str'] = "COT"
+            line['kg_triples_str'] = "COT"
         else:
             times=0
             while times<5:
                 # prompts = answer_prompt_kb_interwined_path_1227 + "Q: " + lines['question'] + "\nKnowledge Path: " + lines['kg_paths'] + "\nA: "
-                prompts = answer_prompt_kb_interwined_nointer + "Q: " + lines['question'] + "\nKnowledge Triplets: " + lines['kg_triples_str'] + "\nA: "
+                prompts = answer_prompt_kb_interwined_nointer + "Q: " + line['question'] + "\nKnowledge Triplets: " + line['kg_triples_str'] + "\nA: "
                 response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
 
                 if len(response)==0:
-                    print("*********empty_results results*******************************************************")
-                    print("Q: " + lines['question'])
-                    print("*******************************************************************************")
+                    print(f"\n{'*'*10} Empty Results {'*'*10}")
+                    print("Q: " + line['question'])
+                    print("*"*30 + '\n')
                     times += 1
                     continue
                 elif times == 4:
-                    prompts = cot_prompt + "\n\nQ: " + lines['question'] + "\nA: "
+                    prompts = cot_prompt + "\n\nQ: " + line['question'] + "\nA: "
                     response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
-                    lines['kg_triples_str'] = "COT"
+                    line['kg_triples_str'] = "COT"
                     break
                 elif "{" not in response or "}" not in response:
-                    print("*********invalid results*******************************************************")
+                    print(f"\n{'*'*10} Invalid Results {'*'*10}")
                     print(response)
-                    print("*******************************************************************************")
+                    print("*" * 30 + '\n')
                     times += 1
                     continue
                 else:
                     break
 
-        reasoning_result.append({"question":lines['question'], "results": response, "reasoning_chains": lines['kg_triples_str']})
+        reasoning_result.append({"question":line['question'], "results": response, "reasoning_chains": line['kg_triples_str']})
 
         output_dir = os.path.split(file_name)[0]
         # savejson('results/KGQA/RoG-cwq/QA_result/cwq_100examples'+file_index+".json", reasoning_result)
@@ -251,7 +175,7 @@ def reasoning_with_ROG(file_name, file_index):
 
 
 def extract_egprs_graph(file_index):
-    data=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1112.json")
+    data=readjson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1112.json")
     # entities=readlines("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/cwq_subgraph/entities.txt")
     # relations=readlines("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/cwq_subgraph/relations.txt")
     # test_simple=read_jsonl_file_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/cwq_subgraph/test_simple.jsonl")
@@ -261,7 +185,7 @@ def extract_egprs_graph(file_index):
 
     entities=readlines(subgraph_file_name+"entities.txt")
     relations=readlines(subgraph_file_name+"relations.txt")
-    test_simple=read_jsonl_file_50(subgraph_file_name+"test_simple.json")
+    test_simple=read_jsonl(subgraph_file_name+"test_simple.json")
     # test_simple=readjson_50("/home/v-sitaocheng/demos/llm_hallu/KB-Binder/LLM-KBQA/data/cwq/data/cwq/CWQ_test_top100_lp_top1_ep_instantiated_subg.json")
 
     with open('/home/v-sitaocheng/demos/llm_hallu/subgraph_retrieval/sr_cwq/SubgraphRetrievalKBQA/debug/ent2id.pickle', 'rb') as file:
@@ -310,10 +234,10 @@ def extract_egprs_graph(file_index):
 
 
 def build_knowledge_triple_egpsr(file_index):
-    data=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1127.json")
+    data=readjson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1127.json")
     # data=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_dev_cwq_1112.json")
     # epgsr=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/egpsr/kb_egpsr_test_cwq_top1_NSM_"+file_index+".json")
-    epgsr=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/egpsr/kb_egpsr_test_cwq_1128.json")
+    epgsr=readjson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/egpsr/kb_egpsr_test_cwq_1128.json")
     print("build_knowledge_triple_egpsr filename: ", "/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/SR/kb_SR_test_cwq_top1_SR_"+file_index+".json", "\ngolden: ", "/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1112.json\n")
     for index, lines in enumerate(tqdm(data)):
         subgraph=epgsr[index]['subgraph']
@@ -331,7 +255,7 @@ def build_knowledge_triple_egpsr(file_index):
 
 def egpsr_contract(file_index):
     print("egpsr_contract filename: ", "/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_"+file_index+".json")
-    epgsr=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1129.json")
+    epgsr=readjson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1129.json")
     # epgsr=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/egpsr/kb_egpsr_dev_cwq_1112.json")
     for lines in tqdm(epgsr):
         # prompts = kb_contract_prompt_dev + "Question: " + lines['question'] + "\nKnowledge Triplets: " + lines['knowledge_triples_egpsr_top1'] + "\nRelevant Triples: "
@@ -357,7 +281,7 @@ def egpsr_contract(file_index):
 
 def rog_contract(input_file):
     print("Reasoning filename: ", input_file)
-    epgsr=read_jsonl_file_50(input_file)
+    epgsr=read_jsonl(input_file)
     # epgsr=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/egpsr/kb_egpsr_dev_cwq_1112.json")
     for lines in tqdm(epgsr):
         # prompts = kb_contract_prompt_dev + "Question: " + lines['question'] + "\nKnowledge Triplets: " + lines['knowledge_triples_egpsr_top1'] + "\nRelevant Triples: "
@@ -392,7 +316,7 @@ def trim_cwq_ToG():
 def calculate_avg_kb(file_index):
     print("calculate_avg_kb filename: ", "/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_"+file_index+".json")
 
-    data=readjson_50('/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_'+file_index+'.json')
+    data=readjson('/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_'+file_index+'.json')
     golden_kb_len = 0
     egpsr_kb_len = 0
     egpsr_contract_kb_len = 0
@@ -420,7 +344,7 @@ def calculate_avg_kb(file_index):
 
 
 def calculate_avg_kb_egpse():
-    data=read_jsonl_file_50("/home/v-sitaocheng/demos/llm_hallu/reasoning-on-graphs/results/gen_rule_path/RoG-cwq/RoG/test/predictions_kg.jsonl")
+    data=read_jsonl("/home/v-sitaocheng/demos/llm_hallu/reasoning-on-graphs/results/gen_rule_path/RoG-cwq/RoG/test/predictions_kg.jsonl")
 
     egpsr_kb_len = 0
     for lines in tqdm(data):
@@ -433,7 +357,7 @@ def calculate_avg_kb_egpse():
 
 
 def calculate_avg_kb_tog():
-    data=read_jsonl_file_50('/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/ToG_test_50_cwq.jsonl')
+    data=read_jsonl('/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/ToG_test_50_cwq.jsonl')
     golden_kb_len = 0
     total_len = 0
     for lines in tqdm(data):
@@ -452,9 +376,9 @@ if __name__ == '__main__':
     parser.add_argument("--max_length", type=int,
                         default=4096, help="the max length of LLMs output.")
     parser.add_argument("--temperature_exploration", type=float,
-                        default=0, help="the temperature in exploration stage.")
+                        default=0.3, help="the temperature in exploration stage.")
     parser.add_argument("--temperature_reasoning", type=float,
-                        default=0, help="the temperature in reasoning stage.")
+                        default=0.3, help="the temperature in reasoning stage.")
     parser.add_argument("--width", type=int,
                         default=3, help="choose the search width of ToG.")
     parser.add_argument("--depth", type=int,
@@ -464,7 +388,7 @@ if __name__ == '__main__':
     # parser.add_argument("--LLM_type", type=str,
                         # default="gpt-4-32k-20230321", help="base LLM model.")
                         # default="gpt-35-turbo-16k-20230613", help="base LLM model.")
-    parser.add_argument("--llm", type=str,default='gpt4', choices=LLM_BASE.keys(), help="base LLM model")
+    parser.add_argument("--llm", type=str,default='gpt35', choices=LLM_BASE.keys(), help="base LLM model")
     parser.add_argument("--opeani_api_keys", type=str,
                         default="", help="if the LLM_type is gpt-3.5-turbo or gpt-4, you need add your own openai api keys.")
     parser.add_argument("--num_retain_entity", type=int,

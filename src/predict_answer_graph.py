@@ -32,34 +32,6 @@ def get_output_file(path, force=False):
         fout = open(path, "a")
         return fout, processed_results
 
-
-def merge_rule_result(qa_dataset, rule_dataset, n_proc=1, filter_empty=False):
-    question_to_rule = dict()
-    for data in rule_dataset:
-        qid = data["id"]
-        predicted_paths = data["prediction"]
-        ground_paths = data["ground_paths"]
-        question_to_rule[qid] = {
-            "predicted_paths": predicted_paths,
-            "ground_paths": ground_paths,
-        }
-
-    def find_rule(sample):
-        qid = sample["id"]
-        sample["predicted_paths"] = []
-        sample["ground_paths"] = []
-        sample["predicted_paths"] = question_to_rule[qid]["predicted_paths"]
-        sample["ground_paths"] = question_to_rule[qid]["ground_paths"]
-        return sample  # TODO: ignore the sample with zero paths.
-
-    qa_dataset = qa_dataset.map(find_rule, num_proc=n_proc)
-    if filter_empty:
-        qa_dataset = qa_dataset.filter(
-            lambda x: len(x["ground_paths"]) > 0, num_proc=n_proc
-        )
-    return qa_dataset
-
-
 def prediction_graph(data, processed_list, input_builder, reasoning_path_LLM):
     question = data["question"]
     answer = data["answer"]
@@ -97,20 +69,16 @@ def prediction_graph(data, processed_list, input_builder, reasoning_path_LLM):
     }
     return result
 
-
-
 # 前处理 后处理 存文件
-def prediction_graph_engine(processed_list, input_builder, reasoning_path_LLM, llm_engine):
-    question = reasoning_path_LLM["question"]
-    answer = reasoning_path_LLM["answer"]
-
-    id_str = list(set(["qid", "ID"]).intersection(reasoning_path_LLM.keys()))[0]
-    id = reasoning_path_LLM[id_str]
+def prediction_graph_engine(args, processed_list, input_builder, data):
+    question = data[QUESTION_STRING[args.dataset]]
+    answer = get_entity_answer(data, args.dataset)
+    id = data[QUESTION_ID[args.dataset]]
     thought = ""
     if id in processed_list:
         return None
 
-    kg_triples, kg_paths, thought = input_builder.get_graph_knowledge_LLM_revised_engine(reasoning_path_LLM, llm_engine)
+    kg_triples, kg_paths, thought = input_builder.get_graph_knowledge_LLM_revised_engine(args, data)
     # 只要init plan
     # kg_triples, kg_paths, thought = input_builder.get_graph_knowledge_LLM_init_plan(reasoning_path_LLM, llm_engine)
 
@@ -141,144 +109,6 @@ def prediction_graph_engine(processed_list, input_builder, reasoning_path_LLM, l
         "input": question,
     }
     return result
-
-
-
-def prediction(data, processed_list, input_builder, model):
-    question = data["question"]
-    answer = data["answer"]
-    id = data["id"]
-    if id in processed_list:
-        return None
-    if model is None:
-        prediction = input_builder.direct_answer(data)
-        return {
-            "id": id,
-            "question": question,
-            "prediction": prediction,
-            "ground_truth": answer,
-            "input": question,
-        }
-    input = input_builder.process_input(data)
-    prediction = model.generate_sentence(input)
-    if prediction is None:
-        return None
-    result = {
-        "id": id,
-        "question": question,
-        "prediction": prediction,
-        "ground_truth": answer,
-        "input": input,
-    }
-    return result
-
-
-def main(args, LLM):
-    input_file = os.path.join(args.data_path, args.d)
-    rule_postfix = "no_rule"
-    # Load dataset
-    dataset = load_dataset(input_file, split=args.split)
-    if args.add_rule:
-        rule_postfix = args.rule_path.replace("/", "_").replace(".", "_")
-        rule_dataset = utils.load_jsonl(args.rule_path)
-        dataset = merge_rule_result(dataset, rule_dataset, args.n, args.filter_empty)
-        if args.use_true:
-            rule_postfix = "ground_rule"
-        elif args.use_random:
-            rule_postfix = "random_rule"
-
-    if args.cot:
-        rule_postfix += "_cot"
-    if args.explain:
-        rule_postfix += "_explain"
-    if args.filter_empty:
-        rule_postfix += "_filter_empty"
-    if args.each_line:
-        rule_postfix += "_each_line"
-
-    print("Load dataset from finished")
-    output_dir = os.path.join(
-        # args.predict_path, args.d, args.model_name, args.split, rule_postfix
-        args.predict_path, args.dataset,
-    )
-    print("Save results to: ", output_dir)
-    # Predict
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    if LLM is not None:
-        model = LLM(args)
-        input_builder = PromptBuilder(
-            args.prompt_path,
-            args.add_rule,
-            use_true=args.use_true,
-            cot=args.cot,
-            explain=args.explain,
-            use_random=args.use_random,
-            each_line=args.each_line,
-            maximun_token=model.maximun_token,
-            tokenize=model.tokenize,
-        )
-        print("Prepare pipline for inference...")
-        # model.prepare_for_inference()
-    else:
-        model = None
-        # Directly return last entity as answer
-        input_builder = PromptBuilder(
-            args.prompt_path, args.add_rule, use_true=args.use_true
-        )
-
-    # Save args file
-    with open(os.path.join(output_dir, "args.txt"), "w") as f:
-        json.dump(args.__dict__, f, indent=2)
-
-    output_file = os.path.join(output_dir, f"predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_1227_llm_stop.jsonl")
-    fout, processed_list = get_output_file(output_file, force=args.force)
-
-    if args.n > 1:
-        with Pool(args.n) as p:
-            for res in tqdm(
-                p.imap(
-                    partial(
-                        prediction,
-                        processed_list=processed_list,
-                        input_builder=input_builder,
-                        model=model,
-                    ),
-                    dataset,
-                ),
-                total=len(dataset),
-            ):
-                if res is not None:
-                    if args.debug:
-                        print(json.dumps(res))
-                    fout.write(json.dumps(res) + "\n")
-                    fout.flush()
-    else:
-        # for index, data in enumerate(tqdm(dataset)):
-        #     # res = prediction(data, processed_list, input_builder, model)
-        #     res = prediction_graph_engine(data, processed_list, input_builder, reasoning_path[index])
-        #     if res is not None:
-        #         if args.debug:
-        #             print(json.dumps(res))
-        #         fout.write(json.dumps(res) + "\n")
-        #         fout.flush()
-        # fout.close()
-
-        with open(args.init_plan_path, 'r') as f:
-            reasoning_path = json.load(f)
-
-        for index, data in enumerate(tqdm(dataset)):
-            # res = prediction(data, processed_list, input_builder, model)
-            res = prediction_graph_engine(data, processed_list, input_builder, reasoning_path[index])
-            if res is not None:
-                if args.debug:
-                    print(json.dumps(res))
-                fout.write(json.dumps(res) + "\n")
-                fout.flush()
-    fout.close()
-
-    # eval_result(output_file)
-
 
 
 def main_engine(args, LLM):
@@ -335,7 +165,7 @@ def main_engine(args, LLM):
         reasoning_path = json.load(f)
 
     for index, data in enumerate(tqdm(reasoning_path)):
-        res = prediction_graph_engine(processed_list, input_builder, data, args.llm_engine)
+        res = prediction_graph_engine(args, processed_list, input_builder, data)
         if res is not None:
             if args.debug:
                 print(json.dumps(res))
@@ -348,52 +178,34 @@ def main_engine(args, LLM):
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
-    argparser.add_argument(
-        "--data_path", type=str, default="rmanluo"
-    )
-    # argparser.add_argument("--d", "-d", type=str,choices=DATASET.keys(), default='cwq')
-    argparser.add_argument("--dataset", "-d", type=str,choices=DATASET.keys(), default='cwq')
+    argparser.add_argument( "--data_path", type=str, default="rmanluo")
+    argparser.add_argument("--dataset","-d", type=str,choices=DATASET.keys(), default=None)
     argparser.add_argument("--split", type=str, default="test")
     argparser.add_argument("--predict_path", type=str, default="results/KGQA")
-    argparser.add_argument(
-        "--model_name",
-        type=str,
-        help="model_name for save results",
-        default="RoG",
-    )
-    argparser.add_argument(
-        "--prompt_path",
-        type=str,
-        help="prompt_path",
-        default="../reasoning-on-graphs/prompts/llama2_predict.txt",
-    )
+    argparser.add_argument( "--model_name", type=str, help="model_name for save results", default="RoG",)
+    argparser.add_argument( "--prompt_path", type=str, help="prompt_path", default="../reasoning-on-graphs/prompts/llama2_predict.txt",)
     argparser.add_argument("--add_rule", default=True ,action="store_true")
     argparser.add_argument("--use_true", action="store_true")
     argparser.add_argument("--cot", action="store_true")
     argparser.add_argument("--explain", action="store_true")
     argparser.add_argument("--use_random", action="store_true")
     argparser.add_argument("--each_line", action="store_true")
-    argparser.add_argument(
-        "--rule_path",
-        type=str,
+    argparser.add_argument( "--rule_path", type=str,
         default="../reasoning-on-graphs/results/gen_rule_path/RoG-cwq/RoG/test/predictions_3_False.jsonl",
     )
-    argparser.add_argument(
-        "--force", "-f", action="store_true", help="force to overwrite the results"
-    )
+    argparser.add_argument( "--force", "-f", action="store_true", help="force to overwrite the results")
     argparser.add_argument("-n", default=1, type=int, help="number of processes")
     argparser.add_argument("-init_path_only", default=False, type=bool, help="whether use init path only")
     argparser.add_argument("--filter_empty", action="store_true")
     argparser.add_argument("--debug", action="store_true")
     argparser.add_argument("--llm", type=str, choices=LLM_BASE.keys(), default='gpt35')
-    # argparser.add_argument("--llm_engine", type=str, default="gpt-4-32k-20230321")
-    # argparser.add_argument("--llm_engine", type=str, default="gpt-35-turbo-16k-20230613")
-    argparser.add_argument("--init_plan_path", type=str, default="/home/v-sitaocheng/demos/dangle_over_ground/data/initial_plan/cwq_test_1221.json")
+    argparser.add_argument("--init_plan_path", type=str, default=None)
     # argparser.add_argument("--output_file_name", type=str, default="predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_1230_engine_triple_cvt_new_goal_progess_hard_stop.jsonl")
     argparser.add_argument("--name", type=str, default="onePath_CVT_HardStop")
 
     args, _ = argparser.parse_known_args()
-    args.dataset = os.path.split(args.init_plan_path)[1].split('_')[0]
+    if args.dataset is None:
+        args.dataset = os.path.split(args.init_plan_path)[1].split('_')[0]
 
     args.output_file_name = f"{args.dataset}_{args.llm}_{args.name}_{get_timestamp()}.jsonl"
     print(args.output_file_name)

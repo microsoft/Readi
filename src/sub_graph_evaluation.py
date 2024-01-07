@@ -5,6 +5,7 @@ from utils.freebase_func import *
 import json
 # from rank_bm25 import BM25Okapi
 from utils import *
+from utils.utils import read_jsonl, readjson, savejson
 import openai
 import re
 import time
@@ -14,25 +15,7 @@ import pickle
 import string
 from utils.cloudgpt_aoai_new import *
 from utils.prompt_list import *
-
-
-def read_jsonl_file_50(file_path):
-    data = []
-    with open(file_path, 'r', encoding='utf-8') as file:
-        for line in file:
-            json_obj = json.loads(line)
-            data.append(json_obj)
-    return data
-
-def readjson_50(file_name):
-    with open(file_name, encoding='utf-8') as f:
-        data=json.load(f)
-    return data
-
-
-def savejson(file_name, new_data):
-    with open(file_name, mode='w',encoding='utf-8') as fp:
-        json.dump(new_data, fp, indent=4, sort_keys=False,ensure_ascii=False)
+import argparse
 
 
 def extract_variables_from_sparql_query(query):
@@ -105,7 +88,7 @@ def extract_query_knowledge(sparql_query, sparql_results):
     return knowledge
 
 def get_golden_knowledge():
-    cwq = readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1115.json")
+    cwq = readjson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1115.json")
     for lines in tqdm(cwq):
         sparql = lines['sparql']
         modified_sparql = extract_variables_from_sparql_query(sparql)
@@ -116,7 +99,7 @@ def get_golden_knowledge():
 
 
 def instantiate_knowledge():
-    cwq = readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1115.json")
+    cwq = readjson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1115.json")
     for lines in tqdm(cwq):
         entity_label_map={}
         entity_set = set()
@@ -156,7 +139,7 @@ def instantiate_knowledge():
 
 
 def deal_egpsr_entity():
-    egpsr=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/egpsr/kb_egpsr_test_cwq_1113.json")
+    egpsr=readjson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/egpsr/kb_egpsr_test_cwq_1113.json")
     for lines in tqdm(egpsr):
         subgraph = lines['subgraph']
         num_UnName_Entity = 0
@@ -179,7 +162,7 @@ def deal_egpsr_entity():
 
 
 def calculate_contract_recall_natural_language():
-    data=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1115.json")
+    data=readjson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1115.json")
     all_recall=0
     non_zero_num=0
     all_knowledge_len=0
@@ -246,11 +229,8 @@ def match(s1: str, s2: str) -> bool:
 
 
 def calculate_answer_coverage_rate(file_path, golden_file_path):
-    # sr_graph = read_jsonl_file_50("/home/v-sitaocheng/demos/llm_hallu/reasoning-on-graphs/results/gen_rule_path/RoG-cwq/RoG/test/predictions_kg.jsonl")
-    # sr_graph = read_jsonl_file_50("/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/RoG /test/_home_v-sitaocheng_demos_llm_hallu_reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt35_1225_llm_stop.jsonl")
-    sr_graph = read_jsonl_file_50(file_path)
-    # cwq = readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1127.json")
-    cwq = readjson_50(golden_file_path)
+    sr_graph = read_jsonl(file_path)
+    golden = readjson(golden_file_path)
     all_recall=0
     all_recall=0
     non_zero_num=0
@@ -266,15 +246,19 @@ def calculate_answer_coverage_rate(file_path, golden_file_path):
 
     for index, lines in enumerate(tqdm(sr_graph)):
         # topic实体 (数量对应 路径数量)
-        topic_entity = cwq[index]['topic_entity']
+        topic_entity = golden[index]['topic_entity']
         num_of_path = len(topic_entity.keys())
         lines['kg_triples'] = "\n".join(list(set(lines['kg_triples_str'].split("\n"))))
         # 拿答案 也可以在golden文件拿
-        if type(lines['ground_truth'])==str:
-            answer_list = [lines['ground_truth']]
-        elif type(lines['ground_truth']) == list:
-            answer_list = lines['ground_truth']
-
+        if "cwq" in file_path:
+            if type(lines['ground_truth'])==str:
+                answer_list = [lines['ground_truth']]
+            elif type(lines['ground_truth']) == list:
+                answer_list = lines['ground_truth']
+        elif "grailqa" in file_path:
+            answer_list = []
+            for e in golden[index]['answer']:
+                answer_list.append(e['entity_name'] if 'entity_name' in e.keys() else e['answer_argument'])
 
         knowledge_seq = lines['kg_triples'].replace(", ",",").replace(" ,",",").strip()
         all_knowledge_num += len(knowledge_seq.split("\n"))
@@ -320,8 +304,8 @@ def calculate_answer_coverage_rate(file_path, golden_file_path):
 
 
 def calculate_graph_recall():
-    sr_graph = readjson_50("/home/v-sitaocheng/demos/llm_hallu/reasoning-on-graphs/results/gen_rule_path/RoG-cwq/RoG/test/predictions_kg.json")
-    cwq = readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1127.json")
+    sr_graph = readjson("/home/v-sitaocheng/demos/llm_hallu/reasoning-on-graphs/results/gen_rule_path/RoG-cwq/RoG/test/predictions_kg.json")
+    cwq = readjson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1127.json")
 
     all_recall=0
     non_zero_num=0
@@ -378,8 +362,8 @@ def calculate_graph_recall():
 
 
 def calculate_recall_triple():
-    sr_graph = readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/egpsr/kb_egpsr_test_cwq_top1_NSM_1115.json")
-    cwq = readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1115.json")
+    sr_graph = readjson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/egpsr/kb_egpsr_test_cwq_top1_NSM_1115.json")
+    cwq = readjson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1115.json")
 
     all_recall=0
     non_zero_num=0
@@ -428,6 +412,8 @@ if __name__ == '__main__':
     # instantiate_knowledge()
     # calculate_contract_recall()
     # calculate_graph_recall()
-    file_path="results/KGQA/RoG-cwq/RoG/test/___reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_0101_agent.jsonl"
-    golden_path="../ToG/data/cwq.json"
-    calculate_answer_coverage_rate(file_path,golden_path)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--file_path", type=str, required=True, help="file path to be evaluated")
+    parser.add_argument("--golden_path", type=str, required=True, help="file path to golden result")
+    args = parser.parse_args()
+    calculate_answer_coverage_rate(args.file_path, args.golden_path)

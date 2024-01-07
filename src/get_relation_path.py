@@ -2,73 +2,20 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/..")
 from utils.freebase_func import *
 from utils.prompt_list import *
-import json
-from rank_bm25 import BM25Okapi
-from sentence_transformers import util
-from sentence_transformers import SentenceTransformer
-from utils.cloudgpt_aoai import get_openai_token
-import openai
-import re
-import time
-from tqdm import tqdm
-import argparse
-import pickle
-import os
-import numpy as np
+from utils.utils import readjson
 from pyserini.search import FaissSearcher, LuceneSearcher
 from pyserini.search.hybrid import HybridSearcher
 from pyserini.search.faiss import AutoQueryEncoder
-import pandas as pd
-import json
+import time
+from tqdm import tqdm
+import argparse
+import os
 from utils import *
 from config import *
-import Levenshtein
-
-
-def most_similar_string(input_str, string_list):
-    similarity_scores = [(s, Levenshtein.distance(input_str.lower(), s.lower())) for s in string_list]
-    similarity_scores.sort(key=lambda x: x[1])
-    return similarity_scores[0][0]
-
-
-def reasoning(file_index):
-    data=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1115.json")
-    for lines in tqdm(data):
-        prompts = answer_prompt_kb_interwined + "Q: " + lines['question'] + "\nKnowledge Triplets: " + lines['golden_knowledge_enumerate'] + "\nA: "
-        response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
-        if len(response)==0 or len(lines['golden_knowledge_enumerate'])==0:
-            prompts = cot_prompt + "\n\nQ: " + lines['question'] + "\nA: "
-            response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
-            lines['golden_knowledge_enumerate'] = "COT"
-
-        save_2_jsonl(lines['question'], response, lines['golden_knowledge_enumerate'], 'cwq_golden_1123_'+file_index)
-
-
-
-def get_relation_path(input_file="data/datasets/cwq_test.json", output_file="data/initial_plan/cwq_test_1221.json"):
-
-    cwq=readjson_50(input_file)[:100]
-    for index, item in enumerate(tqdm(cwq)):
-        topic_ent = [v for k,v in item['topic_entity'].items()]
-        prompts = relation_reasoning_prompt_new  + "Question: " + item['question'] + "\nTopic Entities:" + str(topic_ent)+ "\nThought:"
-        while True:
-            response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
-            try:
-                cwq[index]['relation_path_candidates'] = eval(response.split("Path:")[-1].strip())
-                break
-            except:
-                print("**********************************************************************************")
-                print(prompts)
-                print(response)
-                time.sleep(10)
-                print("**********************************************************************************")
-                # cwq[index]['relation_path_candidates']= response
-
-        savejson(output_file, cwq)
 
 
 def dump():
-    cwq=readjson_50("data/datasets/cwq_test.json")
+    cwq=readjson("data/datasets/cwq_test.json")
     for lines in cwq:
         for key in lines['relation_path_candidates']['relation_paths'].keys():
             lines['relation_path_candidates']['relation_paths'][key] = list(set(lines['relation_path_candidates']['relation_paths'][key]))
@@ -77,7 +24,7 @@ def dump():
 
 
 def grounding_relations():
-    cwq=readjson_50("data/datasets/cwq_test.json")
+    cwq=readjson("data/datasets/cwq_test.json")
     query_encoder = AutoQueryEncoder(encoder_dir='facebook/contriever', pooling='mean')
     corpus = LuceneSearcher('/home/v-sitaocheng/demos/llm_hallu/KB-Binder/LLM-KBQA/KB-BINDER/contriever_fb_relation/index_relation_fb')
     bm25_searcher = LuceneSearcher('/home/v-sitaocheng/demos/llm_hallu/KB-Binder/LLM-KBQA/KB-BINDER/contriever_fb_relation/index_relation_fb')
@@ -118,9 +65,9 @@ def grounding_relations():
 
 
 def run():
-    cwq_origin=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/data/cwq.json")
-    cwq=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/candidate_rel/cwq_test_new.json")
-    one_hop_relations = readjson_50('/home/v-sitaocheng/demos/llm_hallu/KB-Binder/LLM-KBQA/data/pred_conn_fb.jsonl')
+    cwq_origin=readjson("/home/v-sitaocheng/demos/llm_hallu/ToG/data/cwq.json")
+    cwq=readjson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/candidate_rel/cwq_test_new.json")
+    one_hop_relations = readjson('/home/v-sitaocheng/demos/llm_hallu/KB-Binder/LLM-KBQA/data/pred_conn_fb.jsonl')
     for index, items in tqdm(enumerate(cwq)):
         topic_entity_dict = cwq_origin[index]
         paths=[]
@@ -140,13 +87,43 @@ def run():
                 # one_hop_connected.append()
 
 
+def get_relation_path(input_file, output_file):
+
+    items=readjson(input_file)[:100]
+    for index, item in enumerate(tqdm(items)):
+        topic_ent = [v for k,v in item['topic_entity'].items()]
+        if topic_ent == []:
+            print(f"{index} topic entity is empty, item: {item}")
+            continue
+
+        question_str = QUESTION_STRING[args.dataset]
+        prompts = relation_reasoning_prompt_new  + "Question: " + item[question_str] + "\nTopic Entities:" + str(topic_ent)+ "\nThought:"
+
+        default_relation_path = {
+            k: [k]
+            for k in topic_ent
+        }
+        item['relation_path_candidates'] = default_relation_path
+        MAX_RETRY_TIME = 5
+        for _ in range(MAX_RETRY_TIME):
+            response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
+            try:
+                item['relation_path_candidates'] = eval(response.split("Path:")[-1].strip())
+                break
+            except:
+                error_line = "*" * 20
+                print(response)
+                time.sleep(1)
+                print(error_line)
+
+
+        savejson(output_file, items)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, choices=DATASET.keys(), default="cwq", help="choose the dataset.")
+    parser.add_argument("--dataset", type=str, choices=DATASET.keys(), default=CWQ, help="choose the dataset.")
     parser.add_argument("--max_length", type=int, default=4096, help="the max length of LLMs output.")
-    parser.add_argument("--temperature_exploration", type=float, default=0.4, help="the temperature in exploration stage.")
-    parser.add_argument("--temperature_reasoning", type=float, default=0.4, help="the temperature in reasoning stage.")
+    parser.add_argument("--temperature_reasoning", type=float, default=0.3, help="the temperature in reasoning stage.")
     parser.add_argument("--width", type=int, default=3, help="choose the search width of ToG.")
     parser.add_argument("--depth", type=int, default=3, help="choose the search depth of ToG.")
     parser.add_argument("--remove_unnecessary_rel", type=bool, default=True, help="whether removing unnecessary relations.")
@@ -161,5 +138,3 @@ if __name__ == '__main__':
     input_file = os.path.join(DATASET_BASE, DATASET[args.dataset])
     output_file = os.path.join(INIT_PLAN_BASE,f"{args.dataset}_{args.llm}_{get_timestamp()}.json")
     get_relation_path(input_file=input_file, output_file=output_file)
-    # grounding_relations()
-    # run()

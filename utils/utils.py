@@ -12,6 +12,7 @@ import openai
 import re
 import time
 from sentence_transformers import SentenceTransformer, util
+import Levenshtein
 
 transformer_model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
 
@@ -30,10 +31,6 @@ def get_openai_embedding(input_message):
 
 def run_llm(prompt, temperature, max_tokens, opeani_api_keys, engine="gpt-35-turbo-16k-20230613"):
     if "llama" not in engine.lower():
-        # openai.api_key = "EMPTY"
-        # openai.api_base = "http://localhost:8000/v1"  # your local llama server port
-        # engine = openai.Model.list()["data"][0]["id"]
-
         openai.api_type = "azure"
         openai.api_base = "https://cloudgpt-openai.azure-api.net/"
         openai.api_version = "2023-07-01-preview"
@@ -42,14 +39,16 @@ def run_llm(prompt, temperature, max_tokens, opeani_api_keys, engine="gpt-35-tur
         openai.api_key = opeani_api_keys
         openai.api_key = get_openai_token()
 
-    messages = [{"role":"system","content":"You are an AI assistant that helps people find information."}]
+    # messages = [{"role":"system","content":"You are an AI assistant that helps people find information."}]
+    messages = []
     # rules放在这里  Q: K: A:
 
     message_prompt = {"role":"user","content":prompt}
     messages.append(message_prompt)
     # print("start openai")
     f = 0
-    result = ""
+    # result = ""
+    result = [{"content": ""}]
     while(f <= 5):
         try:
             response = openai.ChatCompletion.create(
@@ -58,27 +57,41 @@ def run_llm(prompt, temperature, max_tokens, opeani_api_keys, engine="gpt-35-tur
                     temperature=temperature,
                     max_tokens=max_tokens,
                     frequency_penalty=0,
-                    presence_penalty=0)
+                    presence_penalty=0
+                )
             result = response["choices"][0]['message']['content']
-            f = 10
+            if len(result) == 0:
+                f += 1
+                continue
+            break
         except:
             print("openai error, retry")
-            print(len(messages[1]["content"]))
+            # print(len(messages[1]["content"]))
 
             f += 1
             if "gpt-4" in engine:
                 messages[-1] = {"role":"user","content": prompt[:32767]}
+                time.sleep(10)
             else:
                 messages[-1] = {"role":"user","content": prompt[:16384]}
-            time.sleep(2)
+                time.sleep(5)
     # print("end openai")
     return result
 
 
 
-def readjson_50(file_name):
+def readjson(file_name):
     with open(file_name, encoding='utf-8') as f:
         data=json.load(f)
+    return data
+
+def read_jsonl(file_path):
+    data = []
+    with open(file_path, 'r', encoding='utf-8') as file:
+        for line in file:
+            # print(line)
+            json_obj = json.loads(line)
+            data.append(json_obj)
     return data
 
 
@@ -87,6 +100,10 @@ def savejson(file_name, new_data):
         json.dump(new_data, fp, indent=4, sort_keys=False,ensure_ascii=False)
 
 
+def most_similar_string(input_str, string_list):
+    similarity_scores = [(s, Levenshtein.distance(input_str.lower(), s.lower())) for s in string_list]
+    similarity_scores.sort(key=lambda x: x[1])
+    return similarity_scores[0][0]
 
 def retrieve_top_docs(query, docs, model, width=3):
     """

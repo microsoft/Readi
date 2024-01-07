@@ -13,6 +13,7 @@ import time
 import openai
 from utils.cloudgpt_aoai_new import *
 from utils.prompt_list import *
+from config import *
 import time
 
 
@@ -941,9 +942,9 @@ class PromptBuilder(object):
 
 
     # Refine framework
-    def get_graph_knowledge_LLM_revised_engine(self, question_dict, llm_engine):
+    def get_graph_knowledge_LLM_revised_engine(self, args, question_dict):
         reasoning_path_LLM_init = question_dict['relation_path_candidates']
-        question = question_dict['question']
+        question = question_dict[QUESTION_STRING[args.dataset]]
         entities = question_dict['topic_entity']
         if not question.endswith('?'):
             question += '?'
@@ -1008,7 +1009,7 @@ class PromptBuilder(object):
                     if End_loop_cur_path == False:
                         # 硬性停
                         # reasoning_path_LLM_init, refine_time, thought, current_prompt_agent, agent_time = self.LLM_refine_agent(llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time, current_prompt_agent, agent_time)
-                        reasoning_path_LLM_init, refine_time, thought = self.LLM_refine(llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time)
+                        reasoning_path_LLM_init, refine_time, thought = self.LLM_refine(args.llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time)
                     #     reasoning_path_LLM_init, refine_time, End_loop_cur_path, thought = self.LLM_refine_and_stop_condition(llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time, End_loop_cur_path, Ends_with_cvt)
 
 
