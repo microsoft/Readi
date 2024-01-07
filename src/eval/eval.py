@@ -6,10 +6,9 @@ import logging
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, default="cwq", help="choose the dataset.")
-    parser.add_argument("--output_file", type=str, default="results/KGQA/graliqa/graliqa_gpt35_onePath_CVT_HardStop_0104_gpt4_reasoning.json", help="the output file name.")
-    parser.add_argument("--constraints_refuse", type=bool,
-                        default=True, help="LLM may have refuse erorr, enable this option to skip current sample.")
+    parser.add_argument("--dataset", type=str, required=True, help="choose the dataset.")
+    parser.add_argument("--output_file", type=str, required=True, help="the output file name.")
+    parser.add_argument("--constraints_refuse", type=bool, default=True, help="LLM may have refuse erorr, enable this option to skip current sample.")
     args = parser.parse_args()
 
     logging.getLogger().setLevel(logging.INFO)
