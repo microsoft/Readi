@@ -396,9 +396,7 @@ if __name__ == '__main__':
     parser.add_argument("--prune_tools", type=str,
                         default="llm", help="prune tools for ToG, can be llm (same as LLM_type), bm25 or sentencebert.")
 
-    # parser.add_argument("--input_file", type=str, required=True)
-    parser.add_argument("--input_file", type=str, default="/home/v-sitaocheng/demos/results/KGQA/cwq/cwq_gpt35_onePath_CVT_HardStop_0104.jsonl")
-    # parser.add_argument("--output_file", type=str, required=True)
+    parser.add_argument("--input_file", type=str, required=True)
     args = parser.parse_args()
 
     args.LLM_type = LLM_BASE[args.llm]

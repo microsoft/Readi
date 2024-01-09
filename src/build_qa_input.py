@@ -43,9 +43,9 @@ class PromptBuilder(object):
         self.each_line = each_line
 
         query_encoder = AutoQueryEncoder(encoder_dir='facebook/contriever', pooling='mean')
-        self.corpus = LuceneSearcher('KB-BINDER/contriever_fb_relation/index_relation_fb')
-        bm25_searcher = LuceneSearcher('KB-BINDER/contriever_fb_relation/index_relation_fb')
-        contriever_searcher = FaissSearcher('KB-BINDER/contriever_fb_relation/freebase_contriever_index', query_encoder)
+        self.corpus = LuceneSearcher(os.path.join(KB_BINDER_PATH, "contriever_fb_relation/index_relation_fb"))
+        bm25_searcher = LuceneSearcher(os.path.join(KB_BINDER_PATH, 'contriever_fb_relation/index_relation_fb'))
+        contriever_searcher = FaissSearcher(os.path.join(KB_BINDER_PATH, 'contriever_fb_relation/freebase_contriever_index'), query_encoder)
 
         self.hsearcher = HybridSearcher(contriever_searcher, bm25_searcher)
 
@@ -574,7 +574,7 @@ class PromptBuilder(object):
         grounded_know = [" -> ".join([i if not i.startswith("m.") else "<cvt></cvt>" for i in utils.path_to_string(knowledge).split(" -> ")]) for knowledge in grounded_know]
         grounded_know = list(set(grounded_know))
         grounded_know_string = "\n".join(grounded_know)
-        
+
         if len(grounded_know)==0 and len(ungrounded_neighbor_relation_dict)>0:
             ungrounded_cand_rel = ungrounded_neighbor_relation_dict
 
@@ -660,7 +660,7 @@ class PromptBuilder(object):
                         print("bad function call")
                         print(functions)
                         raise ValueError("bad function call")
-                    
+
                 if new_path == init_path:
                     print("****************************************************************")
                     print("----------new path no changing-----------:",functions)
@@ -1004,7 +1004,7 @@ class PromptBuilder(object):
     # Refine framework
     def get_graph_knowledge_LLM_revised_engine(self, args, question_dict):
         reasoning_path_LLM_init = question_dict['relation_path_candidates']
-        question = question_dict[QUESTION_STRING[args.dataset]]
+        question = question_dict[get_question_string(args.dataset)]
         entities = question_dict['topic_entity']
         if not question.endswith('?'):
             question += '?'
@@ -1100,7 +1100,7 @@ class PromptBuilder(object):
                             for grounded_path in grounded_knowledge_current:
                                 if grounded_path[-1] < max_path_len:
                                     continue
-                                
+
                                 string_path = utils.path_to_string(grounded_path[1])
                                 if len(string_path) > 0:
                                     if string_path not in lists_of_paths:
@@ -1117,7 +1117,7 @@ class PromptBuilder(object):
             # merge一下
             if len(entities) > 1:
                  reasoning_paths, lists_of_paths = self.merge_different_path(grounded_revised_knowledge, reasoning_paths, lists_of_paths)
-                 
+
         return reasoning_paths, lists_of_paths, thought, len_of_predict_knowledge, len_of_grounded_knowledge, predict_path
 
 
@@ -1207,7 +1207,7 @@ class PromptBuilder(object):
         entities = question_dict['topic_entity']
         if not question.endswith('?'):
             question += '?'
-            
+
         print("Question:", question)
         # path表示用"->"分割的路径,prompt的一种尝试  如果用数组的话效果会差一些
         path = True
@@ -1301,7 +1301,7 @@ class PromptBuilder(object):
                             for grounded_path in grounded_knowledge_current:
                                 if grounded_path[-1] < max_path_len:
                                     continue
-                                
+
                                 string_path = utils.path_to_string(grounded_path[1])
                                 if len(string_path) > 0:
                                     if string_path not in lists_of_paths:

@@ -96,7 +96,7 @@ def get_relation_path(input_file, output_file):
             print(f"{index} topic entity is empty, item: {item}")
             continue
 
-        question_str = QUESTION_STRING[args.dataset]
+        question_str = get_question_string(args.dataset)
         prompts = relation_reasoning_prompt_new  + "Question: " + item[question_str] + "\nTopic Entities:" + str(topic_ent)+ "\nThought:"
 
         default_relation_path = {
@@ -121,7 +121,7 @@ def get_relation_path(input_file, output_file):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, choices=DATASET.keys(), default=CWQ, help="choose the dataset.")
+    parser.add_argument("--dataset", type=str, default=CWQ, help="Dataset alias or prefix")
     parser.add_argument("--max_length", type=int, default=4096, help="the max length of LLMs output.")
     parser.add_argument("--temperature_reasoning", type=float, default=0.3, help="the temperature in reasoning stage.")
     parser.add_argument("--width", type=int, default=3, help="choose the search width of ToG.")
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     args.LLM_type = LLM_BASE[args.llm]
 
-    input_file = os.path.join(DATASET_BASE, DATASET[args.dataset])
+    input_file = get_dataset_file(args.dataset)
     output_file = os.path.join(INIT_PLAN_BASE,f"{args.dataset}_{args.llm}_{get_timestamp()}.json")
 
     print("save result to: ",output_file)

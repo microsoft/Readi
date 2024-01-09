@@ -1,13 +1,13 @@
 import sys, os
 import datetime
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/..")
-from prompt_list import *
+from utils.prompt_list import *
 import json
 from rank_bm25 import BM25Okapi
 from sentence_transformers import util
 from sentence_transformers import SentenceTransformer
-from cloudgpt_aoai_new import *
-from freebase_func import *
+from utils.cloudgpt_aoai_new import *
+from utils.freebase_func import *
 import openai
 import re
 import time
@@ -654,7 +654,6 @@ def jsonl_to_json(jsonl_file_path, json_file_path):
         json.dump(data, json_file, indent=4, sort_keys=False,ensure_ascii=False)
 
 # Usage
-jsonl_to_json('/home/v-sitaocheng/demos/results/KGQA/cwq/cwq_gpt35_init_only_onePath_CVT_HardStop_new_goal_progress_1000example__0107.jsonl', '/home/v-sitaocheng/demos/results/KGQA/cwq/cwq_gpt35_init_only_onePath_CVT_HardStop_new_goal_progress_1000example__0107.json')
-
-
-get_ent_one_hop_rel("m.0bdxs5")
+if __name__=='__main__':
+    jsonl_to_json('/home/v-sitaocheng/demos/results/KGQA/cwq/cwq_gpt35_init_only_onePath_CVT_HardStop_new_goal_progress_1000example__0107.jsonl', '/home/v-sitaocheng/demos/results/KGQA/cwq/cwq_gpt35_init_only_onePath_CVT_HardStop_new_goal_progress_1000example__0107.json')
+    get_ent_one_hop_rel("m.0bdxs5")

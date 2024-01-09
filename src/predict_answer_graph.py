@@ -71,9 +71,9 @@ def prediction_graph(data, processed_list, input_builder, reasoning_path_LLM):
 
 # 前处理 后处理 存文件
 def prediction_graph_engine(args, processed_list, input_builder, data):
-    question = data[QUESTION_STRING[args.dataset]]
+    question = data[get_question_string(args.dataset)]
     answer = get_entity_answer(data, args.dataset)
-    id = data[QUESTION_ID[args.dataset]]
+    id = data[get_question_id(args.dataset)]
     thought = ""
     if id in processed_list:
         return None
@@ -83,7 +83,7 @@ def prediction_graph_engine(args, processed_list, input_builder, data):
     # 只要init plan
     elif args.refine_strategy=="init_only":
         kg_triples, kg_paths, thought, len_of_predict_knowledge, len_of_grounded_knowledge, predict_path = input_builder.get_graph_knowledge_LLM_init_plan(args, data)
-    
+
     # init plan为空
     elif args.refine_strategy =="init_empty":
         kg_triples, kg_paths, thought, len_of_predict_knowledge, len_of_grounded_knowledge, predict_path = input_builder.get_graph_knowledge_LLM_empty_init(args, data)
@@ -188,7 +188,7 @@ def main_engine(args, LLM):
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
     argparser.add_argument( "--data_path", type=str, default="rmanluo")
-    argparser.add_argument("--dataset","-d", type=str,choices=DATASET.keys(), default=None)
+    argparser.add_argument("--dataset","-d", type=str, default=None, help="dataset alias or prefix")
     argparser.add_argument("--split", type=str, default="test")
     argparser.add_argument("--predict_path", type=str, default="results/KGQA")
     argparser.add_argument( "--model_name", type=str, help="model_name for save results", default="RoG",)
@@ -211,7 +211,7 @@ if __name__ == "__main__":
 
     argparser.add_argument("--refine_strategy", type=str, choices={"llm_refine", "init_only", "init_empty"}, default="llm_refine")
     argparser.add_argument("--llm", type=str, choices=LLM_BASE.keys(), default='gpt35')
-    argparser.add_argument("--init_plan_path", type=str, default=None)
+    argparser.add_argument("--init_plan_path", type=str, required=True, default=None)
     # argparser.add_argument("--output_file_name", type=str, default="predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_1230_engine_triple_cvt_new_goal_progess_hard_stop.jsonl")
     argparser.add_argument("--name", type=str, default="onePath_CVT_HardStop_new_goal_progress_0103prompt_")
 
