@@ -8,13 +8,11 @@ sys.path.append(os.path.join(os.getcwd(), 'dangle_over_ground/src'))
 from config import *
 
 
-def prepare_dataset_for_eval(dataset_name, output_file):
-    assert dataset_name in DATASET.keys()
-    assert dataset_name in QUESTION_STRING.keys()
-    dataset_path = os.path.join(DATASET_BASE, DATASET[dataset_name])
+def prepare_dataset_for_eval(dataset, output_file):
+    dataset_path = get_dataset_file(dataset)
     with open(dataset_path, 'r', encoding='utf-8') as f:
         datas = json.load(f)
-    question_string = QUESTION_STRING[dataset_name]
+    question_string = get_question_string(dataset)
 
     output_datas= []
 
@@ -36,7 +34,7 @@ def prepare_dataset_for_eval(dataset_name, output_file):
 def align(dataset_name, question_string, data, ground_truth_datas):
     answer_list= []
     origin_data = [j for j in ground_truth_datas if j[question_string] == data['question']][0]
-    if dataset_name == CWQ:
+    if dataset_name.startswith(CWQ):
         if 'answers' in origin_data:
             answers = origin_data["answers"]
         else:
@@ -54,7 +52,7 @@ def align(dataset_name, question_string, data, ground_truth_datas):
                     alias.append(ans)
                 answer_list.extend(alias)
 
-    elif dataset_name == WEBQSP:
+    elif dataset_name.startswith(WEBQSP):
         answers = origin_data["Parses"]
         for answer in answers:
             for name in answer['Answers']:
@@ -63,7 +61,7 @@ def align(dataset_name, question_string, data, ground_truth_datas):
                 else:
                     answer_list.append(name['EntityName'])
 
-    elif dataset_name in (GRAILQA, GRAILQA_DEV):
+    elif dataset_name.startswith(GRAILQA):
         answers = origin_data["answer"]
         for answer in answers:
             if "entity_name" in answer:
