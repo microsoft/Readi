@@ -140,7 +140,7 @@ def reasoning_with_ROG(file_name, file_index):
             line['kg_triples_str'] = "COT"
         else:
             times=0
-            while times<5:
+            while times<8:
                 # prompts = answer_prompt_kb_interwined_path_1227 + "Q: " + lines['question'] + "\nKnowledge Path: " + lines['kg_paths'] + "\nA: "
                 prompts = answer_prompt_kb_interwined_nointer + "Q: " + line['question'] + "\nKnowledge Triplets: " + line['kg_triples_str'] + "\nA: "
                 response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
@@ -151,12 +151,12 @@ def reasoning_with_ROG(file_name, file_index):
                     print("*"*30 + '\n')
                     times += 1
                     continue
-                elif times == 4:
+                elif times >= 5:
                     prompts = cot_prompt + "\n\nQ: " + line['question'] + "\nA: "
                     response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
                     line['kg_triples_str'] = "COT"
-                    break
-                elif "{" not in response or "}" not in response:
+                    
+                if "{" not in response or "}" not in response:
                     print(f"\n{'*'*10} Invalid Results {'*'*10}")
                     print(response)
                     print("*" * 30 + '\n')
@@ -397,12 +397,12 @@ if __name__ == '__main__':
                         default="llm", help="prune tools for ToG, can be llm (same as LLM_type), bm25 or sentencebert.")
 
     # parser.add_argument("--input_file", type=str, required=True)
-    parser.add_argument("--input_file", type=str, default="/home/v-sitaocheng/demos/results/KGQA/cwq/cwq_gpt35_onePath_CVT_HardStop_0104.jsonl")
+    parser.add_argument("--input_file", type=str, default="/home/v-sitaocheng/demos/results/KGQA/cwq/cwq_gpt35_init_only_onePath_CVT_HardStop_new_goal_progress_1000example__0107.jsonl")
     # parser.add_argument("--output_file", type=str, required=True)
     args = parser.parse_args()
 
     args.LLM_type = LLM_BASE[args.llm]
-    args.output_file = f"{os.path.splitext(os.path.split(args.input_file)[1])[0]}_{args.llm}_reasoning_0105_no_init"
+    args.output_file = f"{os.path.splitext(os.path.split(args.input_file)[1])[0]}_{args.llm}_reasoning_0110_init_path"
 
     # file_name='results/KGQA/RoG-cwq/RoG/test/___reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_0101_agent.jsonl'
     # file_index="0103_GPT4_engine_triple_cvt_new_goal_progress_hard_stop"

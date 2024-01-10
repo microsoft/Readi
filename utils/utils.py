@@ -1,13 +1,13 @@
 import sys, os
 import datetime
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/..")
-from prompt_list import *
+from utils.prompt_list import *
 import json
 from rank_bm25 import BM25Okapi
 from sentence_transformers import util
 from sentence_transformers import SentenceTransformer
-from cloudgpt_aoai_new import *
-from freebase_func import *
+from utils.cloudgpt_aoai_new import *
+from utils.freebase_func import *
 import openai
 import re
 import time
@@ -245,6 +245,9 @@ def construct_entity_score_prompt(question, relation, entity_candidates, score):
 
 
 def get_ent_one_hop_rel(entity_id, pre_relations=[], pre_head=-1, literal=False):
+    if entity_id.startswith("m.") == False and entity_id.startswith("g.")==False:
+        return []
+    
     sparql_relations_extract_head = sparql_head_relations % (entity_id)
     head_relations = table_result_to_list(execute_sparql(sparql_relations_extract_head))
 
@@ -654,7 +657,7 @@ def jsonl_to_json(jsonl_file_path, json_file_path):
         json.dump(data, json_file, indent=4, sort_keys=False,ensure_ascii=False)
 
 # Usage
-jsonl_to_json('/home/v-sitaocheng/demos/results/KGQA/cwq/cwq_gpt35_init_only_onePath_CVT_HardStop_new_goal_progress_1000example__0107.jsonl', '/home/v-sitaocheng/demos/results/KGQA/cwq/cwq_gpt35_init_only_onePath_CVT_HardStop_new_goal_progress_1000example__0107.json')
+jsonl_to_json('/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/cwq/cwq_gpt35_llm_refine_onePath_CVT_HardStop_new_goal_progress_0103prompt__0107.jsonl', '/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/cwq/cwq_gpt35_llm_refine_onePath_CVT_HardStop_new_goal_progress_0103prompt__0107.json')
 
 
 get_ent_one_hop_rel("m.0bdxs5")

@@ -36,6 +36,7 @@ def execute_sparql(sparql_txt):
         sparql = SPARQLWrapper(SPARQLPATH)
         sparql.setQuery(sparql_txt)
         sparql.setReturnFormat(JSON)
+        sparql.addExtraURITag("timeout", "10000")
         results = sparql.query().convert()
 
         res = []
@@ -45,7 +46,8 @@ def execute_sparql(sparql_txt):
                 res_item[k] = v['value']
             res.append(res_item)
         return res
-    except:
+    except Exception as e:
+        print(e)
         print("Freebase query error")
         print(sparql_txt)
         return []
@@ -85,20 +87,26 @@ def id2entity_name_or_type(entity_id):
 
 
 def id2entity_name_or_type_en(entity_id):
+    if entity_id.startswith("m.") == False and entity_id.startswith("g.") == False:
+        return entity_id
+    
     sparql_query = sparql_id % (entity_id, entity_id)
     sparql = SPARQLWrapper(SPARQLPATH)
     sparql.setQuery(sparql_query)
     sparql.setReturnFormat(JSON)
-    results = sparql.query().convert()
-    if len(results["results"]["bindings"])==0:
-        return entity_id
-    else:
-        for lines in results["results"]["bindings"]:
-            if lines['tailEntity']['xml:lang']=='en':
-                return lines['tailEntity']['value']
-            
-        return results["results"]["bindings"][0]['tailEntity']['value']
+    try:
+        results = sparql.query().convert()
 
+        if len(results["results"]["bindings"])==0:
+            return entity_id
+        else:
+            for lines in results["results"]["bindings"]:
+                if lines['tailEntity']['xml:lang']=='en':
+                    return lines['tailEntity']['value']
+                
+            return results["results"]["bindings"][0]['tailEntity']['value']
+    except:
+        return entity_id
 
 
 def table_result_to_list(res):

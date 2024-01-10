@@ -43,9 +43,9 @@ class PromptBuilder(object):
         self.each_line = each_line
 
         query_encoder = AutoQueryEncoder(encoder_dir='facebook/contriever', pooling='mean')
-        self.corpus = LuceneSearcher('KB-BINDER/contriever_fb_relation/index_relation_fb')
-        bm25_searcher = LuceneSearcher('KB-BINDER/contriever_fb_relation/index_relation_fb')
-        contriever_searcher = FaissSearcher('KB-BINDER/contriever_fb_relation/freebase_contriever_index', query_encoder)
+        self.corpus = LuceneSearcher('../KB-BINDER/contriever_fb_relation/index_relation_fb')
+        bm25_searcher = LuceneSearcher('../KB-BINDER/contriever_fb_relation/index_relation_fb')
+        contriever_searcher = FaissSearcher('../KB-BINDER/contriever_fb_relation/freebase_contriever_index', query_encoder)
 
         self.hsearcher = HybridSearcher(contriever_searcher, bm25_searcher)
 
@@ -180,6 +180,7 @@ class PromptBuilder(object):
         return results, result_paths, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict
 
 
+    # 0108 目前用的是这个
     def apply_rules_LLM_one_path_engine(self, rules, entity_id_label, grounded_relations):
         # results = []
         result_paths = []
@@ -200,7 +201,8 @@ class PromptBuilder(object):
             grounded_reasoning_set.append(grounded_relations[relation])
 
         # 这个代码 可以优化一下 因为现在是BFS,如果实体太大了 每个事实单独BFS 效率太低了
-        result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict = utils.bfs_with_rule_LLM_engine(entity_id, entity_label, relation_path_array, grounded_reasoning_set)
+        # result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict = utils.bfs_with_rule_LLM_engine(entity_id, entity_label, relation_path_array, grounded_reasoning_set)
+        result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict = utils.grounding_with_engine(entity_id, entity_label, grounded_reasoning_set)
 
         # # 当前实体出发  如果非空,说明grounding成功, 加入路径
         # if len(result_paths) > 0:
@@ -364,8 +366,6 @@ class PromptBuilder(object):
         return result
 
 
-
-
     def LLM_refine_agent(self, llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time, current_prompt_agent, agent_time):
         # 初始路径 refine之前
         init_path = reasoning_path_LLM_init[entity_label]
@@ -514,7 +514,7 @@ class PromptBuilder(object):
 
 
 
-    def LLM_refine(self, llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time):
+    def LLM_refine(self, args, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time):
         # 初始路径 refine之前
         init_path = reasoning_path_LLM_init[entity_label]
         if type(init_path) == list:
@@ -524,52 +524,37 @@ class PromptBuilder(object):
         ungrounded_cand_rel = {}
         max_grounded_len = 0
         thought = ""
-        # 已有的知识, 其他topic的路径   (加不加看效果考虑)
-        # for entity, knowledge in grounded_revised_knowledge.items():
-        #     if len(knowledge)>0:
-        #         grounded_know.append(knowledge)
+        cvt_ending = False
 
-        # 已有的知识有两种取法 一种是只要最长的(断掉的开始), 还有一种是全部从0到最长的都取
         if len(grounded_knowledge_current) > 0:
             max_grounded_len = grounded_knowledge_current[-1][-1]
 
-        # 已有的知识,当前路径     这里可以有一个优化, 同类grounding对的知识     是不是取一个就够了????
-        if len(grounded_knowledge_current) < 25:
-            for know in grounded_knowledge_current:
-                # 1. 只要最长的知识
-                if know[-1] == max_grounded_len:
-                    grounded_know.append(know[1])
-                    node_label = utils.id2entity_name_or_type_en(know[0])
-                    if node_label in ungrounded_neighbor_relation_dict.keys():
-                        ungrounded_cand_rel[node_label] = ungrounded_neighbor_relation_dict[node_label]
-                # 2. 所有长度知识都要
-                # grounded_know.append(know[1])
-                # ungrounded_cand_rel = ungrounded_neighbor_relation_dict
-        else:
-            # 非CVT节点
-            for i in grounded_knowledge_current:
-                node_label = utils.id2entity_name_or_type_en(i[0])
-                if node_label.startswith("m.")==False and i[2]!=0 and i[2]==max_grounded_len:
-                    if node_label in ungrounded_neighbor_relation_dict.keys():
-                        ungrounded_cand_rel[node_label] = ungrounded_neighbor_relation_dict[node_label]
-                    grounded_know.append(i[1])
+        # 已有的知识,当前路径  这里可以有一个优化, 同类grounding对的知识    是不是取一个就够了????
+        for know in grounded_knowledge_current:
+            node_label = utils.id2entity_name_or_type_en(know[0])
+            if node_label.startswith("m.")==False and know[2]!=0 and know[2]==max_grounded_len:
+                if node_label in ungrounded_neighbor_relation_dict.keys():
+                    ungrounded_cand_rel[node_label] = ungrounded_neighbor_relation_dict[node_label]
+                grounded_know.append(know[1])
+            if know[2]==max_grounded_len and node_label.startswith("m."):
+                cvt_ending = True
 
-            # 后续可以考虑根据相似度排序!!!!!
-            if len(grounded_know) > 15 :
-                # 相似度排序
-                # grounded_know = utils.similar_search_list(question, [utils.path_to_string(know) for know in grounded_know])[:25]
-                grounded_know = random.sample(grounded_know, 15)
+        # 可以考虑根据相似度排序!!!!!
+        if len(grounded_know) > 15 :
+            # 相似度排序
+            # grounded_know = utils.similar_search_list(question, [utils.path_to_string(know) for know in grounded_know])[:25]
+            grounded_know = random.sample(grounded_know, 15)
 
-            # cvt可能很多  全部处理成 <cvt></cvt>.
-            cvt_know = [(i[0], i[1]) for i in grounded_knowledge_current if utils.id2entity_name_or_type_en(i[0]).startswith("m.") and len(i[1])>0 and i[2]==max_grounded_len]
-            if len(cvt_know) > 10:
-                # cand_cvt = utils.similar_search_list(question, [utils.path_to_string(i[1]) for i in cvt_know])[:25]
-                cvt_know = random.sample(cvt_know, 10)
-            for cvt in cvt_know:
-                if cvt[0] in ungrounded_neighbor_relation_dict.keys():
-                    # cvt的label就是本身 不用转化
-                    ungrounded_cand_rel[cvt[0]] = ungrounded_neighbor_relation_dict[cvt[0]]
-                grounded_know.append(cvt[1])
+        # cvt可能很多  全部处理成 <cvt></cvt>.
+        cvt_know = [(i[0], i[1]) for i in grounded_knowledge_current if utils.id2entity_name_or_type_en(i[0]).startswith("m.") and len(i[1])>0 and i[2]==max_grounded_len]
+        if len(cvt_know) > 10:
+            # cand_cvt = utils.similar_search_list(question, [utils.path_to_string(i[1]) for i in cvt_know])[:25]
+            cvt_know = random.sample(cvt_know, 10)
+        for cvt in cvt_know:
+            if cvt[0] in ungrounded_neighbor_relation_dict.keys():
+                # cvt的label就是本身 不用转化
+                ungrounded_cand_rel[cvt[0]] = ungrounded_neighbor_relation_dict[cvt[0]]
+            grounded_know.append(cvt[1])
 
         grounded_know = [" -> ".join([i if not i.startswith("m.") else "<cvt></cvt>" for i in utils.path_to_string(knowledge).split(" -> ")]) for knowledge in grounded_know]
         grounded_know = list(set(grounded_know))
@@ -588,140 +573,161 @@ class PromptBuilder(object):
         if len(candidate_rel) > 35:
             candidate_rel = utils.similar_search_list(question, candidate_rel)[:35]
             # candidate_rel = random.sample(candidate_rel, 50)
+        candidate_rel.sort()        
 
-        candidate_rel.sort()
-        # prompts = refine_prompt_path_one_path_1222  + "\nQuestion: " + question + "\nInitial Path:" + str(init_path) + "\nGrounded Knowledge:" + grounded_know_string +"\nCandidate Relations:" + str(ungrounded_cand_rel) + "\nThought:"
+        if 'err_msg' in args.refine_output:
+            err_msg_list = []
+            if cvt_ending:
+                err_msg_list.append("<cvt></cvt> in the end.")
+            relation_elements = init_path.split(" -> ")[1:]
+            if max_grounded_len < len(relation_elements):
+                ungrounded_relation = relation_elements[max_grounded_len]
+                err_msg_list.append(f"relation \"{ungrounded_relation}\" not instantiated.")
+            err_msg = ""
+            for index, msg in enumerate(err_msg_list):
+                err_msg+= str(index+1)+". "+msg +"\n"
+
         # prompts = refine_prompt_path_one_path_1224  + "\nQuestion: " + question + "\nInitial Path:" + str(init_path) + "\nGrounded Knowledge:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel) + "\nThought:"
         # prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_1229_2052  + "Question: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
-        prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_0103  + "Question: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
-        # prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_emptyinit_0104  + "Question: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
+        # prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_0103  + "Question: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
+        # prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_0109  + "Question: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nInstantiate Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
+        if args.refine_output == 'function':
+            prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_0109  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Instantiation Message\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel) + "\n>>>> Correcting Function\nGoal:"
+        elif args.refine_output == 'sequence':
+            prompts = refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_0109  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Instantiation Message\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel) + "\n>>>> Corrected Path\nGoal:"
+        elif args.refine_output == 'sequence_err_msg':
+            # prompts = refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_err_msg0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Message\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Corrected Path"
+            prompts = refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_err_msg_no_thought0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Message\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Corrected Path"
+        elif args.refine_output == 'function_err_msg':
+            # prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_err_msg_thought0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Message\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Correcting Function"
+            prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_err_msg_no_thought0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Message\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Correcting Function"
+        
         # prompts = refine_agent_prompt  + "\nQuestion: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
 
-        while refine_time <= 5:
-            response = self.run_llm(prompts, temperature=0.3, max_tokens=4096, opeani_api_keys="", engine=llm_engine)
+        while refine_time <= 8:
+            response = self.run_llm(prompts, temperature=args.temperature_refine, max_tokens=4096, opeani_api_keys="", engine=args.llm_engine)
             try:
                 refine_time+=1
-                function_calls = response.split("Function Call:")[-1].strip().strip("\"").strip()
-                functions = function_calls.split("\n")
-                new_path = init_path
-                for fun in functions:
-                    if fun.startswith("replace_relation(") and fun.endswith(")"):
-                        fun = fun.replace("replace_relation(","").replace(")", "").strip()
-                        origin_relation = fun.split(",")[0].strip().strip("\'").strip("\"").strip()
-                        refine_relation = fun.split(",")[-1].strip().strip("\'").strip("\"").strip()
-                        new_path = new_path.replace(origin_relation, refine_relation).strip()
-                    # elif fun.startswith("trim_relation(") and fun.endswith(")"):
-                    #     fun = fun.replace("trim_relation(","").replace(")", "").strip()
-                    #     relation = fun.strip().strip("\'").strip("\"").strip()
-                    #     start_index = new_path.find("-> "+relation)
-                    #     if start_index==-1:
-                    #         start_index = new_path.find("->"+relation)
-                    #         if start_index==-1:
-                    #             print("bad function call")
-                    #             print(functions)
-                    #             raise ValueError("bad function call")
-                    #     new_path = new_path[:start_index].strip()
-                    elif fun.startswith("remove_relation(") and fun.endswith(")"):
-                        fun = fun.replace("remove_relation(","").replace(")", "").strip()
-                        relation = fun.strip().strip("\'").strip("\"").strip()
-
-                        start_index = new_path.find(" -> "+relation)
-                        if start_index==-1:
-                            print("****************************************************************")
-                            print("bad function call:  remove_relation problem")
-                            print(functions)
-                            print("****************************************************************")
-                            raise ValueError("bad function call")
-
-                        new_path = new_path[:start_index] + new_path[start_index+len(relation + " -> "):]
-                        new_path = new_path.replace("  ", " ").strip()
-
-                    elif fun.startswith("add_relation(") and fun.endswith(")"):
-                        fun = fun.replace("add_relation(","").replace(")", "").strip()
-                        # relation = fun.strip().strip("\'").strip("\"").strip()
-                        # new_path = new_path.strip() + " -> " + relation
-
-                        relation = fun.split(",")[0].strip().strip("\'").strip("\"").strip()
-                        position = (",").join(fun.split(",")[1:]).strip().strip("\'").strip("\"").strip()
-
-                        start_index = new_path.find(position)
-                        if start_index==-1:
-                            start_index = new_path.find(position)
-                            if start_index==-1:
+                if "function" in args.refine_output:
+                    if 'Thouhght' in prompts:
+                        function_calls = response.strip().strip("\"").strip()
+                    else:
+                        function_calls = response.split("Correcting Function:")[-1].strip().strip("\"").strip()
+                    functions = function_calls.split("\n")
+                    new_path = init_path
+                    for fun in functions:
+                        if fun.startswith("replace_relation(") and fun.endswith(")"):
+                            fun = fun.replace("replace_relation(","").replace(")", "").strip()
+                            origin_relation = fun.split(",")[0].strip().strip("\'").strip("\"").strip()
+                            refine_relation = fun.split(",")[-1].strip().strip("\'").strip("\"").strip()
+                            if origin_relation not in init_path:
                                 print("****************************************************************")
-                                print("bad function call:  add_relation problem")
                                 print(functions)
                                 print("****************************************************************")
+                                raise ValueError("bad function call:  replaced relation not in path!")
+                            new_path = new_path.replace(origin_relation, refine_relation).strip()
+                        elif fun.startswith("remove_relation(") and fun.endswith(")"):
+                            fun = fun.replace("remove_relation(","").replace(")", "").strip()
+                            relation = fun.strip().strip("\'").strip("\"").strip()
 
-                                raise ValueError("bad function call")
-                        new_path = new_path[:start_index+len(position)] + " -> " + relation + new_path[start_index+len(position):]
-                        new_path = new_path.replace("  ", " ").strip()
+                            start_index = new_path.find(" -> "+relation)
+                            if start_index==-1:
+                                print("****************************************************************")
+                                print(functions)
+                                print("****************************************************************")
+                                raise ValueError("bad function call:  remove_relation relation not in path!")
+
+                            new_path = new_path[:start_index] + new_path[start_index+len(relation + " -> "):]
+                            new_path = new_path.replace("  ", " ").strip()
+
+                        elif fun.startswith("add_relation(") and fun.endswith(")"):
+                            fun = fun.replace("add_relation(","").replace(")", "").strip()
+                            # relation = fun.strip().strip("\'").strip("\"").strip()
+                            # new_path = new_path.strip() + " -> " + relation
+
+                            relation = fun.split(",")[0].strip().strip("\'").strip("\"").strip()
+                            position = (",").join(fun.split(",")[1:]).strip().strip("\'").strip("\"").strip()
+
+                            start_index = new_path.find(position)
+                            if start_index==-1:
+                                start_index = new_path.find(position)
+                                if start_index==-1:
+                                    print("****************************************************************")
+                                    print(functions)
+                                    print("****************************************************************")
+                                    raise ValueError("bad function call: add_relation position not in path")
+                            new_path = new_path[:start_index+len(position)] + " -> " + relation + new_path[start_index+len(position):]
+                            new_path = new_path.replace("  ", " ").strip()
+                        else:
+                            print("****************************************************************")
+                            print(functions)
+                            raise ValueError("NO given function called")
+                        
+                elif "sequence" in args.refine_output:
+                    # 直接生成Refined Path
+                    new_path = response.split("Final Path:")[-1].strip().strip("\"").strip()
+                    thought = response
+                    if entity_label not in new_path or "->" not in new_path:
+                        raise ValueError("entity_label or -> is not in path")
+                    reasoning_path_LLM_init[entity_label] = new_path                  
+
+                elif args.refine_output == "dict":
+                    new_reasoning_path_LLM_init=eval(response.split("Refined Path:")[-1].strip())
+                    if type(new_reasoning_path_LLM_init) != dict:
+                        raise ValueError("GPT generate type no match, regenerate")
+
+                    if len(new_reasoning_path_LLM_init.keys()) == 0:
+                        raise ValueError("GPT generate topics entities no match, regenerate")
+
+                    for k, v in new_reasoning_path_LLM_init.items():
+                        if type(v) != list:
+                            raise ValueError("GPT generate format no match, regenerate")
+
+                    for key in new_reasoning_path_LLM_init.keys():
+                        if reasoning_path_LLM_init[key] == new_reasoning_path_LLM_init[key]:
+                            print(response)
+                            print("****************************************************************************************")
+                        reasoning_path_LLM_init[key]=new_reasoning_path_LLM_init[key]
                     else:
-                        print("bad function call")
-                        print(functions)
-                        raise ValueError("bad function call")
-                    
+                        reasoning_path_LLM_init = new_reasoning_path_LLM_init
+                    break
+
                 if new_path == init_path:
                     print("****************************************************************")
-                    print("----------new path no changing-----------:",functions)
+                    # print("----------new path no changing-----------:",functions)
                     print("----------new path  -----------:", new_path)
                     print("****************************************************************")
-
-                if new_path==init_path:
-                    print(functions)
-                    raise ValueError("function call no changing origin plan")
+                    raise ValueError("no changing origin plan")
 
                 if "->" not in new_path or entity_label not in new_path:
                     print("****************************************************************")
-                    print(functions)
+                    # print(functions)
                     print("----------new path:", new_path)
                     print("****************************************************************")
-                    raise ValueError("function call no changing origin plan")
+                    raise ValueError("no changing origin plan")
 
+                elements = new_path.split(" -> ")
+                if len(list(set(elements))) < len(elements):
+                    print("****************************************************************")
+                    # print(functions)
+                    print("----------new path:", new_path)
+                    print("****************************************************************")
+                    raise ValueError("same relation in path")
+                if len(elements) > 5:
+                    print("****************************************************************")
+                    # print(functions)
+                    print("----------new path:", new_path)
+                    print("****************************************************************")
+                    raise ValueError("path too long!!!!")   
+                
                 reasoning_path_LLM_init[entity_label] = new_path
                 thought = response + " new_path:" + new_path
-
-                # # 直接生成Refined Path
-                # new_rule_path = response.split("Refined Path:")[-1].strip().strip("\"").strip()
-                # thought = response
-                # if entity_label not in new_rule_path or "->" not in new_rule_path:
-                #     raise ValueError("entity_label or -> is not in path")
-                # reasoning_path_LLM_init[entity_label] = new_rule_path
-                # refine_time += 1
-                # if new_rule_path == init_path:
-                #     refine_time += 10
-                #     raise ValueError("entity_label or -> is not in path")
-
-
-                # new_reasoning_path_LLM_init=eval(response.split("Refined Path:")[-1].strip())
-                # if type(new_reasoning_path_LLM_init) != dict:
-                #     raise ValueError("GPT generate type no match, regenerate")
-
-                # if len(new_reasoning_path_LLM_init.keys()) == 0:
-                #     raise ValueError("GPT generate topics entities no match, regenerate")
-
-                # if not path:
-                #     for k, v in new_reasoning_path_LLM_init.items():
-                #         if type(v) != list:
-                #             raise ValueError("GPT generate format no match, regenerate")
-                # refine_time += 1
-
-                # if one_path is True:
-                #     for key in new_reasoning_path_LLM_init.keys():
-                #         if reasoning_path_LLM_init[key] == new_reasoning_path_LLM_init[key]:
-                #             refine_time += 10
-                #             print(response)
-                #             print("****************************************************************************************")
-                #         reasoning_path_LLM_init[key]=new_reasoning_path_LLM_init[key]
-                # else:
-                #     reasoning_path_LLM_init = new_reasoning_path_LLM_init
-
                 break
-            except:
+            except Exception as e:
+                print(e)
                 print("*****************************************************************************************")
-                print(response)
-                print("****************************************************************************************")
-                time.sleep(5)
+                print()
+                time.sleep(1)
 
         return reasoning_path_LLM_init, refine_time, thought
 
@@ -1010,9 +1016,7 @@ class PromptBuilder(object):
             question += '?'
 
         print("Question:", question)
-        # path表示用"->"分割的路径,prompt的一种尝试  如果用数组的话效果会差一些
         path = True
-
         one_path = True
         refine_time = 0
 
@@ -1070,16 +1074,17 @@ class PromptBuilder(object):
 
                     # # 硬性判断什么时候停
                     if len(result_paths) > 0:
-                        max_path_len =  len(result_paths[-1])
                         if max_path_len == 0:
-                            continue
+                            End_loop_cur_path = False
+                            
                         for path in result_paths:
                             if len(path) < max_path_len:
                                 continue
                             # 最后一个知识以m.结尾 说明遇到了空白节点
-                            if path[-1][-1].startswith("m."):
+                            if path[-1][-1].startswith("m.") or path[-1][-1].startswith("g."):
                                 End_loop_cur_path=False
                                 # Ends_with_cvt = True
+                                break
                     else:
                         End_loop_cur_path = False
 
@@ -1087,10 +1092,10 @@ class PromptBuilder(object):
                     if End_loop_cur_path == False:
                         # 硬性停
                         # reasoning_path_LLM_init, refine_time, thought, current_prompt_agent, agent_time = self.LLM_refine_agent(llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time, current_prompt_agent, agent_time)
-                        reasoning_path_LLM_init, refine_time, thought = self.LLM_refine(args.llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time)
+                        reasoning_path_LLM_init, refine_time, thought = self.LLM_refine(args, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time)
                     #     reasoning_path_LLM_init, refine_time, End_loop_cur_path, thought = self.LLM_refine_and_stop_condition(llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time, End_loop_cur_path, Ends_with_cvt)
 
-                    if End_loop_cur_path or refine_time >= 6:
+                    if End_loop_cur_path or refine_time >= 8:
                         reasoning_paths.extend(result_paths)
                         grounded_revised_knowledge[entity_label] = result_paths
                         lists_of_paths = [utils.path_to_string(p) for p in reasoning_paths]
@@ -1287,10 +1292,10 @@ class PromptBuilder(object):
                     if End_loop_cur_path == False or refine_time==0:
                         # 硬性停
                         # reasoning_path_LLM_init, refine_time, thought, current_prompt_agent, agent_time = self.LLM_refine_agent(llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time, current_prompt_agent, agent_time)
-                        reasoning_path_LLM_init, refine_time, thought = self.LLM_refine(args.llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time)
+                        reasoning_path_LLM_init, refine_time, thought = self.LLM_refine(args, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time)
                     #     reasoning_path_LLM_init, refine_time, End_loop_cur_path, thought = self.LLM_refine_and_stop_condition(llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time, End_loop_cur_path, Ends_with_cvt)
 
-                    if End_loop_cur_path or refine_time >= 6:
+                    if End_loop_cur_path or refine_time >= 8:
                         reasoning_paths.extend(result_paths)
                         grounded_revised_knowledge[entity_label] = result_paths
                         lists_of_paths = [utils.path_to_string(p) for p in reasoning_paths]
@@ -1560,3 +1565,14 @@ class PromptBuilder(object):
                 new_list_of_paths.append(p)
 
 "xxxxx"
+# elif fun.startswith("trim_relation(") and fun.endswith(")"):
+#     fun = fun.replace("trim_relation(","").replace(")", "").strip()
+#     relation = fun.strip().strip("\'").strip("\"").strip()
+#     start_index = new_path.find("-> "+relation)
+#     if start_index==-1:
+#         start_index = new_path.find("->"+relation)
+#         if start_index==-1:
+#             print("bad function call")
+#             print(functions)
+#             raise ValueError("bad function call")
+#     new_path = new_path[:start_index].strip()

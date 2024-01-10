@@ -183,11 +183,18 @@ def bfs_with_rule_LLM(graph, start_node, target_rule, grounded_reasoning_set, ma
     return result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict
 
 
-def grounding_with_engine(entity_id, entity_label, target_rule, grounded_reasoning_set):
+def grounding_with_engine(entity_id, entity_label, grounded_reasoning_set):
     relation_values_dict = {}
-    entity_values_dict = {}
     size_of_path = len(grounded_reasoning_set)
-    size_of_entities = size_of_path+1
+
+    result_paths = []
+    grounded_knowledge_current = []
+    ungrounded_neighbor_relation_dict = {}
+
+    if size_of_path > 4:
+        ungrounded_neighbor_relation_dict[entity_label] = utils.get_ent_one_hop_rel(entity_id)
+        grounded_knowledge_current.append((entity_id, [] , 0))
+        return result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict
 
     for i in range(size_of_path):
         key = "?relation"+str(i)
@@ -195,15 +202,90 @@ def grounding_with_engine(entity_id, entity_label, target_rule, grounded_reasoni
         for relation in grounded_reasoning_set[i]:
             relation_values_dict[key] += "ns:"+relation + " "
         relation_values_dict[key] = "VALUES " + key +" {" + relation_values_dict[key].strip() + "}."
+        
+    prefix = """PREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT *\nWHERE {\n"""
+    source = "?entity0"
+    surfix = """ \n} LIMIT 200 """
+    sparql_values_template = 'VALUES ' + source + ' { ns:'+ str(entity_id) + '}. \n'
+    for k, v in relation_values_dict.items():
+        sparql_values_template += v + " \n "
 
-    for i in range(size_of_entities):
-        key = "?entity" + str(i)
-        entity_values_dict[key] = ""
-        if i == 0:
-            entity_values_dict[key] += "ns:" + str(entity_id)
-            entity_values_dict[key] = "VALUES " + key +" {" + entity_values_dict[key].strip() + "}."
+    sparql_values_template.replace("\VALUES", "VALUES")
+    cur_paths = [""]
+    enumerated_sparql = {}
+    for i in range(size_of_path):
+        cur_relation = "?relation" + str(i)
+        path_tail = "?entity" + str(i) + " " + cur_relation + " ?entity" + str(i+1) + ".\n"
+        path_head = "?entity" + str(i+1) + " " + cur_relation + " ?entity" + str(i) + ".\n"
 
+        new_path = []
+        for p in cur_paths:
+            new_path.append(p+path_tail)
+            new_path.append(p+path_head)
+        cur_paths=new_path
+        enumerated_sparql[cur_relation] = new_path
 
+    cur_results = []
+    grounding_success = True
+    # 从长到短 遍历
+    for relation_id in range(size_of_path-1, -1, -1):
+        print("Current path len: ", relation_id+1)
+        cur_relation = "?relation" + str(relation_id)
+        for path in enumerated_sparql[cur_relation]:
+            execution_result = utils.execute_sparql(prefix + sparql_values_template + path + surfix)
+            if len(execution_result) > 0:
+                cur_results.extend(execution_result) 
+
+        if len(cur_results) == 0:
+            # grounding失败, 继续缩小路径
+            print("Current grounding failed !")
+            grounding_success = False
+            continue
+        # grounding 成功, 拼接当前路径
+        else: 
+            # 整条路都成功
+            if relation_id == size_of_path-1:
+                print("Whole path grounding success !")
+                grounding_success = True
+            else:
+                #  只有一部分成功
+                print("Partial grounding success !")
+
+            list_of_path = []
+            for result in cur_results[:300]:
+                cleaned_result = []
+                # 拼接这条路上的知识
+                for j in range(relation_id+1):
+                    s = result["entity" + str(j)].replace("http://rdf.freebase.com/ns/", "") 
+                    p = result["relation" + str(j)].replace("http://rdf.freebase.com/ns/", "") 
+                    o = result["entity" + str(j+1)].replace("http://rdf.freebase.com/ns/", "") 
+                    cleaned_result.append((utils.id2entity_name_or_type_en(s) , p, utils.id2entity_name_or_type_en(o)))
+                
+                string_path = utils.path_to_string(cleaned_result)
+
+                # 去重
+                elements = string_path.split(" -> ")
+                if len(list(set(elements))) < len(elements):
+                    continue
+
+                if string_path not in list_of_path:
+                    list_of_path.append(string_path)
+                    # 只有整条路都成功才拼接返回result path 否则只返回grounded_know和ungrounded dict
+                    if grounding_success:
+                        result_paths.append(cleaned_result)
+                    grounded_knowledge_current.append((o, cleaned_result, len(cleaned_result)))
+                    end_ent_label = utils.id2entity_name_or_type_en(o)
+                    candi_relation_list = utils.get_ent_one_hop_rel(o)
+                    # 排除之前的关系
+                    ungrounded_neighbor_relation_dict[end_ent_label] = [i for i in candi_relation_list if i not in elements]
+            break
+
+    # 全部失败了 那么返回起始位置的周围关系
+    if len(ungrounded_neighbor_relation_dict.keys()) == 0:
+        ungrounded_neighbor_relation_dict[entity_label] = utils.get_ent_one_hop_rel(entity_id)
+        grounded_knowledge_current.append((entity_id, [] , 0))
+
+    print()
     return result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict
   
 
@@ -217,7 +299,7 @@ def bfs_with_rule_LLM_engine(entity_id, entity_label, target_rule, grounded_reas
     while queue:
         size = len(queue)
         # grounded_knowledge_current.clear()
-        # ungrounded_neighbor_relation_dict.clear()
+        ungrounded_neighbor_relation_dict.clear()
         # 遍历当前层
         print("current layer size when BFS", size)
 
