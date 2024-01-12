@@ -659,6 +659,34 @@ def jsonl_to_json(jsonl_file_path, json_file_path):
     with open(json_file_path, 'w') as json_file:
         json.dump(data, json_file, indent=4, sort_keys=False,ensure_ascii=False)
 
+
+def dedup_log(result_file_name):
+    # log去重
+    # 已经跑过的log都进来去个重
+    if result_file_name.endswith("jsonl"):
+        with open(result_file_name, 'r') as f:
+            current_log_res = f.readlines()
+    elif result_file_name.endswith("json"):
+        current_log_res = readjson(result_file_name)
+    # log去个重
+    deduplication_current_log_res=[]
+    done_id=[]
+    for done_item in current_log_res:
+        done_item=eval(done_item)
+        if done_item['id'] not in done_id:
+            deduplication_current_log_res.append(done_item)
+            done_id.append(done_item['id'])
+    # 把去过重的文件写回原文件
+    if result_file_name.endswith("jsonl"):
+        with open(result_file_name, 'w') as file:
+            for record in deduplication_current_log_res:
+                json.dump(record, file)
+                file.write('\n')
+    elif result_file_name.endswith("json"):
+        savejson("dedup_"+result_file_name, deduplication_current_log_res)
+    print('have ',len(current_log_res),' records, distinct records ', len(deduplication_current_log_res))
+    return deduplication_current_log_res
+
 # Usage
 if __name__=='__main__':
     jsonl_to_json('/home/v-sitaocheng/demos/results/KGQA/cwq/cwq_gpt35_init_only_onePath_CVT_HardStop_new_goal_progress_1000example__0107.jsonl', '/home/v-sitaocheng/demos/results/KGQA/cwq/cwq_gpt35_init_only_onePath_CVT_HardStop_new_goal_progress_1000example__0107.json')

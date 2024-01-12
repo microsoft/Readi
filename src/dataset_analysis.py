@@ -14,9 +14,15 @@ def run(intput_file):
     grounding_progress = 0.0
     len_of_predict_path = 0
     len_of_grounded_path = 0
+    cvt_end = 0
     for lines in data:
         len_of_predict_knowledge, len_of_grounded_knowledge = lines['len_of_predict_knowledge'], lines['len_of_grounded_knowledge']
         number_of_path += len(len_of_predict_knowledge.keys())
+        kg_paths = lines['kg_paths'].split("\n")
+        for path in kg_paths:
+            if path.split(" -> ")[-1].startswith("m."):
+                cvt_end += 1
+                break
 
         for k,v in len_of_predict_knowledge.items():
             grounding_progress += len_of_grounded_knowledge[k][-1] / v[-1]
@@ -26,10 +32,12 @@ def run(intput_file):
             len_of_predict_path += v[-1]
             len_of_grounded_path += len_of_grounded_knowledge[k][-1]
 
+
     print("all grounded rate: ", all_grounded/number_of_path)
     print("avg grounded progress: ", grounding_progress/number_of_path)
     print("avg len of predict progress: ", len_of_predict_path/len(data))
     print("avg len of grounded progress: ", len_of_grounded_path/len(data))
+    print("cvt ending rate: ", cvt_end/len(data))
 
 
 def len_of_path(input_file):
@@ -60,5 +68,5 @@ def len_of_path(input_file):
     # savejson(input_file.split('.')[0]+"_data_ana.json", data)
 
 
-input_file="/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/cwq/cwq_gpt35_llm_refine_sequence_err_msg_onePath_CVT_HardStop_0103prompt_newengine_thought__0110_0110_prompt.jsonl"
+input_file="/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/cwq/cwq_gpt35_llm_refine_sequence_err_msg_onePath_CVT_HardStop_oldengine_thought_0112.jsonl"
 run(input_file)

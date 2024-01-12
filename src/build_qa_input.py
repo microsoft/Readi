@@ -201,8 +201,8 @@ class PromptBuilder(object):
             grounded_reasoning_set.append(grounded_relations[relation])
 
         # 这个代码 可以优化一下 因为现在是BFS,如果实体太大了 每个事实单独BFS 效率太低了
-        # result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict = utils.bfs_with_rule_LLM_engine(entity_id, entity_label, relation_path_array, grounded_reasoning_set)
-        result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict = utils.grounding_with_engine(entity_id, entity_label, grounded_reasoning_set)
+        result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict = utils.bfs_with_rule_LLM_engine(entity_id, entity_label, relation_path_array, grounded_reasoning_set)
+        # result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict = utils.grounding_with_engine(entity_id, entity_label, grounded_reasoning_set)
 
         # # 当前实体出发  如果非空,说明grounding成功, 加入路径
         # if len(result_paths) > 0:
@@ -579,10 +579,13 @@ class PromptBuilder(object):
             err_msg_list = []
             if cvt_ending:
                 err_msg_list.append("<cvt></cvt> in the end.")
-            relation_elements = init_path.split(" -> ")[1:]
-            if max_grounded_len < len(relation_elements):
-                ungrounded_relation = relation_elements[max_grounded_len]
-                err_msg_list.append(f"relation \"{ungrounded_relation}\" not instantiated.")
+            if "->" not in init_path:
+                err_msg_list.append("Empty Initial Path.")
+            else:
+                relation_elements = init_path.split(" -> ")[1:]         
+                if max_grounded_len < len(relation_elements):
+                    ungrounded_relation = relation_elements[max_grounded_len]
+                    err_msg_list.append(f"relation \"{ungrounded_relation}\" not instantiated.")
             err_msg = ""
             for index, msg in enumerate(err_msg_list):
                 err_msg+= str(index+1)+". "+msg +"\n"
@@ -596,11 +599,13 @@ class PromptBuilder(object):
         elif args.refine_output == 'sequence':
             prompts = refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_0109  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Instantiation Message\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel) + "\n>>>> Corrected Path\nGoal:"
         elif args.refine_output == 'sequence_err_msg':
-            # prompts = refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_err_msg0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Message\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Corrected Path"
-            prompts = refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_err_msg_no_thought0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Message\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Corrected Path"
+            # prompts = refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_err_msg_thought_empty_prompt_0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Context\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Corrected Path"
+            prompts = refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_err_msg_thought_0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Context\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Corrected Path"
+            # prompts = refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_err_msg_no_thought0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Context\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Corrected Path"
+        
         elif args.refine_output == 'function_err_msg':
-            # prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_err_msg_thought0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Message\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Correcting Function"
-            prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_err_msg_no_thought0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Message\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Correcting Function"
+            prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_err_msg_thought0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Context\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Correcting Function"
+            # prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_err_msg_no_thought0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Context\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Correcting Function"
         
         # prompts = refine_agent_prompt  + "\nQuestion: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
 
@@ -1032,9 +1037,6 @@ class PromptBuilder(object):
             thought = ""
             lists_of_paths = []
             predict_path = {}
-            current_prompt_agent=""
-            agent_time = 1
-
             # 获取对所有路径上的relation 做搜索召回 （top5） 结果是dict {relation: grounded array}
 
             # 对每一个entity 引导的路径进行grounding
@@ -1251,10 +1253,11 @@ class PromptBuilder(object):
                         # result_path表示 grounding过程中的path,如果是空的,说明当前grounding遇到了问题,需要refine
                         result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict = self.apply_rules_LLM_one_path_engine(reasoning_path_LLM_init[entity_label], [entity_id,entity_label], grounded_relations)
                     else:
-                        result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict=[],[],{entity_label: utils.get_ent_one_hop_rel(entity_id)}
+                        result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict=[],[(entity_id,[],0)],{entity_label: utils.get_ent_one_hop_rel(entity_id)}
 
+                    print()
                     print("refine time", refine_time)
-                    print("result paths", result_paths)
+                    print("len of result paths", len(result_paths))
 
                     # record current states
                     max_path_len = grounded_knowledge_current[-1][-1]

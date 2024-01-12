@@ -2,7 +2,7 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/..")
 from utils.freebase_func import *
 from utils.prompt_list import *
-from utils.utils import run_llm, savejson, read_jsonl, readjson
+from utils.utils import run_llm, savejson, read_jsonl, readjson, dedup_log
 import json
 from tqdm import tqdm
 import argparse
@@ -128,12 +128,26 @@ def reasoning_with_egpsr_contract(file_index):
         save_2_jsonl(lines['question'], response, lines['knowledge_triples_egpsr_contract_top1_nointer_reasoning'], 'egpsr_contract_cwq_100sample_top1_nointer_reasoning'+file_index, file_index)
 
 
-def reasoning_with_ROG(file_name, file_index):
+def reasoning_with_ROG(file_name, output_file_index):
     print("reasoning with ROG file: ", file_name)
     # data=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_"+file_index+".json")
-    reasoning_result=[]
     data=read_jsonl(file_name)
+    output_dir = os.path.split(file_name)[0]
+    ex_question_list = []
+    ex_result_file = []
+
+    if os.path.exists(os.path.join(output_dir, output_file_index+".json")):
+        ex_result_file = readjson(os.path.join(output_dir, output_file_index+".json"))
+        for line in ex_result_file:
+            ex_question_list.append(line['question'])
+        print("previous result len: ", len(ex_question_list))
+
+    reasoning_result = ex_result_file
+
     for line in tqdm(data):
+        if line['question'] in ex_question_list:
+            continue
+        
         if len(line['kg_triples_str'])==0:
             prompts = cot_prompt + "\n\nQ: " + line['question'] + "\nA: "
             response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
@@ -167,9 +181,9 @@ def reasoning_with_ROG(file_name, file_index):
 
         reasoning_result.append({"question":line['question'], "results": response, "reasoning_chains": line['kg_triples_str']})
 
-        output_dir = os.path.split(file_name)[0]
+
         # savejson('results/KGQA/RoG-cwq/QA_result/cwq_100examples'+file_index+".json", reasoning_result)
-        savejson(os.path.join(output_dir, file_index+".json"), reasoning_result)
+        savejson(os.path.join(output_dir, output_file_index+".json"), reasoning_result)
         # save_2_jsonl(lines['question'], response, lines['kg_triples_str'], 'ROG_cwq_top1_'+file_index)
 
 
@@ -385,9 +399,6 @@ if __name__ == '__main__':
                         default=3, help="choose the search depth of ToG.")
     parser.add_argument("--remove_unnecessary_rel", type=bool,
                         default=True, help="whether removing unnecessary relations.")
-    # parser.add_argument("--LLM_type", type=str,
-                        # default="gpt-4-32k-20230321", help="base LLM model.")
-                        # default="gpt-35-turbo-16k-20230613", help="base LLM model.")
     parser.add_argument("--llm", type=str,default='gpt35', choices=LLM_BASE.keys(), help="base LLM model")
     parser.add_argument("--opeani_api_keys", type=str,
                         default="", help="if the LLM_type is gpt-3.5-turbo or gpt-4, you need add your own openai api keys.")
@@ -400,7 +411,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     args.LLM_type = LLM_BASE[args.llm]
-    args.output_file = f"{os.path.splitext(os.path.split(args.input_file)[1])[0]}_{args.llm}_reasoning_0110_init_path"
+    args.output_file = f"{os.path.splitext(os.path.split(args.input_file)[1])[0]}_{args.llm}_reasoning"
 
     # file_name='results/KGQA/RoG-cwq/RoG/test/___reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_0101_agent.jsonl'
     # file_index="0103_GPT4_engine_triple_cvt_new_goal_progress_hard_stop"
