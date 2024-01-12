@@ -573,7 +573,7 @@ class PromptBuilder(object):
         if len(candidate_rel) > 35:
             candidate_rel = utils.similar_search_list(question, candidate_rel)[:35]
             # candidate_rel = random.sample(candidate_rel, 50)
-        candidate_rel.sort()        
+        candidate_rel.sort()
 
         if 'err_msg' in args.refine_output:
             err_msg_list = []
@@ -596,12 +596,12 @@ class PromptBuilder(object):
         elif args.refine_output == 'sequence':
             prompts = refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_0109  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Instantiation Message\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel) + "\n>>>> Corrected Path\nGoal:"
         elif args.refine_output == 'sequence_err_msg':
-            # prompts = refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_err_msg0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Message\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Corrected Path"
-            prompts = refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_err_msg_no_thought0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Message\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Corrected Path"
+            prompts = refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_err_msg0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Context\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Corrected Path"
+            # prompts = refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_err_msg_no_thought0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Context\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Corrected Path"
         elif args.refine_output == 'function_err_msg':
-            # prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_err_msg_thought0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Message\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Correcting Function"
-            prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_err_msg_no_thought0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Message\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Correcting Function"
-        
+            # prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_err_msg_thought0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Context\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Correcting Function"
+            prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_err_msg_no_thought0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Context\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Correcting Function"
+
         # prompts = refine_agent_prompt  + "\nQuestion: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
 
         while refine_time <= 8:
@@ -662,14 +662,14 @@ class PromptBuilder(object):
                             print("****************************************************************")
                             print(functions)
                             raise ValueError("NO given function called")
-                        
+
                 elif "sequence" in args.refine_output:
                     # 直接生成Refined Path
                     new_path = response.split("Final Path:")[-1].strip().strip("\"").strip()
                     thought = response
                     if entity_label not in new_path or "->" not in new_path:
                         raise ValueError("entity_label or -> is not in path")
-                    reasoning_path_LLM_init[entity_label] = new_path                  
+                    reasoning_path_LLM_init[entity_label] = new_path
 
                 elif args.refine_output == "dict":
                     new_reasoning_path_LLM_init=eval(response.split("Refined Path:")[-1].strip())
@@ -718,8 +718,8 @@ class PromptBuilder(object):
                     # print(functions)
                     print("----------new path:", new_path)
                     print("****************************************************************")
-                    raise ValueError("path too long!!!!")   
-                
+                    raise ValueError("path too long!!!!")
+
                 reasoning_path_LLM_init[entity_label] = new_path
                 thought = response + " new_path:" + new_path
                 break
@@ -1076,7 +1076,7 @@ class PromptBuilder(object):
                     if len(result_paths) > 0:
                         if max_path_len == 0:
                             End_loop_cur_path = False
-                            
+
                         for path in result_paths:
                             if len(path) < max_path_len:
                                 continue
