@@ -220,7 +220,8 @@ if __name__ == "__main__":
     argparser.add_argument("--debug", action="store_true")
     argparser.add_argument("--temperature_refine", type=float, default=0.3, help="llm temperature refine ")
 
-    argparser.add_argument("--refine_strategy", type=str, choices={"llm_refine", "init_only", "init_empty"}, default="init_empty")
+    argparser.add_argument("--refine_strategy", type=str,
+                           choices={"llm_refine", "init_only", "init_empty"}, default="llm_refine")
     argparser.add_argument("--refine_output", type=str, choices={"sequence", "function", "dict", "sequence_err_msg", "function_err_msg"}, default="sequence_err_msg")
     argparser.add_argument("--llm", type=str, choices=LLM_BASE.keys(), default='gpt35')
     argparser.add_argument("--init_plan_path", type=str, required=True, default=None)
