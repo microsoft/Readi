@@ -229,15 +229,15 @@ if __name__ == "__main__":
     argparser.add_argument("-n", default=1, type=int, help="number of processes")
     argparser.add_argument("--filter_empty", action="store_true")
     argparser.add_argument("--debug", action="store_true")
-    argparser.add_argument("--temperature_refine", type=float, default=0.3, help="llm temperature refine ")
+    argparser.add_argument("--temperature_refine", type=float, default=0.3, help="llm temperature refine")
 
     argparser.add_argument("--refine_strategy", type=str, choices={"llm_refine", "init_only", "init_empty", "init_corrupt", "campre_method"}, default="llm_refine")
     argparser.add_argument("--refine_output", type=str, choices={"sequence", "function", "dict", "sequence_err_msg", "sequence_err_msg_tag", "function_err_msg"}, default="sequence_err_msg")
-    argparser.add_argument("--llm", type=str, choices=LLM_BASE.keys(), default='gpt4')
+    argparser.add_argument("--llm", type=str, choices=LLM_BASE.keys(), default='gpt35')
     argparser.add_argument("--init_plan_path", type=str, required=True, default=None)
     # argparser.add_argument("--output_file_name", type=str, default="predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_1230_engine_triple_cvt_new_goal_progess_hard_stop.jsonl")
     # argparser.add_argument("--name", type=str, default="_compare_sr_beam5")
-    argparser.add_argument("--name", type=str, default="final")
+    argparser.add_argument("--name", type=str, default="final_dedup")
     argparser.add_argument("--compare_beam", type=int, default="1")
 
     args, _ = argparser.parse_known_args()
