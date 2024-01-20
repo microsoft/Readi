@@ -229,7 +229,11 @@ def match(s1: str, s2: str) -> bool:
 
 
 def calculate_answer_coverage_rate(file_path, golden_file_path):
-    sr_graph = read_jsonl(file_path)
+    if file_path.endswith("jsonl"):
+        sr_graph = read_jsonl(file_path)
+    else:
+        sr_graph = readjson(file_path)[:1000]
+
     golden = readjson(golden_file_path)
     all_recall=0
     all_recall=0
@@ -249,12 +253,31 @@ def calculate_answer_coverage_rate(file_path, golden_file_path):
         topic_entity = golden[index]['topic_entity']
         num_of_path = len(topic_entity.keys())
         lines['kg_triples'] = "\n".join(list(set(lines['kg_triples_str'].split("\n"))))
-        # 拿答案 也可以在golden文件拿
+        # 拿答案 也可以在golden文件拿   NOW 公平起见都从golden拿
         if "cwq" in file_path:
-            if type(lines['ground_truth'])==str:
-                answer_list = [lines['ground_truth']]
-            elif type(lines['ground_truth']) == list:
-                answer_list = lines['ground_truth']
+            answer_list = []
+            if 'answers' in golden[index].keys():
+                answers = golden[index]["answers"]
+            else:
+                answers = golden[index]["answer"]
+            if type(answers)==str:
+                answer_list.append(answers)
+            else:
+                for answer in answers:
+                    if type(answer)==str:
+                        alias=[answer]
+                    else:
+                        alias = answer['label']
+                    answer_list.extend(alias)
+
+            # if type(lines['ground_truth'])==str:
+            #     answer_list = [lines['ground_truth']]
+            # elif type(lines['ground_truth']) == list:
+            #     if type(lines['ground_truth'][0]) == dict:
+            #         answer_list = [i['text'] for i in lines['ground_truth']]
+            #     else:
+            #         answer_list = [lines['ground_truth']]
+
         elif "grailqa" in file_path:
             answer_list = []
             for e in golden[index]['answer']:

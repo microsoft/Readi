@@ -2,15 +2,12 @@ import sys, os
 import datetime
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/..")
 from utils.prompt_list import *
-from utils.prompt_list import *
 import json
 from rank_bm25 import BM25Okapi
 from sentence_transformers import util
 from sentence_transformers import SentenceTransformer
-from utils.cloudgpt_aoai_new import *
 from utils.freebase_func import *
 from utils.cloudgpt_aoai_new import *
-from utils.freebase_func import *
 import openai
 import re
 import time
@@ -67,7 +64,8 @@ def run_llm(prompt, temperature, max_tokens, opeani_api_keys, engine="gpt-35-tur
                 f += 1
                 continue
             break
-        except:
+        except Exception as e:
+            print("error: ", e)
             print("openai error, retry")
             # print(len(messages[1]["content"]))
 
@@ -687,7 +685,9 @@ def dedup_log(result_file_name):
     print('have ',len(current_log_res),' records, distinct records ', len(deduplication_current_log_res))
     return deduplication_current_log_res
 
+
 # Usage
 if __name__=='__main__':
-    jsonl_to_json('/home/v-sitaocheng/demos/results/KGQA/cwq/cwq_gpt35_init_only_onePath_CVT_HardStop_new_goal_progress_1000example__0107.jsonl', '/home/v-sitaocheng/demos/results/KGQA/cwq/cwq_gpt35_init_only_onePath_CVT_HardStop_new_goal_progress_1000example__0107.json')
+    # jsonl_to_json('/home/v-sitaocheng/demos/results/KGQA/cwq/cwq_gpt35_init_only_onePath_CVT_HardStop_new_goal_progress_1000example__0107.jsonl', '/home/v-sitaocheng/demos/results/KGQA/cwq/cwq_gpt35_init_only_onePath_CVT_HardStop_new_goal_progress_1000example__0107.json')
     get_ent_one_hop_rel("m.0bdxs5")
+    # print_graph()

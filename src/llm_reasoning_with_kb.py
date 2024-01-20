@@ -128,10 +128,46 @@ def reasoning_with_egpsr_contract(file_index):
         save_2_jsonl(lines['question'], response, lines['knowledge_triples_egpsr_contract_top1_nointer_reasoning'], 'egpsr_contract_cwq_100sample_top1_nointer_reasoning'+file_index, file_index)
 
 
+def gpt4_io(file_name ,output_file_index):
+    if file_name.endswith("jsonl"):
+        data=read_jsonl(file_name)
+    else:
+        data=readjson(file_name)
+        output_dir = os.path.split(file_name)[0]
+    ex_question_list = []
+    ex_result_file = []
+
+    if os.path.exists(os.path.join(output_dir, output_file_index+".json")):
+        ex_result_file = readjson(os.path.join(output_dir, output_file_index+".json"))
+        for line in ex_result_file:
+            ex_question_list.append(line['question'])
+        print("previous result len: ", len(ex_question_list))
+
+    reasoning_result = ex_result_file
+
+    for line in tqdm(data):
+        if line['question'] in ex_question_list:
+            continue
+        
+        prompts = io_prompt + "\n\nQ: " + line['question'] + "\nA: "
+        response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
+
+        reasoning_result.append({"question":line['question'], "results": response})
+
+        # savejson('results/KGQA/RoG-cwq/QA_result/cwq_100examples'+file_index+".json", reasoning_result)
+        savejson(os.path.join(output_dir, output_file_index+".json"), reasoning_result)
+
+
+
+
 def reasoning_with_ROG(file_name, output_file_index):
     print("reasoning with ROG file: ", file_name)
     # data=readjson_50("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_"+file_index+".json")
-    data=read_jsonl(file_name)
+    if file_name.endswith("jsonl"):
+        data=read_jsonl(file_name)
+    else:
+        data=readjson(file_name)
+
     output_dir = os.path.split(file_name)[0]
     ex_question_list = []
     ex_result_file = []
@@ -152,6 +188,8 @@ def reasoning_with_ROG(file_name, output_file_index):
             prompts = cot_prompt + "\n\nQ: " + line['question'] + "\nA: "
             response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
             line['kg_triples_str'] = "COT"
+
+
         else:
             times=0
             while times<8:
@@ -437,7 +475,10 @@ if __name__ == '__main__':
     # rog_contract(input_file='/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/RoG/test/_home_v-sitaocheng_demos_llm_hallu_reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_1223.jsonl')
     # 答案推理 可以改相应的prompt和对应的字段
     # reasoning_with_ROG(file_name, file_index)
+    
     reasoning_with_ROG(args.input_file, args.output_file)
+
+    # gpt4_io(args.input_file, args.output_file)
 
     # analyse
     # trim_cwq_ToG()

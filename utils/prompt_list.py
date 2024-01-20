@@ -2238,6 +2238,7 @@ Final Path: United Kingdom -> location.location.religions -> location.religion_p
 """
 
 
+
 refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_err_msg_thought_0110 = """Task: Given an Inital Path and some feedback information of a Question, please correct the initial path.
 -----
 Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
@@ -2281,7 +2282,7 @@ Thought: In Instantiate Paths, I find that Bolivian boliviano is the currency us
 Final Path: Bolivian boliviano -> country.country.currency -> location.location.adjoin_s
 -----
 Question: Rift Valley Province is located in a nation that uses which form of currency?
-Initial Path: Rift Valley Province -> place.administrative_division.country -> place.location.geolocation -> location.mailing_address.state_province_region
+Initial Path: Rift Valley Province -> place.administrative_division.country -> place.location.geolocation -> location.mailing_address.state_province_region -> finance.currency.countries_used
 >>>> Error Message
 1. <cvt></cvt> in the end. 
 2. relation "location.mailing_address.state_province_region" not instantiated.
@@ -2314,6 +2315,89 @@ In candidates, I find "location.religion_percentage.religion" most relevant to m
 Final Path: United Kingdom -> location.statistical_region.religions -> location.religion_percentage.religion
 -----
 """
+
+
+refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_err_msg_thought_0118 = """Task: Given an Inital Path and some feedback information of a Question, please correct the initial path.
+Tips:
+[CVT] is common in this task, which is an transition node in Instantiate Path. A [CVT] can divide a complex relation into two sub-relations. For example, the country bordered by France can be obtained by "France -> location.location.adjoin_s -> [CVT] -> location.adjoining_relationship". So [CVT] MUST NOT be the end of the Instantiate Path! 
+-----
+Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
+Initial Path: Miley Cyrus -> film.film.actor -> film.film.producer
+>>>> Error Message
+1. [CVT] in the end. 
+2. relation "film.film.producer" not instantiated.
+>>>> Instantiation Context
+Instantiate Paths: Miley Cyrus -> film.actor.film -> [CVT]
+Candidate Relations: ['dataworld.gardening_hint.last_referenced_by', 'dataworld.gardening_hint.replaced_by', 'film.director.film', 'film.film.country', 'film.film.directed_by', 'film.film.genre', 'film.film.initial_release_date', 'film.film.language', 'film.film.prequel', 'film.film.release_date_s', 'film.film.runtime', 'film.film.sequel', 'film.film.starring', 'film.film.written_by', 'film.film_cut.film', 'film.film_genre.films_in_this_genre', 'film.film_regional_release_date.film', 'film.performance.film', 'film.writer.film', 'imdb.topic.title_id', 'kg.object_profile.prominent_type', 'tv.tv_director.episodes_directed', 'tv.tv_program.episodes', 'tv.tv_series_episode.air_date', 'tv.tv_series_episode.director', 'tv.tv_series_episode.episode_number', 'tv.tv_series_episode.next_episode', 'tv.tv_series_episode.season', 'tv.tv_series_episode.season_number', 'tv.tv_series_episode.series', 'tv.tv_series_episode.writer']
+>>>> Corrected Path
+Goal: The Initial Path starts from Miley Cyrus, which should cover the movies featured by Miley Cyrus.
+Thought: In Instantiate Paths I know that Miley Cyrus acts some films, described by a [CVT].
+In candidates, I find "film.performance.film" most relevant to get the films.
+Meanwhile, "film.film.producer" is not relevant to my Goal.
+Final Path: Miley Cyrus -> film.actor.film -> film.performance.film
+-----
+Question: The country with the National Anthem of Bolivia borders which nations?
+Initial Path: National Anthem of Bolivia -> country.country.composer -> person.person.nationality -> location.location.adjoins -> location.location.country
+>>>> Error Message
+1. relation "country.country.composer" not instantiated.
+>>>> Instantiation Context
+Instantiate Paths: 
+Candidate Relations: ['dataworld.gardening_hint.last_referenced_by', 'government.national_anthem.national_anthem_of', 'government.national_anthem_of_a_country.anthem', 'kg.object_profile.prominent_type', 'music.composer.compositions', 'music.composition.composer', 'music.composition.lyricist', 'music.composition.recordings', 'music.lyricist.lyrics_written', 'music.recording.song']
+>>>> Corrected Path
+Goal: The Initial Path starts from National Anthem of Bolivia, which should cover the country whose national anthem is National Anthem of Bolivia, and then the countries bordering this country.
+Thought: In candidates, I find "government.national_anthem.national_anthem_of" most relevant to get the country with that national anthem.
+Meanwhile, I find the relation "country.country.composer" and "person.person.nationality" in Initial Path irrelevant to get the country and the bordering country.
+Final Path:  National Anthem of Bolivia -> government.national_anthem.national_anthem_of -> location.location.adjoins -> location.location.country
+-----
+Question: What bordering countries are to the country that uses Bolivian Boliviano as its currency?
+Initial Path: Bolivian boliviano -> country.country.currency -> country.country.bordering
+>>>> Error Message
+1. relation "country.country.bordering" not instantiated.
+>>>> Instantiation Context
+Instantiate Paths: Bolivian boliviano -> finance.currency.countries_used -> Bolivia
+Candidate Relations: []
+>>>> Corrected Path
+Goal: The Initial Path starts from Bolivian boliviano, which should cover the country whose currency is Bolivian boliviano, and then the countries bordering this country.
+Thought: In Instantiate Paths, I find that Bolivian boliviano is the currency used in Bolivia. No candidates are given, so I should pick some relations on my own.
+Final Path: Bolivian boliviano -> country.country.currency -> location.location.adjoin_s
+-----
+Question: Rift Valley Province is located in a nation that uses which form of currency?
+Initial Path: Rift Valley Province -> place.administrative_division.country -> place.location.geolocation -> location.mailing_address.state_province_region -> finance.currency.countries_used
+>>>> Error Message
+1. [CVT] in the end. 
+2. relation "location.mailing_address.state_province_region" not instantiated.
+>>>> Instantiation Message
+Instantiate Paths: Rift Valley Province -> location.administrative_division.country -> Kenya -> location.location.geolocation -> [CVT]
+Candidate Relations: ['location.geocode.latitude', 'location.geocode.longitude']
+>>>> Corrected Path
+Goal: Information needed in this path is from Rift Valley Province to the nation it is located in and then the form of currency used in this nation.
+Thought: In Instantiate Paths, I find that Rift Valley Province is located in Kenya. And Kenya has some geolocations.
+But "place.location.geolocation" and "location.mailing_address.state_province_region" seem irrelevant to the currency of Kenya.
+And I should know the currency used in Kenya.
+Final Path: Rift Valley Province -> location.administrative_division.country -> finance.currency.countries_used
+-----
+Question: What major religion in the UK has a place of worship named St. Mary's Cathedral, Batticaloa?
+Initial Path: United Kingdom -> location.location.religions -> place.religion.major_religions
+>>>> Error Message
+1. [CVT] in the end. 
+2. relation "place.religion.major_religions" not instantiated.
+>>>> Instantiation Context
+Instantiate Paths: United Kingdom -> location.location.contains -> Heaton railway station
+United Kingdom -> location.statistical_region.religions -> [CVT]
+United Kingdom -> location.location.contains -> Bakersfield, Nottingham
+United Kingdom -> location.location.contains -> Knockloughrim
+United Kingdom -> location.location.contains -> Oakenshaw
+Candidate Relations: ['location.location.containedby', 'location.location.geolocation', 'location.religion_percentage.date', 'location.religion_percentage.percentage', 'location.religion_percentage.religion', 'type.object.type']
+>>>> Corrected Path
+Goal: The Initial Path starts from United Kingdom, which should cover the major religion in United Kingdom.
+Thought: In Instantiate Paths, I find that United Kingdom has some religions, described by a [CVT].
+In candidates, I find "location.religion_percentage.religion" most relevant to major religions.
+Final Path: United Kingdom -> location.statistical_region.religions -> location.religion_percentage.religion
+-----
+"""
+
+
+
 
 
 refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_err_msg_thought_empty_prompt_0110 = """Task: Given an Inital Path and some feedback information of a Question, please correct the initial path.
@@ -2359,7 +2443,7 @@ Thought: In Instantiate Paths, I find that Bolivian boliviano is the currency us
 Final Path: Bolivian boliviano -> country.country.currency -> location.location.adjoin_s
 -----
 Question: Rift Valley Province is located in a nation that uses which form of currency?
-Initial Path: Rift Valley Province -> place.administrative_division.country -> place.location.geolocation -> location.mailing_address.state_province_region
+Initial Path: Rift Valley Province -> place.administrative_division.country -> place.location.geolocation -> location.mailing_address.state_province_region -> finance.currency.countries_used
 >>>> Error Message
 1. <cvt></cvt> in the end. 
 2. relation "location.mailing_address.state_province_region" not instantiated.
@@ -2551,9 +2635,166 @@ add_relation("place.country.currency_used")
 """
 
 
+refine_seq_cvt_deal_goal_err_msg_thought_0110_cvt_instruct = """Task: Given an Inital Path and some feedback information of a Question, please correct the initial path.
+Tips:
+<cvt></cvt> is common in this task, which is an intermediate node in Instantiate Path. If you encounter a <cvt></cvt>, this means combining the relations right before and right after the <cvt></cvt> together can present a complete semantic. Or you can regard <cvt></cvt> as a node seperating a relation into two sub-relations. For example, the country bordered by France can be represented as "France -> location.location.adjoin_s -> <cvt></cvt> -> location.adjoining_relationship". So <cvt></cvt> MUST NOT be the end of the Instantiate Path.
+-----
+Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
+Initial Path: Miley Cyrus -> film.film.actor -> film.film.producer
+>>>> Error Message
+1. <cvt></cvt> in the end. 
+2. relation "film.film.producer" not instantiated.
+>>>> Instantiation Context
+Instantiate Paths: Miley Cyrus -> film.actor.film -> <cvt></cvt>
+Candidate Relations: ['dataworld.gardening_hint.last_referenced_by', 'dataworld.gardening_hint.replaced_by', 'film.director.film', 'film.film.country', 'film.film.directed_by', 'film.film.genre', 'film.film.initial_release_date', 'film.film.language', 'film.film.prequel', 'film.film.release_date_s', 'film.film.runtime', 'film.film.sequel', 'film.film.starring', 'film.film.written_by', 'film.film_cut.film', 'film.film_genre.films_in_this_genre', 'film.film_regional_release_date.film', 'film.performance.film', 'film.writer.film', 'imdb.topic.title_id', 'kg.object_profile.prominent_type', 'tv.tv_director.episodes_directed', 'tv.tv_program.episodes', 'tv.tv_series_episode.air_date', 'tv.tv_series_episode.director', 'tv.tv_series_episode.episode_number', 'tv.tv_series_episode.next_episode', 'tv.tv_series_episode.season', 'tv.tv_series_episode.season_number', 'tv.tv_series_episode.series', 'tv.tv_series_episode.writer']
+>>>> Corrected Path
+Goal: The Initial Path starts from Miley Cyrus, which should cover the movies featured by Miley Cyrus.
+Thought: In Instantiate Paths I know that Miley Cyrus acts some films, described by <cvt></cvt>.
+In candidates, I find "film.performance.film" most relevant to get the films.
+Meanwhile, "film.film.producer" is not relevant to my Goal.
+Final Path: Miley Cyrus -> film.actor.film -> film.performance.film
+-----
+Question: The country with the National Anthem of Bolivia borders which nations?
+Initial Path: National Anthem of Bolivia -> country.country.composer -> person.person.nationality -> location.location.adjoins -> location.location.country
+>>>> Error Message
+1. relation "country.country.composer" not instantiated.
+>>>> Instantiation Context
+Instantiate Paths: 
+Candidate Relations: ['dataworld.gardening_hint.last_referenced_by', 'government.national_anthem.national_anthem_of', 'government.national_anthem_of_a_country.anthem', 'kg.object_profile.prominent_type', 'music.composer.compositions', 'music.composition.composer', 'music.composition.lyricist', 'music.composition.recordings', 'music.lyricist.lyrics_written', 'music.recording.song']
+>>>> Corrected Path
+Goal: The Initial Path starts from National Anthem of Bolivia, which should cover the country whose national anthem is National Anthem of Bolivia, and then the countries bordering this country.
+Thought: In candidates, I find "government.national_anthem.national_anthem_of" most relevant to get the country with that national anthem.
+Meanwhile, I find the relation "country.country.composer" and "person.person.nationality" in Initial Path irrelevant to get the country and the bordering country.
+Final Path:  National Anthem of Bolivia -> government.national_anthem.national_anthem_of -> location.location.adjoins -> location.location.country
+-----
+Question: What bordering countries are to the country that uses Bolivian Boliviano as its currency?
+Initial Path: Bolivian boliviano -> country.country.currency -> country.country.bordering
+>>>> Error Message
+1. relation "country.country.bordering" not instantiated.
+>>>> Instantiation Context
+Instantiate Paths: Bolivian boliviano -> finance.currency.countries_used -> Bolivia
+Candidate Relations: []
+>>>> Corrected Path
+Goal: The Initial Path starts from Bolivian boliviano, which should cover the country whose currency is Bolivian boliviano, and then the countries bordering this country.
+Thought: In Instantiate Paths, I find that Bolivian boliviano is the currency used in Bolivia. No candidates are given, so I should pick some relations on my own.
+Final Path: Bolivian boliviano -> country.country.currency -> location.location.adjoin_s
+-----
+Question: Rift Valley Province is located in a nation that uses which form of currency?
+Initial Path: Rift Valley Province -> place.administrative_division.country -> place.location.geolocation -> location.mailing_address.state_province_region -> finance.currency.countries_used
+>>>> Error Message
+1. <cvt></cvt> in the end. 
+2. relation "location.mailing_address.state_province_region" not instantiated.
+>>>> Instantiation Message
+Instantiate Paths: Rift Valley Province -> location.administrative_division.country -> Kenya -> location.location.geolocation -> <cvt></cvt>
+Candidate Relations: ['location.geocode.latitude', 'location.geocode.longitude']
+>>>> Corrected Path
+Goal: Information needed in this path is from Rift Valley Province to the nation it is located in and then the form of currency used in this nation.
+Thought: In Instantiate Paths, I find that Rift Valley Province is located in Kenya. And Kenya has some geolocations.
+But "place.location.geolocation" and "location.mailing_address.state_province_region" seem irrelevant to the currency of Kenya.
+And I should know the currency used in Kenya.
+Final Path: Rift Valley Province -> location.administrative_division.country -> finance.currency.countries_used
+-----
+Question: What major religion in the UK has a place of worship named St. Mary's Cathedral, Batticaloa?
+Initial Path: United Kingdom -> location.location.religions -> place.religion.major_religions
+>>>> Error Message
+1. <cvt></cvt> in the end. 
+2. relation "place.religion.major_religions" not instantiated.
+>>>> Instantiation Context
+Instantiate Paths: United Kingdom -> location.location.contains -> Heaton railway station
+United Kingdom -> location.statistical_region.religions -> <cvt></cvt>
+United Kingdom -> location.location.contains -> Bakersfield, Nottingham
+United Kingdom -> location.location.contains -> Knockloughrim
+United Kingdom -> location.location.contains -> Oakenshaw
+Candidate Relations: ['location.location.containedby', 'location.location.geolocation', 'location.religion_percentage.date', 'location.religion_percentage.percentage', 'location.religion_percentage.religion', 'type.object.type']
+>>>> Corrected Path
+Goal: The Initial Path starts from United Kingdom, which should cover the major religion in United Kingdom.
+Thought: In Instantiate Paths, I find that United Kingdom has some religions, described by <cvt></cvt>.
+In candidates, I find "location.religion_percentage.religion" most relevant to major religions.
+Final Path: United Kingdom -> location.statistical_region.religions -> location.religion_percentage.religion
+-----
+"""
 
 
-refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_err_msg_thought_0111 = """Task: Given an Inital Path and some feedback information of a Question, please correct the initial path.
+refine_seq_cvt_deal_goal_err_msg_thought_0110_tag = """Task: Given an Inital Path and some feedback information of a Question, please correct the initial path.
+-----
+Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
+Initial Path: <ent>Miley Cyrus</ent> -> <rel>film.film.actor</rel> -> <rel>film.film.producer</rel>
+>>>> Error Message
+1. <cvt></cvt> in the end. 
+2. relation "film.film.producer" not instantiated.
+>>>> Instantiation Context
+Instantiate Paths: <ent>Miley Cyrus</ent> -> <rel>film.actor.film</rel> -> <cvt></cvt>
+Candidate Relations: ['dataworld.gardening_hint.last_referenced_by', 'dataworld.gardening_hint.replaced_by', 'film.director.film', 'film.film.country', 'film.film.directed_by', 'film.film.genre', 'film.film.initial_release_date', 'film.film.language', 'film.film.prequel', 'film.film.release_date_s', 'film.film.runtime', 'film.film.sequel', 'film.film.starring', 'film.film.written_by', 'film.film_cut.film', 'film.film_genre.films_in_this_genre', 'film.film_regional_release_date.film', 'film.performance.film', 'film.writer.film', 'imdb.topic.title_id', 'kg.object_profile.prominent_type', 'tv.tv_director.episodes_directed', 'tv.tv_program.episodes', 'tv.tv_series_episode.air_date', 'tv.tv_series_episode.director', 'tv.tv_series_episode.episode_number', 'tv.tv_series_episode.next_episode', 'tv.tv_series_episode.season', 'tv.tv_series_episode.season_number', 'tv.tv_series_episode.series', 'tv.tv_series_episode.writer']
+>>>> Corrected Path
+Goal: The Initial Path starts from Miley Cyrus, which should cover the movies featured by Miley Cyrus.
+Thought: In Instantiate Paths I know that Miley Cyrus acts some films, described by <cvt></cvt>.
+In candidates, I find "film.performance.film" most relevant to get the films.
+Meanwhile, "film.film.producer" is not relevant to my Goal.
+Final Path: <ent>Miley Cyrus</ent> -> <rel>film.actor.film</rel> -> <rel>film.performance.film</rel>
+-----
+Question: The country with the National Anthem of Bolivia borders which nations?
+Initial Path: <ent>National Anthem of Bolivia</ent> -> <rel>country.country.composer</rel> -> <rel>person.person.nationality</rel> -> <rel>location.location.adjoins</rel> -> <rel>location.location.country</rel>
+>>>> Error Message
+1. relation "country.country.composer" not instantiated.
+>>>> Instantiation Context
+Instantiate Paths: 
+Candidate Relations: ['dataworld.gardening_hint.last_referenced_by', 'government.national_anthem.national_anthem_of', 'government.national_anthem_of_a_country.anthem', 'kg.object_profile.prominent_type', 'music.composer.compositions', 'music.composition.composer', 'music.composition.lyricist', 'music.composition.recordings', 'music.lyricist.lyrics_written', 'music.recording.song']
+>>>> Corrected Path
+Goal: The Initial Path starts from National Anthem of Bolivia, which should cover the country whose national anthem is National Anthem of Bolivia, and then the countries bordering this country.
+Thought: In candidates, I find "government.national_anthem.national_anthem_of" most relevant to get the country with that national anthem.
+Meanwhile, I find the relation "country.country.composer" and "person.person.nationality" in Initial Path irrelevant to get the country and the bordering country.
+Final Path:  <ent>National Anthem of Bolivia</ent> -> <rel>government.national_anthem.national_anthem_of</rel> -> <rel>location.location.adjoins</rel> -> <rel>location.location.country</rel>
+-----
+Question: What bordering countries are to the country that uses Bolivian Boliviano as its currency?
+Initial Path: <ent>Bolivian boliviano</ent> -> <rel>country.country.currency</rel> -> <rel>country.country.bordering</rel>
+>>>> Error Message
+1. relation "country.country.bordering" not instantiated.
+>>>> Instantiation Context
+Instantiate Paths: <ent>Bolivian boliviano</ent> -> <rel>finance.currency.countries_used</rel> -> <ent>Bolivia</ent>
+Candidate Relations: []
+>>>> Corrected Path
+Goal: The Initial Path starts from Bolivian boliviano, which should cover the country whose currency is Bolivian boliviano, and then the countries bordering this country.
+Thought: In Instantiate Paths, I find that Bolivian boliviano is the currency used in Bolivia. No candidates are given, so I should pick some relations on my own.
+Final Path: <ent>Bolivian boliviano</ent> -> <rel>country.country.currency</rel> -> <rel>location.location.adjoin_s</rel>
+-----
+Question: Rift Valley Province is located in a nation that uses which form of currency?
+Initial Path: <ent>Rift Valley Province</ent> -> <rel>place.administrative_division.country</rel> -> <rel>place.location.geolocation</rel> -> <rel>location.mailing_address.state_province_region</rel> -> <rel>finance.currency.countries_used</rel>
+>>>> Error Message
+1. <cvt></cvt> in the end. 
+2. relation "location.mailing_address.state_province_region" not instantiated.
+>>>> Instantiation Message
+Instantiate Paths: <ent>Rift Valley Province</ent> -> <rel>location.administrative_division.country</rel> -> <ent>Kenya</ent> -> <rel>location.location.geolocation</rel> -> <cvt></cvt>
+Candidate Relations: ['location.geocode.latitude', 'location.geocode.longitude']
+>>>> Corrected Path
+Goal: Information needed in this path is from Rift Valley Province to the nation it is located in and then the form of currency used in this nation.
+Thought: In Instantiate Paths, I find that Rift Valley Province is located in Kenya. And Kenya has some geolocations.
+But "place.location.geolocation" and "location.mailing_address.state_province_region" seem irrelevant to the currency of Kenya.
+And I should know the currency used in Kenya.
+Final Path: <ent>Rift Valley Province</ent> -> <rel>location.administrative_division.country</rel> -> <rel>finance.currency.countries_used</rel>
+-----
+Question: What major religion in the UK has a place of worship named St. Mary's Cathedral, Batticaloa?
+Initial Path: <ent>United Kingdom</ent> -> <rel>location.location.religions</rel> -> <rel>place.religion.major_religions</rel>
+>>>> Error Message
+1. <cvt></cvt> in the end. 
+2. relation "place.religion.major_religions" not instantiated.
+>>>> Instantiation Context
+Instantiate Paths: <ent>United Kingdom</ent> -> <rel>location.location.contains</rel> -> <ent>Heaton railway station</ent>
+<ent>United Kingdom</ent> -> <rel>location.statistical_region.religions</rel> -> <cvt></cvt>
+<ent>United Kingdom</ent> -> <rel>location.location.contains</rel> -> <ent>Bakersfield, Nottingham</ent>
+<ent>United Kingdom</ent> -> <rel>location.location.contains</rel> -> <ent>Knockloughrim</ent>
+<ent>United Kingdom</ent> -> <rel>location.location.contains</rel> -> <ent>Oakenshaw</ent>
+Candidate Relations: ['location.location.containedby', 'location.location.geolocation', 'location.religion_percentage.date', 'location.religion_percentage.percentage', 'location.religion_percentage.religion', 'type.object.type']
+>>>> Corrected Path
+Goal: The Initial Path starts from United Kingdom, which should cover the major religion in United Kingdom.
+Thought: In Instantiate Paths, I find that United Kingdom has some religions, described by <cvt></cvt>.
+In candidates, I find "location.religion_percentage.religion" most relevant to major religions.
+Final Path: <ent>United Kingdom</ent> -> <rel>location.statistical_region.religions</rel> -> <rel>location.religion_percentage.religion</rel>
+-----
+"""
+
+
+
+refine_prompt_seq_err_msg_thought_tag = """Task: Given an Inital Path and some feedback information of a Question, please correct the initial path.
 -----
 Question: The movie featured Miley Cyrus and was produced by Tobin Armbrust?
 Initial Path: Miley Cyrus -> film.film.actor -> film.film.producer
@@ -3573,7 +3814,7 @@ Path: {
 }
 #
 Question: Who is the director of the movie featured Miley Cyrus and was produced by Tobin Armbrust?
-Topic Entities: ["Miley Cyrus", "Tobin Armbrust"]\
+Topic Entities: ["Miley Cyrus", "Tobin Armbrust"]
 Thought: There are two topic entities, so the answer should be constrained by two relation paths. 
 For the path starting from "Miley Cyrus", firstly, it should cover the movies featured Miley Crus. Second, it should cover the directors of the movies.
 For the path starting from "Tobin Armbrust", firstly, it should cover the movies produced by Tobin Armbrust. Second, it should cover the directors of the movies.
@@ -3648,6 +3889,232 @@ Path: {
 }
 #
 """
+
+
+
+
+
+relation_reasoning_prompt_webqsp = """Given a question and a Topic Entity in the Question, output possible freebase Relation Paths starting from the Topic Entities in order to answer the question. 
+Here are some RULES you must obey:
+1. Use a json dict as output format, the key of which is the Topic Entities of the Question and the value is an array of array, each inner array is a relation path from the Topic Entity to the answer of the question. You should output different Relation Paths for each Topic Entities, according to the question. The Paths are stored in an array.
+2. You must output at least 2 different possible relation paths starting from this topic entity. The differences between the paths can be different relations or the number of relations.
+3. For your information, the Freebase knowledge base stores knowledge in different structures from the natural language. In other words, a relation in natural language can be represented by several (one or two or more) relations in the knowledge base. That is why I want you to output several different possible paths.
+4. Please think step by step.
+#
+Question: where is aviano air force base located?
+Topic Entity: "aviano air force base"
+Thought: Firstly, the path should cover location containing aviano air force base.
+Path: {
+"destin florida":[
+    "aviano air force base -> location.location.containing",
+    "aviano air force base -> location.location.containedby",
+]
+}
+#
+Question: what major airport is near destin florida?
+Topic Entity: "destin florida"
+Thought: Firstly, the path should cover airports near destin florida. Second, it should cover the number of runways to finally now the major one.
+Path: {
+"destin florida":[
+    "destin florida -> location.location.nearby_airports -> aviation.airport.number_of_runways",
+    "destin florida -> location.location.airports_near -> aviation.airport.major_airport",
+]
+}
+#
+Question: where did laura ingalls wilder live?
+Topic Entity: "laura ingalls wilder"
+Thought: Firstly, the path should cover the place where laura ingalls wilder live.
+Path: {
+"laura ingalls wilder":[
+    "laura ingalls wilder -> people.person.places_lived -> people.place_lived.location", 
+    "laura ingalls wilder -> place.place.person_lived -> location.location.place", 
+]
+}
+#
+Question: who played princess leia in star wars movies?
+Topic Entity: "princess leia"
+Thought: Firstly, the path should cover the movies portrying princess leia. Secondly, the path should cover the actors in that movie.
+Path: {
+"princess leia":[
+    "princess leia -> film.film_character.portrayed_in_films -> film.performance.actor", 
+    "princess leia -> movie.movie_character.movie -> film.actor.actor", 
+]
+}
+#
+Question: what are countries in south asia?
+Topic Entity: "south asia"
+Thought: Firstly, the path should cover the locations in south asia. Secondly, the path should cover the country of these locations.
+Path: {
+"south asia":[
+    "south asia -> location.location.contains -> location.country", 
+    "south asia -> location.location.contains -> location.location.country"
+]
+}
+#
+Question: what to see outside of paris?
+Topic Entity: "paris"
+Thought: Firstly, the path should cover tourist attractions in paris.
+Path: {
+"paris":[
+    "paris -> travel.travel_destination.tourist_attractions", 
+    "paris -> place.place.tourist_attractions", 
+]
+}
+#
+"""
+
+
+
+refine_prompt_webqsp = """Task: Given an Inital Path and some feedback information of a Question, please correct the initial path.
+-----
+Question: where is aviano air force base located?
+Initial Path: aviano air force base -> place.place.location
+>>>> Error Message
+1. relation "place.place.location" not instantiated.
+>>>> Instantiation Context
+Instantiate Paths:
+Candidate Relations: ['aviation.airport.serves', 'base.aareas.schema.administrative_area.administrative_children', 'base.aareas.schema.administrative_area.administrative_parent', 'base.popstra.location.vacationers', 'base.popstra.vacation_choice.location', 'base.wikipedia_infobox.settlement.area_code', 'book.newspaper.circulation_areas', 'broadcast.broadcast.area_served', 'film.film.featured_film_locations', 'film.film_location.featured_in_films', 'location.hud_county_place.county', 'location.hud_county_place.place', 'location.hud_foreclosure_area.hhuniv', 'location.hud_foreclosure_area.ofheo_price_change', 'location.hud_foreclosure_area.total_90_day_vacant_residential_addresses', 'location.location.area', 'location.location.containedby', 'location.location.geolocation', 'location.location.gnis_feature_id', 'location.location.nearby_airports', 'location.location.time_zones', 'location.mailing_address.citytown', 'location.us_county.hud_county_place', 'organization.organization.place_founded', 'people.deceased_person.place_of_death', 'people.marriage.location_of_ceremony', 'people.place_lived.location', 'transportation.bridge.locale', 'transportation.road_starting_point.location', 'travel.tourist_attraction.near_travel_destination', 'travel.transportation.travel_destination', 'travel.travel_destination.how_to_get_here', 'travel.travel_destination.tourist_attractions', 'tv.tv_location.tv_shows_filmed_here', 'tv.tv_program.filming_locations']
+>>>> Corrected Path
+Goal: The Initial Path is from aviano air force base, which should cover the place it located.
+Thought: In candidates, I find "location.location.containedby" most relevant to the place air force base located.
+Final Path: aviano air force base -> location.location.containedby
+-----
+Question: what major airport is near destin florida?
+Initial Path: destin florida -> place.place.airports_near -> airport.airport.major_airport
+>>>> Error Message
+1. relation "airport.airport.major_airport" not instantiated.
+>>>> Instantiation Context
+Instantiate Paths: destin florida -> location.location.nearby_airports -> Destin–Fort Walton Beach Airport
+destin florida -> location.location.nearby_airports -> Destin Executive Airport
+Candidate Relations: ['aviation.airline.focus_cities', 'aviation.airline.hubs', 'aviation.airport.focus_city_for', 'aviation.airport.hub_for', 'aviation.airport.iata', 'aviation.airport.icao', 'aviation.airport.number_of_runways', 'aviation.airport.serves', 'base.ourairports.airport.ourairports_id', 'kg.object_profile.prominent_type', 'location.location.containedby', 'location.location.contains', 'location.location.geolocation', 'location.location.nearby_airports', 'location.location.time_zones', 'time.time_zone.locations_in_this_time_zone', 'travel.transportation.mode_of_transportation']
+>>>> Corrected Path
+Goal: The Initial Path is from destin florida, which should cover the airports near destin florida and then the number of runways to know the major one.
+Thought: In Instantiate Paths, I know that destin florida has some nearby airports.
+In candidates, I find "aviation.airport.number_of_runways" most relevant to number of runways.
+Final Path: destin florida -> place.place.airports_near -> aviation.airport.number_of_runways
+-----
+Question: what to see outside of paris?
+Initial Path: paris -> location.location.near_by
+>>>> Error Message
+1. <cvt></cvt> in the end. 
+>>>> Instantiation Context
+Instantiate Paths: paris -> location.location.adjoin_s -> <cvt></cvt>
+Candidate Relations: ['location.adjoining_relationship.adjoins']
+>>>> Corrected Path
+Goal: The Initial Path is from paris, which should cover some tourism attractions in paris.
+Thought: In Instantiate Paths, I know that paris adjoins some place, described by a cvt node.
+Some candidates are given. However, I want some tourism attractions in this path.
+Final Path: paris -> travel.travel_destination.tourist_attractions
+-----
+Question: where did laura ingalls wilder live?
+Initial Path: laura ingalls wilder -> people.person.places_lived
+>>>> Error Message
+1. <cvt></cvt> in the end. 
+>>>> Instantiation Context
+Instantiate Paths: laura ingalls wilder -> people.person.places_lived -> <cvt></cvt>
+Candidate Relations: ['people.person.places_lived', 'people.place_lived.location', 'people.place_lived.person']
+>>>> Corrected Path
+Goal: The Initial Path is from laura ingalls wilder, which should cover the place he lived.
+Thought: In Instantiate Paths, I know that laura ingalls wilder lived in some place, described by a cvt node.
+In candidates, I find "people.place_lived.location" most relevant to get place he lived.
+Final Path: laura ingalls wilder -> people.person.places_lived -> people.place_lived.location
+-----
+Question: who played princess leia in star wars movies?
+Initial Path: princess leia -> film.film.actor
+>>>> Error Message
+1. <cvt></cvt> in the end. 
+>>>> Instantiation Context
+Instantiate Paths: princess leia -> film.performance.character -> <cvt></cvt>
+Candidate Relations: ['film.actor.film', 'film.film.starring', 'film.film_character....d_in_films', 'film.performance.actor', 'film.performance.film']
+>>>> Corrected Path
+Goal: The Initial Path is from princess leia, which should cover the film it is in, and then the actor if the film.
+Thought: In Instantiate Paths, I know that princess leia is in some films, described by a cvt node.
+In candidates, I find "film.performance.actor" most relevant to get place he lived.
+Final Path: laura ingalls wilder -> film.performance.character -> film.performance.actor
+-----
+"""
+
+
+
+
+
+relation_reasoning_prompt_cleaned = """Task: Given a question and some Topic Entities, output reasoning paths starting from each Topic Entities to answer the question. 
+RULES:
+1. Use a json dict as output format.
+2. Please think step by step, before you output the Path.
+-----
+Question: Find the person who said \"Taste cannot be controlled by law\", where did this person die from?
+Topic Entities: ["\"Taste cannot be controlled by law\""]
+Thought: There is only one topic entity, the answer is constrained by one path. 
+For, the path from "\"Taste cannot be controlled by law\"", firstly, it should cover the person quote it. Second, I should cover the place where the person died.
+Path: {
+"\"Taste cannot be controlled by law\"":[
+    "\"Taste cannot be controlled by law\" -> people.person.quotations -> people.deceased_person.place_of_death"
+]
+}
+-----
+Question: Who is the director of the movie featured Miley Cyrus and was produced by Tobin Armbrust?
+Topic Entities: ["Miley Cyrus", "Tobin Armbrust"]\
+Thought: There are two topic entities, so the answer should be constrained by two relation paths. 
+For the path starting from "Miley Cyrus", firstly, it should cover the movies featured Miley Crus. Second, it should cover the directors of the movies.
+For the path starting from "Tobin Armbrust", firstly, it should cover the movies produced by Tobin Armbrust. Second, it should cover the directors of the movies.
+Finally, the answer of the question should be the intersection of the two paths. 
+Path: {
+"Miley Cyrus":[
+    "Miley Cyrus -> film.film.starring -> film.film_staff.director", 
+],
+"Tobin Armbrust":[
+    "Tobin Armbrust -> film.film.produced_by -> film.film.director",
+]
+}
+-----
+Question: The artist nominated for The Long Winter lived where?
+Topic Entities:["The Long Winter lived"]
+Thought: There is only one topic entity, the answer is constrained by one path. 
+For the path from "The Long Winter lived", firstly, it should cover the artist nominated for "The Long Winter lived". Second, it should cover where the artist lived.
+Path: {
+"The Long Winter lived":[
+    "The Long Winter lived -> award.award_nomination.nominated_for -> people.person.places_lived"
+]
+}
+-----
+Question: What major religion in the UK has a place of worship named St. Mary's Cathedral, Batticaloa?
+Topic Entities:["United Kingdom", "St. Mary's Cathedral, Batticaloa"]
+Thought: There are two topic entities, so the answer should be constrained by two relation paths. 
+For the path starting from "United Kingdom", firstly, it should cover the religions in "United Kingdom". Second, it should cover the majority of the religions.
+For the path starting from "St. Mary's Cathedral, Batticaloa", first, it should cover the religion with a place of worship named "St. Mary's Cathedral, Batticaloa".
+Finally, the answer of the question should be the intersection of the two paths.
+Path: {
+"United Kingdom":[
+    "United Kingdom -> location.statistical_region.religions -> location.religion_percentage.religion", 
+],
+"St. Mary's Cathedral, Batticaloa":[
+    "St. Mary's Cathedral, Batticaloa -> religion.religious_organization.places_of_worship",
+]
+}
+-----
+Question: Rift Valley Province is located in a nation that uses which form of currency?
+Topic Entities:["Rift Valley Province"]
+Thought: There is only one topic entity, the answer is constrained by one path. 
+For the path from "Rift Valley Province", firstly, it should cover the nation where "Rift Valley Province" is located. Second, it should cover the form of currency used by the nation.
+Path: {
+"Rift Valley Province":[
+    "Rift Valley Province -> location.administrative_division.country -> location.country.currency_used"
+]
+}
+-----
+Question: The country with the National Anthem of Bolivia borders which nations?
+Topic Entities:["National Anthem of Bolivia"],
+Thought: There is only one topic entity, the answer is constrained by one path. 
+For the path from "National Anthem of Bolivia", firstly, it should cover the country with the national athem "National Anthem of Bolivia". Second, it should cover the nations bordering that country.
+Path: {
+"National Anthem of Bolivia":[
+    "National Anthem of Bolivia -> location.country.national_anthem -> location.location.adjoin_s"
+]
+}
+-----
+"""
+
 
 
 relation_reasoning_prompt_onepath = """Given a question and some Topic Entities in the Question, output possible freebase Relation Paths starting from each Topic Entities in order to answer the question. 

@@ -47,9 +47,9 @@ def align(dataset_name, question_string, data, ground_truth_datas):
                 if type(answer)==str:
                     alias=[answer]
                 else:
-                    alias = answer['aliases']
-                    ans = answer['answer']
-                    alias.append(ans)
+                    alias = answer['label']
+                    # ans = answer['answer']
+                    # alias.append(ans)
                 answer_list.extend(alias)
 
     elif dataset_name.startswith(WEBQSP):
@@ -113,8 +113,8 @@ def exact_match(response, answers):
     clean_result = response.strip().replace(" ","").lower()
     for answer in answers:
         clean_answer = answer.strip().replace(" ","").lower()
-        if clean_result == clean_answer or clean_result in clean_answer or clean_answer in clean_result:
-        # if clean_result == clean_answer or clean_result in clean_answer:
+        # if clean_result == clean_answer or clean_result in clean_answer or clean_answer in clean_result:
+        if clean_result == clean_answer or clean_answer in clean_result:
             return True
     return False
 

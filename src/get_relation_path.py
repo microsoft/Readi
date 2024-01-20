@@ -88,36 +88,56 @@ def run():
 
 
 def get_relation_path(input_file, output_file):
-
-    items=readjson(input_file)[:100]
+    items=readjson(input_file)
+    # done = readjson("/home/v-sitaocheng/demos/dangle_over_ground/data/initial_plan/cwq_gpt4_0119.json")
+    # doneid=[i["ID"] for i in done]
+    doneid=[]
+    done = []
     for index, item in enumerate(tqdm(items)):
-        topic_ent = [v for k,v in item['topic_entity'].items()]
-        if topic_ent == []:
-            print(f"{index} topic entity is empty, item: {item}")
+        if item['ID'] in doneid:
+            items[index] = done[index]
             continue
+        else:
+            topic_ent = [v for k,v in item['topic_entity'].items()]
+            if topic_ent == []:
+                print(f"{index} topic entity is empty, item: {item}")
+                continue
 
-        question_str = get_question_string(args.dataset)
-        prompts = relation_reasoning_prompt_new  + "Question: " + item[question_str] + "\nTopic Entities:" + str(topic_ent)+ "\nThought:"
+            question_str = get_question_string(args.dataset)
 
-        default_relation_path = {
-            k: [k]
-            for k in topic_ent
-        }
-        item['relation_path_candidates'] = default_relation_path
-        MAX_RETRY_TIME = 5
-        for _ in range(MAX_RETRY_TIME):
-            response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
-            try:
-                item['relation_path_candidates'] = eval(response.split("Path:")[-1].strip())
-                break
-            except:
-                error_line = "*" * 20
-                print(response)
-                time.sleep(1)
-                print(error_line)
+            if "cwq" == args.dataset:
+                prompts = relation_reasoning_prompt_new  + "Question: " + item[question_str] + "\nTopic Entities:" + str(topic_ent)+ "\nThought:"
+            elif "WebQSP" == args.dataset:
+                prompts = relation_reasoning_prompt_webqsp + "Question: " + item[question_str] + "\nTopic Entity:" + str(topic_ent)+ "\nThought:"
 
+            default_relation_path = {
+                k: [k]
+                for k in topic_ent
+            }
+            item['relation_path_candidates'] = default_relation_path
+            MAX_RETRY_TIME = 5
+            for _ in range(MAX_RETRY_TIME):
+                response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
+                try:
+                    item['relation_path_candidates'] = eval(response.split("Path:")[-1].strip())
+                    break
+                except Exception as e:
+                    print(e)
+                    error_line = "*" * 20
+                    print(response)
+                    time.sleep(1)
+                    print(error_line)
 
-        savejson(output_file, items)
+        if index % 100:
+            savejson(output_file, items)
+
+# def run():
+#     cwq = readjson("/home/v-sitaocheng/demos/dangle_over_ground/data/datasets/cwq_test_origin.json")
+#     topic = readjson("/home/v-sitaocheng/demos/dangle_over_ground/data/datasets/cwq_test.json")
+#     for index, line in enumerate(cwq):
+#         line['topic_entity'] = topic[index]['topic_entity']
+
+#     savejson("/home/v-sitaocheng/demos/dangle_over_ground/data/datasets/cwq_test_origin_with_topic.json", cwq)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -127,7 +147,7 @@ if __name__ == '__main__':
     parser.add_argument("--width", type=int, default=3, help="choose the search width of ToG.")
     parser.add_argument("--depth", type=int, default=3, help="choose the search depth of ToG.")
     parser.add_argument("--remove_unnecessary_rel", type=bool, default=True, help="whether removing unnecessary relations.")
-    parser.add_argument("--llm", type=str,choices=LLM_BASE.keys(), default="gpt35", help="base LLM model.")
+    parser.add_argument("--llm", type=str,choices=LLM_BASE.keys(), default="gpt4", help="base LLM model.")
                         # default="gpt-35-turbo-16k-20230613", help="base LLM model.")
     parser.add_argument("--opeani_api_keys", type=str, default="", help="if the LLM_type is gpt-3.5-turbo or gpt-4, you need add your own openai api keys.")
     parser.add_argument("--num_retain_entity", type=int, default=5, help="Number of entities retained during entities search.")
@@ -138,5 +158,5 @@ if __name__ == '__main__':
     input_file = get_dataset_file(args.dataset)
     output_file = os.path.join(INIT_PLAN_BASE,f"{args.dataset}_{args.llm}_{get_timestamp()}.json")
 
-    print("save result to: ",output_file)
+    print("save result to: ", output_file)
     get_relation_path(input_file=input_file, output_file=output_file)

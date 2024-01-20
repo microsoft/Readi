@@ -88,6 +88,16 @@ def prediction_graph_engine(args, processed_list, input_builder, data):
     elif args.refine_strategy =="init_empty":
         kg_triples, kg_paths, thought, len_of_predict_knowledge, len_of_grounded_knowledge, predict_path = input_builder.get_graph_knowledge_LLM_empty_init(args, data)
 
+    # init plan为对比方法
+    elif args.refine_strategy =="campre_method":
+        kg_triples, kg_paths, thought, len_of_predict_knowledge, len_of_grounded_knowledge, predict_path = input_builder.get_graph_knowledge_campare_method_plan(args, data)
+    
+    # init 为破坏版
+    elif args.refine_strategy =="init_corrupt":
+        kg_triples, kg_paths, thought, len_of_predict_knowledge, len_of_grounded_knowledge, predict_path = input_builder.get_graph_knowledge_LLM_crpt_init(args, data)
+
+
+
     process_ed_kg = ""
     kg_triple_set = []
     for lines in kg_triples:
@@ -173,6 +183,7 @@ def main_engine(args, LLM):
     with open(args.init_plan_path, 'r') as f:
         reasoning_path = json.load(f)
 
+    # reasoning_path=reasoning_path[:1000]
     for index, data in enumerate(tqdm(reasoning_path)):
         res = prediction_graph_engine(args, processed_list, input_builder, data)
         if res is not None:
@@ -220,19 +231,23 @@ if __name__ == "__main__":
     argparser.add_argument("--debug", action="store_true")
     argparser.add_argument("--temperature_refine", type=float, default=0.3, help="llm temperature refine ")
 
-    argparser.add_argument("--refine_strategy", type=str,
-                           choices={"llm_refine", "init_only", "init_empty"}, default="llm_refine")
-    argparser.add_argument("--refine_output", type=str, choices={"sequence", "function", "dict", "sequence_err_msg", "function_err_msg"}, default="sequence_err_msg")
-    argparser.add_argument("--llm", type=str, choices=LLM_BASE.keys(), default='gpt35')
+    argparser.add_argument("--refine_strategy", type=str, choices={"llm_refine", "init_only", "init_empty", "init_corrupt", "campre_method"}, default="llm_refine")
+    argparser.add_argument("--refine_output", type=str, choices={"sequence", "function", "dict", "sequence_err_msg", "sequence_err_msg_tag", "function_err_msg"}, default="sequence_err_msg")
+    argparser.add_argument("--llm", type=str, choices=LLM_BASE.keys(), default='gpt4')
     argparser.add_argument("--init_plan_path", type=str, required=True, default=None)
     # argparser.add_argument("--output_file_name", type=str, default="predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_1230_engine_triple_cvt_new_goal_progess_hard_stop.jsonl")
-    argparser.add_argument("--name", type=str, default="onePath_CVT_HardStop_oldengine_thought")
+    # argparser.add_argument("--name", type=str, default="_compare_sr_beam5")
+    argparser.add_argument("--name", type=str, default="final")
+    argparser.add_argument("--compare_beam", type=int, default="1")
 
     args, _ = argparser.parse_known_args()
     if args.dataset is None:
         args.dataset = os.path.split(args.init_plan_path)[1].split('_')[0]
 
-    args.output_file_name = f"{args.dataset}_{args.llm}_{args.refine_strategy}_{args.refine_output}_{args.name}_{get_timestamp()}.jsonl"
+    if args.refine_strategy == "init_only":
+        args.output_file_name = f"{args.dataset}_{args.refine_strategy}_{args.name}_0118.jsonl"
+    else:
+        args.output_file_name = f"{args.dataset}_{args.llm}_{args.refine_strategy}_{args.refine_output}_{args.name}_0119.jsonl"
     print(args.output_file_name)
 
     args.llm_engine = LLM_BASE[args.llm]

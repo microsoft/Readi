@@ -27,6 +27,7 @@ if __name__ == '__main__':
 
     num_right = 0
     num_error = 0
+    # output_datas = output_datas[:1000]
     for data in output_datas:
         answers = align(args.dataset, question_string, data, ground_truth_datas)
         if 'cot' in args.output_file:
@@ -49,14 +50,16 @@ if __name__ == '__main__':
                         logger.info("cot_result: {}".format(data['cot_result']))
                     else:
                         print(data['question'])
-                        print(data['reasoning_chains'])
+                        # print(data['reasoning_chains'])
                         print(data['results'])
                         logger.info("question: {}".format(data['question']))
-                        logger.info("reasoning_chains: {}".format(data['reasoning_chains']))
+                        # logger.info("reasoning_chains: {}".format(data['reasoning_chains']))
                         logger.info("results: {}".format(data['results']))
                     num_error+=1
         else:
             response = results
+            if type(response)!=str:
+                response=""
             if args.constraints_refuse and check_string(response):
                 continue
             if response!="" and exact_match(response, answers):
@@ -69,10 +72,10 @@ if __name__ == '__main__':
                     logger.info("cot_result: {}".format(data['cot_result']))
                 else:
                     print(data['question'])
-                    print(data['reasoning_chains'])
+                    # print(data['reasoning_chains'])
                     print(data['results'])
                     logger.info("question: {}".format(data['question']))
-                    logger.info("reasoning_chains: {}".format(data['reasoning_chains']))
+                    # logger.info("reasoning_chains: {}".format(data['reasoning_chains']))
                     logger.info("results: {}".format(data['results']))
                 print()
                 num_error+=1

@@ -15,7 +15,7 @@ WEBQSP = 'WebQSP'
 GRAPHQ = 'graphq'
 
 DATASET = {
-    CWQ: "cwq_test.json",
+    CWQ: "cwq_test_origin_with_topic.json",
     GRAILQA_DEV: "grailqa_dev_pyql_topic_entities.json",
     GRAILQA: "grailqa.json",
     # GRAILQA_DEV_FILTER: "grailqa_dev_afilter_empty_topic_entity.json",
@@ -34,6 +34,7 @@ def get_dataset_file(dataset: str) -> str:
 LLM_BASE = {
     'gpt35': "gpt-35-turbo-16k-20230613",
     'gpt4': "gpt-4-32k-20230321"
+    # 'gpt4': "gpt-4-20230321"
 }
 
 QUESTION_STRING = {
@@ -79,7 +80,10 @@ def get_entity_answer(data, dataset):
             for ans in answer_list
         ]
     else:
-        entity_answer = data['answer']
+        if 'answers' in data.keys():
+            entity_answer = data['answers']
+        else:   
+            entity_answer = data['answer']
     return entity_answer
 
 if __name__=='__main__':
