@@ -444,6 +444,47 @@ def call_me_bar():
     plt.tight_layout()
     plt.savefig("./efficient_bar.png")
 
+
+def dedup_json(input_file):
+    import json
+    import jsonlines
+
+    if input_file.endswith("json"):
+        with open(input_file, "r") as f:
+            data = json.load(f)
+    else:
+        with jsonlines.open(input_file, "r") as f:
+            data = list(f)
+
+    # 创建一个空的列表，用来存储去重后的问题
+    unique_questions = []
+
+    # 创建一个空的集合，用来记录已经出现过的问题
+    seen_questions = set()
+
+    # 遍历 json 字典中的每一项
+    for item in data:
+        # 获取当前项的 "question" 字段的值
+        question = item["question"]
+        # 如果这个问题没有出现过
+        if question not in seen_questions:
+            # 将这个问题添加到集合中，表示已经出现过
+            seen_questions.add(question)
+            # 将这个问题添加到列表中，表示保留
+            unique_questions.append(item)
+
+    # 打开一个新的 json 文件，写入去重后的数据
+    if input_file.endswith("json"):
+        with open(input_file.split(".")[0]+"_dedup.json", "w") as f:
+            json.dump(unique_questions, f, indent=4)
+    else:
+        with jsonlines.open(input_file.split(".")[0]+"_dedup.jsonl", "w") as f:
+            f.write_all(unique_questions)
+
+
+    # 打印去重后的问题的数量
+    print(f"去重后的问题有 {len(unique_questions)} 个")
+
 # input_file="/home/v-sitaocheng/demos/llm_hallu/subgraph_retrieval/sr_cwq/SubgraphRetrievalKBQA/debug/cwq_retrieved_graph_cache/data/cwq/SubgraphRetrievalKBQA/src/tmp/reader_data/CWQ/test_simple.json"
 # entity_file = '/home/v-sitaocheng/demos/llm_hallu/subgraph_retrieval/sr_cwq/SubgraphRetrievalKBQA/debug/ent2id.pickle'
 # golden_file = "/home/v-sitaocheng/demos/dangle_over_ground/data/datasets/cwq_test.json"
@@ -463,3 +504,4 @@ def call_me_bar():
 # call_me_bar()
 
 
+dedup_json("/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/cwq/cwq_gpt35_llm_refine_sequence_err_msg_final_0119.jsonl")
