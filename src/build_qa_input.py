@@ -627,11 +627,11 @@ class PromptBuilder(object):
             prompts = refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_0109  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Instantiation Message\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel) + "\n>>>> Corrected Path\nGoal:"
         elif 'sequence_err_msg' in args.refine_output:
             # prompts = refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_err_msg_thought_empty_prompt_0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Context\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Corrected Path"
-            prompts = refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_err_msg_thought_0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Context\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Corrected Path\nGoal: "
+            if args.dataset == "cwq":
+                prompts = refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_err_msg_thought_0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Context\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Corrected Path\nGoal: "
             # prompts = refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_err_msg_thought_0118  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Context\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Corrected Path\nGoal: "
-            
-            # refine_prompt_path_one_path_seq_cvt_deal_new_goal_progress_err_msg_thought_0118
-        
+            elif args.dataset == "WebQSP":
+                prompts = refine_prompt_webqsp  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Context\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Corrected Path\nGoal: "
 
         elif args.refine_output == 'function_err_msg':
             prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_err_msg_thought0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Context\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Correcting Function\nGoal:"

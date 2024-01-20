@@ -128,12 +128,14 @@ def reasoning_with_egpsr_contract(file_index):
         save_2_jsonl(lines['question'], response, lines['knowledge_triples_egpsr_contract_top1_nointer_reasoning'], 'egpsr_contract_cwq_100sample_top1_nointer_reasoning'+file_index, file_index)
 
 
-def gpt4_io(file_name ,output_file_index):
+def gpt4_io(file_name, output_file_index):
     if file_name.endswith("jsonl"):
         data=read_jsonl(file_name)
+        output_dir = os.path.split(file_name)[0]
     else:
         data=readjson(file_name)
         output_dir = os.path.split(file_name)[0]
+
     ex_question_list = []
     ex_result_file = []
 
@@ -146,13 +148,13 @@ def gpt4_io(file_name ,output_file_index):
     reasoning_result = ex_result_file
 
     for line in tqdm(data):
-        if line['question'] in ex_question_list:
+        if line['Question'] in ex_question_list:
             continue
         
-        prompts = io_prompt + "\n\nQ: " + line['question'] + "\nA: "
+        prompts = io_prompt + "\n\nQ: " + line['Question'] + "\nA: "
         response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
 
-        reasoning_result.append({"question":line['question'], "results": response})
+        reasoning_result.append({"question":line['Question'], "results": response})
 
         # savejson('results/KGQA/RoG-cwq/QA_result/cwq_100examples'+file_index+".json", reasoning_result)
         savejson(os.path.join(output_dir, output_file_index+".json"), reasoning_result)
@@ -189,10 +191,9 @@ def reasoning_with_ROG(file_name, output_file_index):
             response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
             line['kg_triples_str'] = "COT"
 
-
         else:
             times=0
-            while times<8:
+            while times<10:
                 # prompts = answer_prompt_kb_interwined_path_1227 + "Q: " + lines['question'] + "\nKnowledge Path: " + lines['kg_paths'] + "\nA: "
                 prompts = answer_prompt_kb_interwined_nointer + "Q: " + line['question'] + "\nKnowledge Triplets: " + line['kg_triples_str'] + "\nA: "
                 response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
