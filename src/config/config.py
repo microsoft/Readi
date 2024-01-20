@@ -19,7 +19,8 @@ DATASET = {
     GRAILQA_DEV: "grailqa_dev_pyql_topic_entities.json",
     GRAILQA: "grailqa.json",
     # GRAILQA_DEV_FILTER: "grailqa_dev_afilter_empty_topic_entity.json",
-    WEBQSP: "WebQSP.json",
+    # WEBQSP: "WebQSP.json",
+    WEBQSP: "webqsp_simple_test.jsonl",
     GRAPHQ: "graphquestions_v1_fb15_test_091420.json",
 }
 
