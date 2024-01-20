@@ -2,6 +2,7 @@ results/
 cloudgpt-apim-token-cache.bin
 data/initial_plan/*
 *.json
+figures/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
