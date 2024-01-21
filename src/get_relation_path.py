@@ -98,7 +98,10 @@ def get_relation_path(input_file, output_file):
             items[index] = done[index]
             continue
         else:
-            topic_ent = [v for k,v in item['topic_entity'].items()]
+            if 'webqsp' in input_file.lower():
+                topic_ent = [item['TopicEntityName']]
+            else:
+                topic_ent = [v for k,v in item['topic_entity'].items()]
             if topic_ent == []:
                 print(f"{index} topic entity is empty, item: {item}")
                 continue

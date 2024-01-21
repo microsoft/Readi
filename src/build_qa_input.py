@@ -583,14 +583,14 @@ class PromptBuilder(object):
             if "->" not in init_path:
                 err_msg_list.append("Empty Initial Path.")
             else:
-                relation_elements = init_path.split(" -> ")[1:]         
+                relation_elements = init_path.split(" -> ")[1:]
                 if max_grounded_len < len(relation_elements):
                     ungrounded_relation = relation_elements[max_grounded_len]
                     err_msg_list.append(f"relation \"{ungrounded_relation}\" not instantiated.")
             err_msg = ""
             for index, msg in enumerate(err_msg_list):
                 err_msg+= str(index+1)+". "+ msg +"\n"
-                
+
         if "tag" in args.refine_output:
             path_splits = init_path.split(" -> ")
             entity = path_splits[0]
@@ -636,7 +636,7 @@ class PromptBuilder(object):
         elif args.refine_output == 'function_err_msg':
             prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_err_msg_thought0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Context\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Correcting Function\nGoal:"
             # prompts = refine_prompt_path_one_path_func_cvt_deal_new_goal_progress_err_msg_no_thought0110  + "Question: " + question + "\nInitial Path:" + str(init_path) + "\n>>>> Error Message\n" + err_msg + ">>>> Instantiation Context\nInstantiate Paths:" + grounded_know_string +"\nCandidate Relations:" + str(candidate_rel)  + "\n>>>> Correcting Function"
-        
+
         # prompts = refine_agent_prompt  + "\nQuestion: " + question + "\n\nInitial Path:" + str(init_path) + "\n\nGrounded Knowledge:" + grounded_know_string +"\n\nCandidate Relations:" + str(candidate_rel) + "\n\nGoal:"
 
         while refine_time <= 8:
@@ -850,7 +850,7 @@ class PromptBuilder(object):
         for k, v in ungrounded_cand_rel.items():
             candidate_rel.extend(v)
         candidate_rel = list(set(candidate_rel))
-        
+
         # 关系给太多会爆炸 超过35随机抽35   这里可以按照和问题相似度排序!!!!!!
         if len(candidate_rel) > 35:
             candidate_rel = utils.similar_search_list(question, candidate_rel)[:35]
@@ -1048,7 +1048,11 @@ class PromptBuilder(object):
     def get_graph_knowledge_LLM_revised_engine(self, args, question_dict):
         reasoning_path_LLM_init = question_dict['relation_path_candidates']
         question = question_dict[get_question_string(args.dataset)]
-        entities = question_dict['topic_entity']
+        if args.dataset == WEBQSP:
+            # entities = question_dict['TopicEntityName']
+            entities = {question_dict['TopicEntityID']: question_dict['TopicEntityName']}
+        else:
+            entities = question_dict['topic_entity']
         if not question.endswith('?'):
             question += '?'
 
@@ -1256,7 +1260,7 @@ class PromptBuilder(object):
                 if entity not in reasoning_path_LLM_init.keys():
                     reasoning_path_LLM_init[entity] = [line]
                 else:
-                    reasoning_path_LLM_init[entity].append(line) 
+                    reasoning_path_LLM_init[entity].append(line)
 
         if not question.endswith('?'):
             question += '?'
@@ -1286,7 +1290,7 @@ class PromptBuilder(object):
 
                 if len(reasoning_path_LLM_init[entity_label])==0:
                     continue
-                
+
                 print("Topic entity: ", entity_label)
                 # 获取对所有路径上的relation 做搜索召回 （top5） 结果是dict {relation: grounded array}
                 grounded_relations = self.ground_relations_from_predictions(reasoning_path_LLM_init, question, topk=1)

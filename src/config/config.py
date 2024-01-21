@@ -20,7 +20,8 @@ DATASET = {
     GRAILQA: "grailqa.json",
     # GRAILQA_DEV_FILTER: "grailqa_dev_afilter_empty_topic_entity.json",
     # WEBQSP: "WebQSP.json",
-    WEBQSP: "webqsp_simple_test.jsonl",
+    # WEBQSP: "webqsp_simple_test.jsonl",
+    WEBQSP: "webqsp.json",
     GRAPHQ: "graphquestions_v1_fb15_test_091420.json",
 }
 
@@ -40,7 +41,7 @@ LLM_BASE = {
 
 QUESTION_STRING = {
     CWQ: 'question',
-    WEBQSP: 'RawQuestion',
+    WEBQSP: 'Question',
     GRAILQA: 'question',
     GRAPHQ: 'question',
     'simpleqa': 'question',
@@ -60,7 +61,8 @@ def get_question_string(dataset: str) -> str:
 
 QUESTION_ID = {
     CWQ: "ID",
-    WEBQSP:"QuestionId",
+    # WEBQSP:"QuestionId",
+    WEBQSP: "ID",
     GRAILQA: "qid",
 }
 
@@ -75,15 +77,16 @@ def get_question_id(dataset:str) -> str:
 def get_entity_answer(data, dataset):
     assert dataset in DATASET.keys(), f"Your dataset {dataset} hasn't been inplemented"
     if dataset == WEBQSP:
-        answer_list = data['Parses'][0]['Answers']
-        entity_answer = [
-            ans.get('EntityName', ans.get('AnswerArgument'))
-            for ans in answer_list
-        ]
+        # answer_list = data['Parses'][0]['Answers']
+        # entity_answer = [
+        #     ans.get('EntityName', ans.get('AnswerArgument'))
+        #     for ans in answer_list
+        # ]
+        entity_answer = data['Answers']
     else:
         if 'answers' in data.keys():
             entity_answer = data['answers']
-        else:   
+        else:
             entity_answer = data['answer']
     return entity_answer
 
