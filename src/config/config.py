@@ -35,8 +35,8 @@ def get_dataset_file(dataset: str) -> str:
 
 LLM_BASE = {
     'gpt35': "gpt-35-turbo-16k-20230613",
-    'gpt4': "gpt-4-32k-20230321"
-    # 'gpt4': "gpt-4-20230321"
+    'gpt4': "gpt-4-32k-20230321",
+    'gpt4-turbo': "gpt-4-1106-preview",
 }
 
 QUESTION_STRING = {

@@ -53,13 +53,14 @@ def align(dataset_name, question_string, data, ground_truth_datas):
                 answer_list.extend(alias)
 
     elif dataset_name.startswith(WEBQSP):
-        answers = origin_data["Parses"]
-        for answer in answers:
-            for name in answer['Answers']:
-                if name['EntityName'] == None:
-                    answer_list.append(name['AnswerArgument'])
-                else:
-                    answer_list.append(name['EntityName'])
+        answer_list = origin_data['Answers'] + origin_data['Aliases']
+        # answers = origin_data["Parses"]
+        # for answer in answers:
+        #     for name in answer['Answers']:
+        #         if name['EntityName'] == None:
+        #             answer_list.append(name['AnswerArgument'])
+        #         else:
+        #             answer_list.append(name['EntityName'])
 
     elif dataset_name.startswith(GRAILQA):
         answers = origin_data["answer"]
