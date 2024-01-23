@@ -150,7 +150,7 @@ def gpt4_io(file_name, output_file_index):
     for line in tqdm(data):
         if line['Question'] in ex_question_list:
             continue
-        
+
         prompts = io_prompt + "\n\nQ: " + line['Question'] + "\nA: "
         response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
 
@@ -185,7 +185,7 @@ def reasoning_with_ROG(file_name, output_file_index):
     for line in tqdm(data):
         if line['question'] in ex_question_list:
             continue
-        
+
         if len(line['kg_triples_str'])==0:
             prompts = cot_prompt + "\n\nQ: " + line['question'] + "\nA: "
             response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
@@ -208,7 +208,7 @@ def reasoning_with_ROG(file_name, output_file_index):
                     prompts = cot_prompt + "\n\nQ: " + line['question'] + "\nA: "
                     response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
                     line['kg_triples_str'] = "COT"
-                    
+
                 if "{" not in response or "}" not in response:
                     print(f"\n{'*'*10} Invalid Results {'*'*10}")
                     print(response)
@@ -476,7 +476,7 @@ if __name__ == '__main__':
     # rog_contract(input_file='/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/RoG-cwq/RoG/test/_home_v-sitaocheng_demos_llm_hallu_reasoning-on-graphs_results_gen_rule_path_RoG-cwq_RoG_test_predictions_3_False_jsonl/predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_1223.jsonl')
     # 答案推理 可以改相应的prompt和对应的字段
     # reasoning_with_ROG(file_name, file_index)
-    
+
     reasoning_with_ROG(args.input_file, args.output_file)
 
     # gpt4_io(args.input_file, args.output_file)
