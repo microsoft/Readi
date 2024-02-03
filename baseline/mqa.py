@@ -69,11 +69,7 @@ def call_llm(prompt):
     return results
 
 
-def get_direct_io(question):
-    prompt = open(
-        os.path.join(PROMPT_PATH, f"direct_3hop.md"),
-        'r', encoding='utf-8'
-    ).read()
+def get_direct_io(question, prompt):
     prompt += f"\nQ: {question}\nA:"
     result = call_llm(prompt)
     result = [str(r) for r in result]
@@ -98,7 +94,10 @@ def main():
     for question_dict in tqdm(dataset):
         question = question_dict['question'].replace("\[", '').replace('\]', '')
         ground_truth = question_dict['answer']
-        result = get_direct_io(question)
+        prompt = open(os.path.join(
+            PROMPT_PATH, f"direct_{options.hop}.md"
+            ), 'r', encoding='utf-8').read()
+        result = get_direct_io(question, prompt)
         if options.verbose:
             print(f"Question: {question}, Answer: {result}")
         hit, coverage = evaluate(result, ground_truth)
