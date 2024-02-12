@@ -89,10 +89,10 @@ def run():
 
 def get_relation_path(input_file, output_file):
     items=readjson(input_file)
-    # done = readjson("/home/v-sitaocheng/demos/dangle_over_ground/data/initial_plan/cwq_gpt4_0119.json")
-    # doneid=[i["ID"] for i in done]
-    doneid=[]
-    done = []
+    done = readjson("/home/v-sitaocheng/demos/dangle_over_ground/data/initial_plan/cwq_gpt4_0120.json")
+    doneid=[i["ID"] for i in done if "relation_path_candidates" in i.keys()]
+    # doneid=[]
+    # done = []
     for index, item in enumerate(tqdm(items)):
         if item['ID'] in doneid:
             items[index] = done[index]

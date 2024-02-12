@@ -15,7 +15,7 @@ from utils.cloudgpt_aoai_new import *
 from utils.prompt_list import *
 from config import *
 import time
-
+import random
 
 
 class PromptBuilder(object):
@@ -226,6 +226,14 @@ class PromptBuilder(object):
                 if len(p) > 0:
                     prediction.append(p[-1][-1])
         return prediction
+
+
+    def similar_relation_from_question(self, question, topk=5):
+        result= []
+        hits = self.hsearcher.search(question, k=1000)[:topk]
+        for hit in hits:
+            result.append(json.loads(self.corpus.doc(str(hit.docid)).raw())['rel_ori'])
+        return result
 
     def grounding_relations(self, relation, question, topk=5):
         # relation_path_candidates = items['relation_path_candidates']
@@ -1480,9 +1488,12 @@ class PromptBuilder(object):
         path = True
         refine_time = 0
 
-        # 为了方便 懒得重新做一个文件了 直接清空吧（doge
+        sample_relations = self.similar_relation_from_question(question, topk=10)
+
         for k, v in reasoning_path_LLM_init.items():
-            reasoning_path_LLM_init[k] = [k]
+            random_path = random.randint(0, 3) 
+            randomed_relations = random.sample(sample_relations, random_path)
+            reasoning_path_LLM_init[k] = k + " -> " + " -> ".join(randomed_relations)
 
         # 确保有初始路径 or refine过的路径
         if len(reasoning_path_LLM_init.keys()) > 0:
@@ -1548,7 +1559,7 @@ class PromptBuilder(object):
                         End_loop_cur_path = False
 
                     # # llm refine and stop condition
-                    # init path是空的 一开始一定要refine
+                    # corrupt一开始定要refine
                     if End_loop_cur_path == False or refine_time==0:
                         # 硬性停
                         # reasoning_path_LLM_init, refine_time, thought, current_prompt_agent, agent_time = self.LLM_refine_agent(llm_engine, reasoning_path_LLM_init, entity_label, grounded_knowledge_current, ungrounded_neighbor_relation_dict, question, refine_time, current_prompt_agent, agent_time)

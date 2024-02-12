@@ -106,13 +106,63 @@ def webqsp_statistics(input_file):
     print("multi number: ", number_multi_constrain)
     print("total number: ", len(data))
     
+def cwq_add_alias():
+    cwq_ori=readjson("/home/v-sitaocheng/demos/dangle_over_ground/data/datasets/cwq_test_origin_with_topic.json")
+    alias = readjson("/home/v-sitaocheng/demos/dangle_over_ground/data/datasets/CWQ_aliase_data31158.json")
+    print(len(alias.keys()))
+    for line in tqdm(cwq_ori):
+        del line['filter_pred']
+        del line['properties']
+        del line['mask_entity']
+        del line['decomposition']
+        del line['compositionality_type']
+        del line['constituency']
+        answers = line['answers']
+        for index, ans_dict in enumerate(answers):
+            new_label = set(ans_dict['label'])
+            print(len(new_label))
+
+            for label in ans_dict['label']:
+                if label in alias.keys():
+                    for i in alias[label]:
+                        new_label.add(i)
+                    
+            new_label=list(new_label)
+            
+            answers[index]['label']=new_label
+        line['answers']=answers
+    savejson("/home/v-sitaocheng/demos/dangle_over_ground/data/datasets/cwq_test_origin_with_topic_alias.json", cwq_ori)
 
 
+def cwq_to_agentbench(intput_path):
+    cwq = readjson(intput_path)
+    print(len(cwq))
+    
+    new_cwq = []
+    for index, line in tqdm(enumerate(cwq)):
+        newline = dict()
+        newline['question']=line['question']
+        newline['qid']=line['ID']
+        newline['entities']={v:k for k,v in line['topic_entity'].items()}
+        golden_answer = line['answers']
+
+        newline['answer'] = [ {"answer_type":"Entity", "answer_argument":answer["uri"].replace("http://rdf.freebase.com/ns/","")}
+                        for answer in golden_answer
+                    ]
+        new_cwq.append(newline)
+        
+    savejson("/home/v-sitaocheng/demos/AgentBench/data/knowledgegraph/cwq_test_0_200.json", new_cwq)
+    
+    
 # input_file="/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/cwq/cwq_gpt35_campre_method___compare_rog_beam1_0114.jsonl"
 # reasoning_path_analysis(input_file)
 
 # input_file = "/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/cwq/cwq_gpt35_llm_refine_sequence_err_msg_onePath_CVT_HardStop_oldengine_thought_0112.jsonl"
 # efficiency_analysis(input_file)
 
-input_path="/home/v-sitaocheng/demos/dangle_over_ground/data/datasets/WebQSP.json"
-webqsp_statistics(input_path)
+# input_path="/home/v-sitaocheng/demos/dangle_over_ground/data/datasets/WebQSP.json"
+# # webqsp_statistics(input_path)
+# cwq_add_alias()
+
+intput_path="/home/v-sitaocheng/demos/dangle_over_ground/data/datasets/cwq_test_origin_with_topic_alias.json"
+cwq_to_agentbench(intput_path)

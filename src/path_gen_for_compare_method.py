@@ -288,6 +288,51 @@ def reliability_subgraph():
     plt.savefig("./reliability.png")
 
 
+def reliability_subgraph_percent():
+    # 设置图形大小
+    plt.figure(figsize=(4.8, 4.),dpi=300)
+    # 创建子图
+    ax = plt.subplot(111)
+    # 设置x轴和y轴的标签
+    ax.set_xlabel('Methods', fontsize=11)
+    ax.set_ylabel('Quality of Instantiation (%)', fontsize=11)
+    ax.set_ylim(0, 100)
+
+    # 设置x轴的刻度和标签
+    x = ['Golden Path', 'SR', 'RoG', 'Readi-init(gpt3.5)', "Readi-full(gpt3.5)"]
+    xticks = range(len(x))
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(x, rotation=15, fontsize=8)
+
+    # 设置图形标题
+    # ax.set_title('Features of Reasoning Path')
+    # 设置网格线
+    ax.grid(True, linestyle='--', alpha=0.5)
+    # 绘制柱状图，每个指标用一种颜色表示
+    colors = ['red', 'green', 'blue']
+    width = 0.18 # 柱子的宽度
+
+    # AIP指标
+    y3 = [100, 88, 55, 64, 86]
+    rect3 = ax.bar(xticks, y3, width=width, color=colors[0], label='Avg. Instantiate Prog(%)', alpha=0.70)
+    # GSR指标
+    y4 = [100, 86, 50, 46, 80]
+    rect4 = ax.bar([i + width for i in xticks], y4, width=width, color=colors[1], label='Instantiate Success(%)', alpha=0.9)
+    # IER指标
+    y5 = [0, 1, 2, 49, 22]
+    rect5 = ax.bar([i + width * 2 for i in xticks], y5, width=width, color=colors[2], label='Compound Node Ending(%)', alpha=0.6)    # 显示图例
+
+    # plt.legend(lines, labels, loc='upper left',  fancybox=True, shadow=True, ncol=2, fontsize=7)  # 图例在图的上方
+
+    ax.legend(bbox_to_anchor=(-0.02, 1.17),loc='upper left', ncol=2, fontsize=8)
+    # ax2.legend(loc='upper right', ncol=1, fontsize=6)
+    # ax2.hlines(y=100, xmin=-0.05, xmax=4.5,linestyles="dashed")
+    # ax.hlines(y=100, xmin=-0.3, xmax=4, linestyles="dashed")
+    plt.tight_layout()
+    plt.savefig("./figures/reliability_percent.png")
+
+
+
 def scatter_graph():
     # 设置图形大小
     sns.set(rc={'figure.figsize':(10, 6)})
@@ -361,17 +406,17 @@ def graph_radar():
     # # 显示图形
     # fig.show()
 
-
     # 数据
-    labels = np.array(['Len. of\nPredict Path', 'Len. of\nInstantiate Path', 'Avg. Instantiate Progress', 'Instantiate\nSuccess (%)', '1-Intermediate Node Ending(%)', 'QA Hit@1'])
+    labels = np.array(['Len. of\nPredict Path', 'Len. of\nInstantiate Path', 'Avg. Instantiate Progress', 'Instantiate\nSuccess (%)', '1-Compound Node Ending(%)', 'QA Hit@1'])
     data = np.array([
-        [1, 1, 1, 1, 1, 1],  # Golden Path
-        [1-(3.65-3.2)/3.2, 1-(3.28-3.2)/3.2, 0.88, 0.86, 1-0.01, 0.518],  # SR (Zhang et al., 2022)
-        [1-(3.2-2.55)/3.2, 1-(3.2-1.37)/3.2, 0.55, 0.5, 1-0.02, 0.531],  # RoG (Luo et al., 2023)
-        [1-(4.28-3.2)/3.2, 1-(3.2-2.54)/3.2, 0.64, 0.46, 1-0.49, 0.502],  # ChatGPT3.5
-        [1-(3.37-3.2)/3.2, 1-(3.2-2.84)/3.2, 0.86, 0.8, 1-0.22, 0.569]  # + Edition
+        # [1, 1, 1, 1, 1, 1],  # Golden Path
+        [1-(3.65-3.2)/3.2, 1-(3.28-3.2)/3.2, 0.88, 0.86, 1-0.01, 0.509],  # SR (Zhang et al., 2022)
+        [1-(3.2-2.55)/3.2, 1-(3.2-1.37)/3.2, 0.55, 0.5, 1-0.02, 0.522],  # RoG (Luo et al., 2023)
+        [1-(4.28-3.2)/3.2, 1-(3.2-2.54)/3.2, 0.64, 0.46, 1-0.49, 0.510],  # ChatGPT3.5
+        [1-(3.37-3.2)/3.2, 1-(3.2-2.84)/3.2, 0.86, 0.8, 1-0.22, 0.587]  # + Edition
     ])
-    methods = ['Golden Path', 'SR', 'RoG', 'Readi-init(gpt3.5)', 'Readi-full(gpt3.5)']
+    # methods = ['Golden Path', 'SR', 'RoG', 'Readi-init(gpt3.5)', 'Readi-full(gpt3.5)']
+    methods = ['SR', 'RoG', 'Readi-init(gpt3.5)', 'Readi-full(gpt3.5)']
 
     # 计算角度
     angles = np.linspace(0, 2 * np.pi, len(labels), endpoint=False).tolist()
@@ -381,7 +426,7 @@ def graph_radar():
     angles += angles[:1]
 
     # 绘图
-    fig, ax = plt.subplots(figsize=(7.5, 6.5), subplot_kw=dict(polar=True))
+    fig, ax = plt.subplots(figsize=(7.5, 6.5), subplot_kw=dict(polar=True), dpi=300)
     for i in range(len(methods)):
         values = data[i]
         values = np.concatenate((values, [values[0]]))  # 使雷达图封闭
@@ -390,10 +435,10 @@ def graph_radar():
     ax.set_yticklabels([])
     ax.set_thetagrids(np.degrees(angles[:-1]), labels, fontsize=14)  # 注意这里我们只使用前5个角度来设置标签
     plt.title('Features of Reasoning Path of Different Methods Relative to Golden', fontsize=15)
-    plt.legend(bbox_to_anchor=(1.1, 0.17),title="Methods",loc='center right', ncol=1, fontsize=10,)
+    plt.legend(bbox_to_anchor=(1.1, 0.17),title="Methods",loc='center right', ncol=1, fontsize=11,)
    
     plt.tight_layout()
-    plt.savefig('./radar.png')
+    plt.savefig('figures/radar.png')
 
 def call_me_distribution():
     count_dict = {0: 584, 2: 188, 5: 48, 7: 32, 3: 97, 1: 372, 4: 60, 6: 42}
@@ -418,13 +463,13 @@ def call_me_distribution():
     # 画出概率分布图
     plt.xlabel('LLM-Call Times')
     plt.ylabel('Density')
-    plt.title('Distribution of Edition LLM-Call Times')
+    # plt.title('Distribution of Edition LLM-Call Times')
     plt.tight_layout()
-    plt.savefig("./efficient_distribution.png")
+    plt.savefig("./figures/efficient_distribution.png")
 
 def call_me_bar():
     count_dict = {0: 584, 2: 188, 5: 48, 7: 32, 3: 97, 1: 372, 4: 60, 6: 42}
-    plt.figure(figsize=(4, 3))
+    plt.figure(figsize=(3, 3))
 
     # 计算总的次数
     total_count = sum(count_dict.values())
@@ -433,14 +478,14 @@ def call_me_bar():
     prob_dict = {k: v / total_count for k, v in count_dict.items()}
 
     # 画出概率分布图
-    plt.bar(prob_dict.keys(), prob_dict.values(), alpha=0.5)
+    plt.bar(prob_dict.keys(), prob_dict.values(), width=0.4 ,alpha=0.5)
     # 添加图例
     # plt.legend(fontsize=8)
 
     # 画出概率分布图
-    plt.xlabel('LLM-Call Times')
-    plt.ylabel('Frequent Density')
-    plt.title('Distribution of Edition LLM-Call Times')
+    plt.xlabel('LLM-Call Times', fontsize=9)
+    plt.ylabel('Frequent Density',fontsize=9)
+    # plt.title('Distribution of Edition LLM-Call Times')
     plt.tight_layout()
     plt.savefig("./efficient_bar.png")
 
@@ -500,8 +545,9 @@ def dedup_json(input_file):
 # scatter_graph()
 # graph_radar()
 # reliability_subgraph()
+reliability_subgraph_percent()
 # call_me_distribution()
 # call_me_bar()
 
 
-dedup_json("/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/cwq/cwq_gpt35_llm_refine_sequence_err_msg_final_0119.jsonl")
+# dedup_json("/home/v-sitaocheng/demos/dangle_over_ground/results/KGQA/cwq/cwq_gpt4_llm_refine_sequence_err_msg__4_final_1000_0119_gpt4_reasoning.json")

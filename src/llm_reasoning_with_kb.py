@@ -139,22 +139,29 @@ def gpt4_io(file_name, output_file_index):
     ex_question_list = []
     ex_result_file = []
 
+    if "webqsp" in file_name.lower():   
+        question_str = get_question_string("WebQSP")
+    else:
+        question_str = get_question_string("cwq")
+
     if os.path.exists(os.path.join(output_dir, output_file_index+".json")):
         ex_result_file = readjson(os.path.join(output_dir, output_file_index+".json"))
         for line in ex_result_file:
-            ex_question_list.append(line['question'])
+            ex_question_list.append(line[question_str])
+
         print("previous result len: ", len(ex_question_list))
 
     reasoning_result = ex_result_file
 
+
     for line in tqdm(data):
-        if line['Question'] in ex_question_list:
+        if line[question_str] in ex_question_list:
             continue
 
         prompts = io_prompt + "\n\nQ: " + line['Question'] + "\nA: "
         response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
 
-        reasoning_result.append({"question":line['Question'], "results": response})
+        reasoning_result.append({"question":line[question_str], "results": response})
 
         # savejson('results/KGQA/RoG-cwq/QA_result/cwq_100examples'+file_index+".json", reasoning_result)
         savejson(os.path.join(output_dir, output_file_index+".json"), reasoning_result)
@@ -193,7 +200,7 @@ def reasoning_with_ROG(file_name, output_file_index):
 
         else:
             times=0
-            while times<10:
+            while times<15:
                 # prompts = answer_prompt_kb_interwined_path_1227 + "Q: " + lines['question'] + "\nKnowledge Path: " + lines['kg_paths'] + "\nA: "
                 prompts = answer_prompt_kb_interwined_nointer + "Q: " + line['question'] + "\nKnowledge Triplets: " + line['kg_triples_str'] + "\nA: "
                 response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
@@ -204,7 +211,7 @@ def reasoning_with_ROG(file_name, output_file_index):
                     print("*"*30 + '\n')
                     times += 1
                     continue
-                elif times >= 5:
+                elif times >= 8:
                     prompts = cot_prompt + "\n\nQ: " + line['question'] + "\nA: "
                     response = run_llm(prompts, args.temperature_reasoning, args.max_length, args.opeani_api_keys, args.LLM_type)
                     line['kg_triples_str'] = "COT"

@@ -93,7 +93,7 @@ def prediction_graph_engine(args, processed_list, input_builder, data):
         kg_triples, kg_paths, thought, len_of_predict_knowledge, len_of_grounded_knowledge, predict_path = input_builder.get_graph_knowledge_campare_method_plan(args, data)
 
     # init 为破坏版
-    elif args.refine_strategy =="init_corrupt":
+    elif args.refine_strategy == "init_corrupt":
         kg_triples, kg_paths, thought, len_of_predict_knowledge, len_of_grounded_knowledge, predict_path = input_builder.get_graph_knowledge_LLM_crpt_init(args, data)
 
 
@@ -242,7 +242,7 @@ if __name__ == "__main__":
     argparser.add_argument("--output_path", type=str, required=False, default=None)
     # argparser.add_argument("--output_file_name", type=str, default="predictions_kg_with_input_llm_cwq100_path_onePath_gpt4_1230_engine_triple_cvt_new_goal_progess_hard_stop.jsonl")
     # argparser.add_argument("--name", type=str, default="_compare_sr_beam5")
-    argparser.add_argument("--name", type=str, default="final_dedup")
+    argparser.add_argument("--name", type=str, default="_4_final_1000")
     argparser.add_argument("--compare_beam", type=int, default="1")
 
     args, _ = argparser.parse_known_args()

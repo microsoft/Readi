@@ -230,7 +230,7 @@ def match(s1: str, s2: str) -> bool:
 
 def calculate_answer_coverage_rate(file_path, golden_file_path):
     if file_path.endswith("jsonl"):
-        sr_graph = read_jsonl(file_path)
+        sr_graph = read_jsonl(file_path)[:1000]
     else:
         sr_graph = readjson(file_path)[:1000]
 
@@ -253,22 +253,41 @@ def calculate_answer_coverage_rate(file_path, golden_file_path):
         topic_entity = golden[index]['topic_entity']
         num_of_path = len(topic_entity.keys())
         lines['kg_triples'] = "\n".join(list(set(lines['kg_triples_str'].split("\n"))))
+        answer_list = []
+
         # 拿答案 也可以在golden文件拿   NOW 公平起见都从golden拿
         if "cwq" in file_path:
-            answer_list = []
-            if 'answers' in golden[index].keys():
-                answers = golden[index]["answers"]
+            origin_data = golden[index]
+            if 'answers' in origin_data:
+                answers = origin_data["answers"]
             else:
-                answers = golden[index]["answer"]
+                answers = origin_data["answer"]
+
             if type(answers)==str:
                 answer_list.append(answers)
             else:
+                alias = []
                 for answer in answers:
                     if type(answer)==str:
-                        alias=[answer]
+                        alias.append(answer)
                     else:
                         alias = answer['label']
                     answer_list.extend(alias)
+            
+            # answer_list = []
+            # if 'answers' in golden[index].keys():
+            #     answers = golden[index]["answers"]
+            # else:
+            #     answers = golden[index]["answer"]
+            # if type(answers)==str:
+            #     answer_list.append(answers)
+            # else:
+            #     for answer in answers:
+            #         if type(answer)==str:
+            #             alias=[answer]
+            #         else:
+            #             alias = answer['label']
+            #         answer_list.extend(alias)
 
             # if type(lines['ground_truth'])==str:
             #     answer_list = [lines['ground_truth']]
@@ -284,14 +303,14 @@ def calculate_answer_coverage_rate(file_path, golden_file_path):
                 answer_list.append(e['entity_name'] if 'entity_name' in e.keys() else e['answer_argument'])
 
         knowledge_seq = lines['kg_triples'].replace(", ",",").replace(" ,",",").strip()
-        all_knowledge_num += len(knowledge_seq.split("\n"))
+        rk = len(list(set(knowledge_seq.split("\n"))))
+        all_knowledge_num += rk
         if num_of_path == 1:
             all_knowledge_one_path_num_questions += 1
-            all_knowledge_one_path_num += len(knowledge_seq.split("\n"))
+            all_knowledge_one_path_num += rk
         else:
             all_knowledge_multi_path_num_questions += 1
-            all_knowledge_multi_path_num += len(knowledge_seq.split("\n"))
-
+            all_knowledge_multi_path_num += rk
 
         recall=0
         for ans in answer_list:
@@ -307,11 +326,11 @@ def calculate_answer_coverage_rate(file_path, golden_file_path):
             print(answer_list)
             print("********************************************************************************************************************")
 
-        all_recall+=recall/len(answer_list)
+        all_recall+= 1 if recall>0 else 0
         if num_of_path == 1:
-            recall_one_path += recall/len(answer_list)
+            recall_one_path += 1 if recall>0 else 0
         else:
-            recall_multi_path += recall/len(answer_list)
+            recall_multi_path += 1 if recall>0 else 0
 
     print("# knowledge one path:", all_knowledge_one_path_num_questions)
     print("# knowledge multi path:", all_knowledge_multi_path_num_questions)

@@ -3,7 +3,7 @@ from glob import glob
 import os
 
 DATASET_BASE = "data/datasets"
-KB_BINDER_PATH = "../KB-BINDER"
+KB_BINDER_PATH = "../KB-BINDER/"
 INIT_PLAN_BASE = "data/initial_plan"
 RESULT_PATH = "results/KGQA"
 
@@ -15,7 +15,7 @@ WEBQSP = 'WebQSP'
 GRAPHQ = 'graphq'
 
 DATASET = {
-    CWQ: "cwq_test_origin_with_topic.json",
+    CWQ: "cwq_test_origin_with_topic_alias.json",
     GRAILQA_DEV: "grailqa_dev_pyql_topic_entities.json",
     GRAILQA: "grailqa.json",
     # GRAILQA_DEV_FILTER: "grailqa_dev_afilter_empty_topic_entity.json",
@@ -41,6 +41,7 @@ LLM_BASE = {
 
 QUESTION_STRING = {
     CWQ: 'question',
+    # WEBQSP: 'RawQuestion',
     WEBQSP: 'Question',
     GRAILQA: 'question',
     GRAPHQ: 'question',

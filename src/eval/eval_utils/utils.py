@@ -10,8 +10,16 @@ from config import *
 
 def prepare_dataset_for_eval(dataset, output_file):
     dataset_path = get_dataset_file(dataset)
-    with open(dataset_path, 'r', encoding='utf-8') as f:
-        datas = json.load(f)
+
+    if dataset_path.endswith("json"):
+        with open(dataset_path, 'r', encoding='utf-8') as f:
+            datas = json.load(f)
+    else:
+        datas = []
+        with open(dataset_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                    datas.append(json.loads(line))
+
     question_string = get_question_string(dataset)
 
     output_datas= []
@@ -21,10 +29,8 @@ def prepare_dataset_for_eval(dataset, output_file):
             output_datas = json.load(f)
 
     elif output_file.endswith(".jsonl"):
-        # print(output_file)
         with open(output_file, 'r', encoding='utf-8') as f:
             for line in f:
-                # print(line)
                 json_obj = json.loads(line)
                 output_datas.append(json_obj)
 
@@ -110,7 +116,7 @@ def check_refuse(string):
     return any(word in string.lower() for word in refuse_words)
 
 
-def exact_match(response, answers):
+def hit1(response, answers):
     clean_result = response.strip().replace(" ","").lower()
     for answer in answers:
         clean_answer = answer.strip().replace(" ","").lower()
