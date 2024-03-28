@@ -1,7 +1,10 @@
 results/
 cloudgpt-apim-token-cache.bin
 data/initial_plan/*
+data/contriever_fb_relation/freebase_contriever_index/index
 *.json
+*.png
+*.yml
 figures/
 
 # Byte-compiled / optimized / DLL files

@@ -57,6 +57,7 @@ def call_llm(prompt):
                 prompt,
                 options.temperature,
                 options.max_token,
+                options.openai_api_keys,
                 options.LLM_type
             )
             if 'sorry' in response:

@@ -1,0 +1,223 @@
+../readi
+├── baseline
+│   └── mqa.py
+├── cloudgpt-apim-token-cache.bin
+├── data
+│   ├── compare_model_path
+│   │   ├── cwq_rog_path.json
+│   │   └── cwq_sr_path.json
+│   ├── contriever_fb_relation
+│   │   ├── freebase_contriever_index
+│   │   │   ├── docid
+│   │   │   └── index
+│   │   ├── index_relation_fb
+│   │   │   ├── _0.fdm
+│   │   │   ├── _0.fdt
+│   │   │   ├── _0.fdx
+│   │   │   ├── _0.fnm
+│   │   │   ├── _0_Lucene90_0.doc
+│   │   │   ├── _0_Lucene90_0.dvd
+│   │   │   ├── _0_Lucene90_0.dvm
+│   │   │   ├── _0_Lucene90_0.pos
+│   │   │   ├── _0_Lucene90_0.tim
+│   │   │   ├── _0_Lucene90_0.tip
+│   │   │   ├── _0_Lucene90_0.tmd
+│   │   │   ├── _0.nvd
+│   │   │   ├── _0.nvm
+│   │   │   ├── _0.si
+│   │   │   ├── _0.tvd
+│   │   │   ├── _0.tvm
+│   │   │   ├── _0.tvx
+│   │   │   ├── segments_1
+│   │   │   └── write.lock
+│   │   └── relation retrieval contriever.ipynb
+│   ├── datasets
+│   │   ├── cwq_test_origin_with_topic_alias.json
+│   │   ├── metaQA
+│   │   │   ├── kb_entity_dict.txt
+│   │   │   ├── kb.txt
+│   │   │   ├── qa_test_1hop.txt
+│   │   │   ├── qa_test_2hop.txt
+│   │   │   ├── qa_test_3hop.txt
+│   │   │   ├── qa_test_qtype_1hop.txt
+│   │   │   ├── qa_test_qtype_2hop.txt
+│   │   │   ├── qa_test_qtype_3hop.txt
+│   │   │   ├── qa_train_1hop.txt
+│   │   │   ├── qa_train_2hop.txt
+│   │   │   ├── qa_train_3hop.txt
+│   │   │   ├── qa_train_qtype_1hop.txt
+│   │   │   ├── qa_train_qtype_2hop.txt
+│   │   │   └── qa_train_qtype_3hop.txt
+│   │   ├── tableqa
+│   │   │   ├── wikisql_test.json
+│   │   │   └── wikitq_test.json
+│   │   └── webqsp_simple_test.jsonl
+│   └── openai_embeddings
+│       ├── fb_relation_embed.json
+│       └── WebQSP_test_question_embed.json
+├── environment.yml
+├── figures
+│   ├── ac_hit_compare.png
+│   ├── compare_init_path.png
+│   ├── efficient_bar_gpt35.png
+│   ├── efficient_bar_gpt4.png
+│   ├── efficient_bar.png
+│   ├── efficient_distribution.png
+│   ├── efficient_distribution_w_gpt4.png
+│   ├── radar_gpt35.png
+│   ├── radar_gpt4_manda.png
+│   ├── radar_gpt4.png
+│   ├── radar.png
+│   ├── reliability_percent.png
+│   ├── reliability.png
+│   └── scatter_plot.png
+├── list.txt
+├── prompt
+│   ├── kgqa
+│   │   ├── cot_reasoning.md
+│   │   ├── cwq_edit.md
+│   │   ├── cwq_init.md
+│   │   ├── kgqa_reasoning.md
+│   │   ├── WebQSP_edit.md
+│   │   └── WebQSP_init.md
+│   ├── metaQA
+│   │   ├── direct_1hop.md
+│   │   ├── direct_2hop.md
+│   │   ├── direct_3hop.md
+│   │   ├── init_1hop.md
+│   │   ├── init_2hop.md
+│   │   ├── init_3hop.md
+│   │   ├── refine_1hop.md
+│   │   ├── refine_2hop.md
+│   │   └── refine_3hop.md
+│   └── table_qa
+│       ├── table_qa_init_0125.md
+│       ├── table_qa_init_0126.md
+│       ├── table_qa_init.md
+│       ├── table_qa_init_wikisql.md
+│       ├── table_qa_reasoning copy.md
+│       ├── table_qa_reasoning.md
+│       ├── table_qa_reasoning_wikitq.md
+│       └── table_qa_refine.md
+├── README.md
+├── requirements.txt
+├── results
+│   ├── KGQA
+│   │   ├── cwq_gpt35_03_20_09_37.jsonl
+│   │   ├── cwq_gpt35_03_20_11_09.jsonl
+│   │   ├── cwq_gpt35_03_20_13_45.jsonl
+│   │   ├── cwq_gpt35_03_22_05_40.jsonl
+│   │   ├── cwq_gpt35_init_corrupt_03_20_09_31.jsonl
+│   │   ├── cwq_gpt35_init_corrupt_03_20_09_32.jsonl
+│   │   └── final_results
+│   │       ├── ablation_study
+│   │       │   ├── cwq_init_corrupt_gpt35_refine_gpt35_reasoning.json
+│   │       │   ├── cwq_init_corrupt_gpt35_refine.jsonl
+│   │       │   ├── cwq_init_corrupt_gpt4_refine_gpt35_reasoning.json
+│   │       │   ├── cwq_init_corrupt_gpt4_refine.jsonl
+│   │       │   ├── cwq_init_empty_gpt35_refine_gpt35_reasoning.json
+│   │       │   ├── cwq_init_empty_gpt35_refine.jsonl
+│   │       │   ├── cwq_init_empty_gpt4_refine_gpt35_reasoning.json
+│   │       │   ├── cwq_init_empty_gpt4_refine.jsonl
+│   │       │   ├── cwq_init_only_gpt35_init_gpt35_reasoning.json
+│   │       │   ├── cwq_init_only_gpt35_init.json
+│   │       │   ├── cwq_init_only_gpt4_init_gpt35_reasoning.json
+│   │       │   ├── cwq_init_only_gpt4_init.jsonl
+│   │       │   ├── cwq_llm_refine_gpt35_init_gpt4_refine_gpt35_reasoning.json
+│   │       │   ├── cwq_llm_refine_gpt35_init_gpt4_refine.jsonl
+│   │       │   ├── cwq_llm_refine_gpt4_init_gpt35_refine_gpt35_reasoning.json
+│   │       │   ├── cwq_llm_refine_gpt4_init_gpt35_refine.jsonl
+│   │       │   ├── cwq_llm_refine_gpt4_init_gpt4_refine_gpt35_reasoning.json
+│   │       │   └── eval.py
+│   │       ├── compared_methds
+│   │       │   ├── cwq_campre_method_rog_beam1_init_gpt35_reasoning.json
+│   │       │   ├── cwq_campre_method_rog_beam1_init.jsonl
+│   │       │   ├── cwq_campre_method_rog_beam2_init_gpt35_reasoning.json
+│   │       │   ├── cwq_campre_method_rog_beam2_init.json
+│   │       │   ├── cwq_campre_method_rog_beam3_init_gpt35_reasoning.json
+│   │       │   ├── cwq_campre_method_rog_beam3_init.json
+│   │       │   ├── cwq_campre_method_sr_beam1_init_gpt35_reasoning.json
+│   │       │   ├── cwq_campre_method_sr_beam1_init.jsonl
+│   │       │   ├── cwq_campre_method_sr_beam2_init_gpt35_reasoning.json
+│   │       │   ├── cwq_campre_method_sr_beam2_init.json
+│   │       │   ├── cwq_campre_method_sr_beam3_init_gpt35_reasoning.json
+│   │       │   └── cwq_campre_method_sr_beam3_init.json
+│   │       ├── cwq
+│   │       │   ├── cwq_gpt35_reasoning.json
+│   │       │   ├── cwq_gpt4_reasoning.json
+│   │       │   ├── cwq_llm_refine_gpt35_init_gpt35_refine_gpt35_reasoning.json
+│   │       │   ├── cwq_llm_refine_gpt35_init_gpt35_refine.jsonl
+│   │       │   ├── cwq_llm_refine_gpt4_init_gpt4_refine_gpt4_reasoning.json
+│   │       │   ├── cwq_llm_refine_gpt4_init_gpt4_refine.jsonl
+│   │       │   └── initial_path
+│   │       │       ├── cwq_gpt35_init_plan.json
+│   │       │       └── cwq_gpt4_init_path.json
+│   │       ├── WebQSP
+│   │       │   ├── webqsp_gpt35_reasoning.json
+│   │       │   ├── webqsp_gpt4_reasoning.json
+│   │       │   ├── WebQSP_llm_refine_gpt35_init_gpt35_refine_gpt35_reasoning.json
+│   │       │   ├── WebQSP_llm_refine_gpt35_init_gpt35_refine.jsonl
+│   │       │   ├── WebQSP_llm_refine_gpt4_init_gpt4_refine_gpt4_reasoning.json
+│   │       │   └── WebQSP_llm_refine_gpt4_init_gpt4_refine.jsonl
+│   │       ├── wikisql
+│   │       │   ├── wikisql_final_gpt35_all.jsonl
+│   │       │   ├── wikisql_final_gpt4_all.jsonl
+│   │       │   ├── wikisql_whole_table_gpt35.jsonl
+│   │       │   └── wikisql_whole_table_gpt4.jsonl
+│   │       └── wtq
+│   │           ├── wikitqa_final_gpt4_all.jsonl
+│   │           ├── wikitqa_whole_table_gpt35.jsonl
+│   │           ├── wikitqa_whole_table_gpt4.jsonl
+│   │           └── wikitq_final_gpt35_all.jsonl
+│   └── tableqa
+├── src
+│   ├── config
+│   │   ├── config.py
+│   │   ├── __init__.py
+│   │   └── __pycache__
+│   │       ├── config.cpython-310.pyc
+│   │       ├── config.cpython-311.pyc
+│   │       ├── config.cpython-38.pyc
+│   │       ├── config.cpython-39.pyc
+│   │       ├── __init__.cpython-310.pyc
+│   │       ├── __init__.cpython-311.pyc
+│   │       ├── __init__.cpython-38.pyc
+│   │       └── __init__.cpython-39.pyc
+│   ├── kg_instantiation.py
+│   ├── kgqa_analysis.py
+│   ├── kgqa.py
+│   ├── mqa.py
+│   ├── __pycache__
+│   │   ├── build_qa_input.cpython-310.pyc
+│   │   ├── build_qa_input.cpython-38.pyc
+│   │   ├── kg_instantiation.cpython-38.pyc
+│   │   └── kgqa.cpython-38.pyc
+│   ├── sub_graph_evaluation.py
+│   ├── tableqa_wikisql.py
+│   └── tableqa_wtq.py
+└── utils
+    ├── cloudgpt_aoai_new.py
+    ├── freebase_func.py
+    ├── __init__.py
+    ├── __pycache__
+    │   ├── cloudgpt_aoai_new.cpython-310.pyc
+    │   ├── cloudgpt_aoai_new.cpython-38.pyc
+    │   ├── freebase_func.cpython-310.pyc
+    │   ├── freebase_func.cpython-38.pyc
+    │   ├── graph_utils.cpython-310.pyc
+    │   ├── graph_utils.cpython-312.pyc
+    │   ├── graph_utils.cpython-38.pyc
+    │   ├── graph_utils.cpython-39.pyc
+    │   ├── __init__.cpython-310.pyc
+    │   ├── __init__.cpython-312.pyc
+    │   ├── __init__.cpython-38.pyc
+    │   ├── __init__.cpython-39.pyc
+    │   ├── prompt_list.cpython-310.pyc
+    │   ├── prompt_list.cpython-38.pyc
+    │   ├── training_utils.cpython-310.pyc
+    │   ├── training_utils.cpython-38.pyc
+    │   ├── utils.cpython-310.pyc
+    │   └── utils.cpython-38.pyc
+    └── utils.py
+
+32 directories, 188 files

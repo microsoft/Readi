@@ -2,19 +2,14 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/..")
 # import utils
 from utils.freebase_func import *
-import json
 # from rank_bm25 import BM25Okapi
 from utils import *
 from utils.utils import read_jsonl, readjson, savejson
-import openai
 import re
-import time
 from tqdm import tqdm
 import argparse
-import pickle
 import string
 from utils.cloudgpt_aoai_new import *
-from utils.prompt_list import *
 import argparse
 
 
@@ -35,17 +30,8 @@ def extract_variables_from_sparql_query(query):
         if "SELECT" in lines:
             splits[index] = f'SELECT DISTINCT {distinct_variables}'
 
-        # if ";" in lines:
-        #     if len(lines.split(" "))==4:
-        #         lines = lines.replace(";", '.')
-        #     elif len(lines.split(" ")) == 3 and index>=1:
-        #         first_var = splits[index-1].split(" ")[0]
-        #         splits[index] = (first_var + lines).replace(';', '.')
-
-    # modified_query = query.replace("SELECT DISTINCT", "SELECT").replace('SELECT', f'SELECT DISTINCT {distinct_variables}')
     modified_query="\n".join(splits)
     return modified_query
-
 
 
 def extract_query_knowledge(sparql_query, sparql_results):
@@ -210,36 +196,57 @@ def calculate_contract_recall_natural_language():
     print("golden knowledge avg recall",all_recall/non_zero_num)
     print("golden knowledge avg len: ", all_knowledge_len/non_zero_num)
 
-def normalize(s: str) -> str:
-    """Lower text and remove punctuation, articles and extra whitespace."""
-    s = s.lower()
-    exclude = set(string.punctuation)
-    s = "".join(char for char in s if char not in exclude)
-    s = re.sub(r"\b(a|an|the)\b", " ", s)
-    # remove <pad> token:
-    s = re.sub(r"\b(<pad>)\b", " ", s)
-    s = " ".join(s.split())
-    return s
+
+def reasoning_path_analysis(input_file):
+    refine_time = {i:0 for i in range(0,8)}
+    if input_file.endswith("json"):
+        data = readjson(input_file)
+    elif input_file.endswith("jsonl"):
+        data = read_jsonl(input_file)
+    all_grounded = 0.0
+    number_of_path = 0
+    grounding_progress = 0.0
+    len_of_predict_path = 0
+    len_of_grounded_path = 0
+    cvt_end = 0
+    data=data[:1000]
+    
+    for lines in data:
+        len_of_predict_knowledge, len_of_grounded_knowledge = lines['len_of_predict_knowledge'], lines['len_of_grounded_knowledge']
+        number_of_path += len(len_of_predict_knowledge.keys())
+        kg_paths = lines['kg_paths'].split("\n")
+        for path in kg_paths:
+            if path.split(" -> ")[-1].startswith("m."):
+                cvt_end += 1
+                break
+
+        for k, v in len_of_predict_knowledge.items():
+            grounding_progress += len_of_grounded_knowledge[k][-1] / v[-1]
+            if len_of_grounded_knowledge[k][-1] == v[-1]:
+                all_grounded += 1.0
+                refine_time[len(len_of_grounded_knowledge[k])-1] += 1
+                
+            len_of_predict_path += v[-1]
+            len_of_grounded_path += len_of_grounded_knowledge[k][-1]
 
 
-def match(s1: str, s2: str) -> bool:
-    s1 = normalize(s1)
-    s2 = normalize(s2)
-    return s2 in s1
+    print("all grounded rate: ", all_grounded/number_of_path)
+    print("avg grounded progress: ", grounding_progress/number_of_path)
+    print("avg len of predict progress: ", len_of_predict_path/len(data))
+    print("avg len of grounded progress: ", len_of_grounded_path/len(data))
+    print("cvt ending rate: ", cvt_end/len(data))
+    print("refine time grounded distribution: ", refine_time)
 
 
 def calculate_answer_coverage_rate(file_path, golden_file_path):
     if file_path.endswith("jsonl"):
-        sr_graph = read_jsonl(file_path)[:1000]
+        predict_graph = read_jsonl(file_path)[:1000]
     else:
-        sr_graph = readjson(file_path)[:1000]
+        predict_graph = readjson(file_path)[:1000]
 
     golden = readjson(golden_file_path)
     all_recall=0
     all_recall=0
-    non_zero_num=0
-    all_knowledge_len=0
-    predict_knowledge_len=0
     all_knowledge_num = 0
     all_knowledge_one_path_num_questions = 0
     all_knowledge_one_path_num = 0
@@ -248,7 +255,7 @@ def calculate_answer_coverage_rate(file_path, golden_file_path):
     all_knowledge_multi_path_num = 0
     recall_multi_path = 0
 
-    for index, lines in enumerate(tqdm(sr_graph)):
+    for index, lines in enumerate(tqdm(predict_graph)):
         # topic实体 (数量对应 路径数量)
         topic_entity = golden[index]['topic_entity']
         num_of_path = len(topic_entity.keys())
@@ -273,34 +280,7 @@ def calculate_answer_coverage_rate(file_path, golden_file_path):
                     else:
                         alias = answer['label']
                     answer_list.extend(alias)
-            
-            # answer_list = []
-            # if 'answers' in golden[index].keys():
-            #     answers = golden[index]["answers"]
-            # else:
-            #     answers = golden[index]["answer"]
-            # if type(answers)==str:
-            #     answer_list.append(answers)
-            # else:
-            #     for answer in answers:
-            #         if type(answer)==str:
-            #             alias=[answer]
-            #         else:
-            #             alias = answer['label']
-            #         answer_list.extend(alias)
-
-            # if type(lines['ground_truth'])==str:
-            #     answer_list = [lines['ground_truth']]
-            # elif type(lines['ground_truth']) == list:
-            #     if type(lines['ground_truth'][0]) == dict:
-            #         answer_list = [i['text'] for i in lines['ground_truth']]
-            #     else:
-            #         answer_list = [lines['ground_truth']]
-
-        elif "grailqa" in file_path:
-            answer_list = []
-            for e in golden[index]['answer']:
-                answer_list.append(e['entity_name'] if 'entity_name' in e.keys() else e['answer_argument'])
+        
 
         knowledge_seq = lines['kg_triples'].replace(", ",",").replace(" ,",",").strip()
         rk = len(list(set(knowledge_seq.split("\n"))))
@@ -319,13 +299,6 @@ def calculate_answer_coverage_rate(file_path, golden_file_path):
                 recall+=1
                 # print(lines['kg_triples_str'])
 
-        if recall == 0:
-            print(lines['question'])
-            print(topic_entity)
-            print(lines['kg_paths'])
-            print(answer_list)
-            print("********************************************************************************************************************")
-
         all_recall+= 1 if recall>0 else 0
         if num_of_path == 1:
             recall_one_path += 1 if recall>0 else 0
@@ -335,127 +308,20 @@ def calculate_answer_coverage_rate(file_path, golden_file_path):
     print("# knowledge one path:", all_knowledge_one_path_num_questions)
     print("# knowledge multi path:", all_knowledge_multi_path_num_questions)
 
-    print("coverage rate overall:" , all_recall/len(sr_graph))
+    print("coverage rate overall:" , all_recall/len(predict_graph))
 
     print("coverage rate one path:" , recall_one_path/all_knowledge_one_path_num_questions)
     print("coverage rate multi path:" , recall_multi_path/all_knowledge_multi_path_num_questions)
 
-    print("avg number of knowledge overall :" , all_knowledge_num/len(sr_graph))
+    print("avg number of knowledge overall :" , all_knowledge_num/len(predict_graph))
     print("avg number of knowledge one path:" , all_knowledge_one_path_num/all_knowledge_one_path_num_questions)
     print("avg number of knowledge multi path:" , all_knowledge_multi_path_num/all_knowledge_multi_path_num_questions)
 
 
-def calculate_graph_recall():
-    sr_graph = readjson("/home/v-sitaocheng/demos/llm_hallu/reasoning-on-graphs/results/gen_rule_path/RoG-cwq/RoG/test/predictions_kg.json")
-    cwq = readjson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1127.json")
-
-    all_recall=0
-    non_zero_num=0
-    all_knowledge_len=0
-    predict_knowledge_len=0
-
-    for index, lines in enumerate(tqdm(sr_graph)):
-        contract_knowledge_seq = lines['kg_triples']
-        golden_knowledge_seq = cwq[index]['golden_knowledge_enumerate']
-
-        golden_knowledge_set = set()
-        contract_knowledge_set = set()
-
-        if len(golden_knowledge_seq)==0:
-            continue
-
-        for know in golden_knowledge_seq.strip().split('\n'):
-            know = know.strip().replace(", ", ",").replace(" ,", ",").strip()
-            if know[0]=='(':
-                know=know[1:]
-            if know[-1]==')':
-                know=know[:-1]
-            know = know.strip()
-            golden_knowledge_set.add(know)
-
-        if len(contract_knowledge_seq) != 0 :
-            for know in contract_knowledge_seq.strip().split('\n'):
-                know = know.strip().replace(", ", ",").replace(" ,", ",").strip()
-                if know[0]=='(':
-                    know=know[1:]
-                if know[-1]==')':
-                    know=know[:-1]
-                know=know.strip()
-                contract_knowledge_set.add(know)
-
-        recall=0
-
-        for golden_know in golden_knowledge_set:
-            if golden_know in contract_knowledge_set:
-                recall+=1
-
-        if len(golden_knowledge_set)==0:
-            # all_recall+=1
-            continue
-        else:
-            print(recall/len(golden_knowledge_set))
-            all_recall += recall/len(golden_knowledge_set)
-            non_zero_num += 1
-            all_knowledge_len += len(golden_knowledge_set)
-
-    print("golden knowledge avg recall",all_recall/non_zero_num)
-    print("golden knowledge avg len: ", all_knowledge_len/non_zero_num)
-    # print("predict knowledge avg len:", predict_knowledge_len/100)
-
-
-def calculate_recall_triple():
-    sr_graph = readjson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/egpsr/kb_egpsr_test_cwq_top1_NSM_1115.json")
-    cwq = readjson("/home/v-sitaocheng/demos/llm_hallu/ToG/ToG/logs/golden/kb_golden_test_cwq_1115.json")
-
-    all_recall=0
-    non_zero_num=0
-    all_knowledge_len=0
-    predict_knowledge_len=0
-    for index, lines in enumerate(tqdm(sr_graph)):
-        sub_graph_knowledge = lines['subgraph']['knowledges']
-        golden_knowledge = cwq[index]['instantiated_knowledge']
-        golden_knowledge_set = []
-        predict_knowledge_set = []
-
-        for lines in golden_knowledge:
-            if lines in golden_knowledge_set:
-                continue
-            golden_knowledge_set.append(lines)
-
-        for lines in sub_graph_knowledge:
-            if lines in predict_knowledge_set:
-                continue
-            predict_knowledge_set.append(lines)
-
-        predict_knowledge_len+=len(predict_knowledge_set)
-        recall=0
-        for golden_know in golden_knowledge_set:
-            if golden_know in sub_graph_knowledge:
-                recall+=1
-
-        if len(golden_knowledge_set)==0:
-            # all_recall+=1
-            continue
-        else:
-            all_recall += recall/len(golden_knowledge_set)
-            non_zero_num += 1
-            all_knowledge_len += len(golden_knowledge_set)
-
-    # print(all_recall/len(sr_graph))
-    print("golden knowledge avg recall",all_recall/non_zero_num)
-    print("golden knowledge avg len: ",all_knowledge_len/non_zero_num)
-    print("predict knowledge avg len:", predict_knowledge_len/100)
-
-
 if __name__ == '__main__':
-    # run()
-    # deal_egpsr_entity()
-    # get_golden_knowledge()
-    # instantiate_knowledge()
-    # calculate_contract_recall()
-    # calculate_graph_recall()
     parser = argparse.ArgumentParser()
     parser.add_argument("--file_path", type=str, required=True, help="file path to be evaluated")
     parser.add_argument("--golden_path", type=str, required=True, help="file path to golden result")
     args = parser.parse_args()
+    
     calculate_answer_coverage_rate(args.file_path, args.golden_path)

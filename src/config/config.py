@@ -3,26 +3,18 @@ from glob import glob
 import os
 
 DATASET_BASE = "data/datasets"
-KB_BINDER_PATH = "../KB-BINDER/"
-INIT_PLAN_BASE = "data/initial_plan"
+CONTRIEVER_PATH = "data/"
 RESULT_PATH = "results/KGQA"
+OUTPUT_FILE_PATH = "results/"
+MAX_LLM_RETRY_TIME = 5
+MAX_REFINE_TIME = 5
 
 CWQ = 'cwq'
-GRAILQA_DEV = 'grailqa_dev'
-GRAILQA_DEV_FILTER = 'grailqa_dev_filter'
-GRAILQA = 'grailqa'
 WEBQSP = 'WebQSP'
-GRAPHQ = 'graphq'
 
 DATASET = {
     CWQ: "cwq_test_origin_with_topic_alias.json",
-    GRAILQA_DEV: "grailqa_dev_pyql_topic_entities.json",
-    GRAILQA: "grailqa.json",
-    # GRAILQA_DEV_FILTER: "grailqa_dev_afilter_empty_topic_entity.json",
-    # WEBQSP: "WebQSP.json",
-    # WEBQSP: "webqsp_simple_test.jsonl",
-    WEBQSP: "webqsp.json",
-    GRAPHQ: "graphquestions_v1_fb15_test_091420.json",
+    WEBQSP: "webqsp_simple_test.jsonl",
 }
 
 def get_dataset_file(dataset: str) -> str:
@@ -36,21 +28,13 @@ def get_dataset_file(dataset: str) -> str:
 LLM_BASE = {
     'gpt35': "gpt-35-turbo-16k-20230613",
     'gpt4': "gpt-4-32k-20230321",
+    'gpt4-8k': "gpt-4-20230321",
     'gpt4-turbo': "gpt-4-1106-preview",
 }
 
 QUESTION_STRING = {
     CWQ: 'question',
-    # WEBQSP: 'RawQuestion',
     WEBQSP: 'Question',
-    GRAILQA: 'question',
-    GRAPHQ: 'question',
-    'simpleqa': 'question',
-    'qald': 'question',
-    'webquestions': 'question',
-    'trex': 'input',
-    'zeroshotre': 'input',
-    'creak': 'sentence'
 }
 
 def get_question_string(dataset: str) -> str:
@@ -60,11 +44,51 @@ def get_question_string(dataset: str) -> str:
             return QUESTION_STRING[cand_dataset]
     raise KeyError(f"Dataset {dataset} has not been configured quesition string yet.")
 
+
+def get_topic_entity_list(item, input_file):
+    if 'webqsp' in input_file.lower():
+        topic_ent = [item['TopicEntityName']]
+    else:
+        topic_ent = [v for k,v in item['topic_entity'].items()]
+    
+    return topic_ent
+
+def get_topic_entity_dict(item, input_file):
+    if 'webqsp' in input_file.lower():
+        entities = {item['TopicEntityID']: item['TopicEntityName']}
+    else:
+        entities = item['topic_entity']
+        
+    return entities
+
+def get_ground_truth(item, dataset_name):
+    answer_list= []
+    if dataset_name.startswith(CWQ):
+        if 'answers' in item:
+            answers = item["answers"]
+        else:
+            answers = item["answer"]
+
+        if type(answers)==str:
+            answer_list.append(answers)
+        else:
+            for answer in answers:
+                if type(answer)==str:
+                    alias=[answer]
+                else:
+                    alias = answer['label']
+                    # ans = answer['answer']
+                    # alias.append(ans)
+                answer_list.extend(alias)
+
+    elif dataset_name.startswith(WEBQSP):
+        answer_list = item['Answers'] + item['Aliases']
+
+    return answer_list
+
 QUESTION_ID = {
     CWQ: "ID",
-    # WEBQSP:"QuestionId",
     WEBQSP: "ID",
-    GRAILQA: "qid",
 }
 
 def get_question_id(dataset:str) -> str:
@@ -78,11 +102,6 @@ def get_question_id(dataset:str) -> str:
 def get_entity_answer(data, dataset):
     assert dataset in DATASET.keys(), f"Your dataset {dataset} hasn't been inplemented"
     if dataset == WEBQSP:
-        # answer_list = data['Parses'][0]['Answers']
-        # entity_answer = [
-        #     ans.get('EntityName', ans.get('AnswerArgument'))
-        #     for ans in answer_list
-        # ]
         entity_answer = data['Answers']
     else:
         if 'answers' in data.keys():
@@ -92,7 +111,7 @@ def get_entity_answer(data, dataset):
     return entity_answer
 
 if __name__=='__main__':
-    alias = "grailqa_dev"
+    alias = "cwq"
     print(get_dataset_file(alias))
     print(get_question_id(alias))
     print(get_question_string(alias))

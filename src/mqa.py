@@ -13,20 +13,16 @@ from utils.utils import run_llm, get_timestamp
 DATA_PATH = "data/datasets/metaQA"
 PROMPT_PATH = "prompt/metaQA"
 TYPE_RELATION = {
-    # "tag_to_movie": "has_tags",
     "tag_to_movie": "tagged",
-    # "writer_to_movie": "written_by",
     "writer_to_movie": "write",
     "movie_to_tags": "has_tags",
     "movie_to_year": "release_year",
     "movie_to_writer": "written_by",
     "movie_to_language": "in_language",
     "movie_to_genre": "has_genre",
-    # "director_to_movie": "directed_by",
     "director_to_movie": "direct",
     "movie_to_actor": "starred_actors",
     "movie_to_director": "directed_by",
-    # "actor_to_movie": "starred_actors"
     "actor_to_movie": "starred"
 }
 
@@ -153,7 +149,7 @@ def call_llm(prompt):
     MAX_RETRY_TIME = 5
     for _ in range(MAX_RETRY_TIME):
         try:
-            response = run_llm(prompt, options.temperature, options.max_token, options.LLM_type)
+            response = run_llm(prompt, options.temperature, options.max_token, options.openai_api_keys, options.LLM_type)
             relations = response.split("Relations: ")[-1].strip('\n').strip()
             results = eval(relations)
             assert type(results) == list
