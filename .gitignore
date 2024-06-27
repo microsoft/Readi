@@ -3,8 +3,10 @@ figures/
 cloudgpt-apim-token-cache.bin
 data/initial_plan/*
 data/contriever_fb_relation/freebase_contriever_index/index
+data/openai_embeddings/fb_relation_embed.json
+data/openai_embeddings/WebQSP_test_question_embed.json
 utils/cloudgpt_aoai_new.py
-*.json
+# *.json
 *.png
 *.yml
 
