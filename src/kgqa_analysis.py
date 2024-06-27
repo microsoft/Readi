@@ -1,5 +1,4 @@
-import sys
-import os
+import sys, os, string, re
 from argparse import ArgumentParser
 from tqdm import tqdm
 import numpy as np
@@ -35,7 +34,154 @@ def parse_args():
     args.LLM_type = LLM_BASE[args.llm]
     return args
 
-def main_analysis():    
+def normalize(s: str) -> str:
+    """Lower text and remove punctuation, articles and extra whitespace."""
+    s = s.lower()
+    exclude = set(string.punctuation)
+    s = "".join(char for char in s if char not in exclude)
+    s = re.sub(r"\b(a|an|the)\b", " ", s)
+    # remove <pad> token:
+    s = re.sub(r"\b(<pad>)\b", " ", s)
+    s = " ".join(s.split())
+    return s
+
+def match(s1: str, s2: str) -> bool:
+    s1 = normalize(s1)
+    s2 = normalize(s2)
+    return s2 in s1
+
+def reasoning_path_analysis(input_file):
+    """calculate some extensive features of reasoning path. 
+    we experiment on 1000 examples of CWQ (we use 8 for maximum edit time, which can be modified according to current resources)
+
+    Args:
+        input_file: output of readi. Our current release does not cover the field "len_of_predict_knowledge" and "len_of_grounded_knowledge". We would release this version as soon as possible.
+    """  
+    refine_time = {i:0 for i in range(0,8)}
+    if input_file.endswith("json"):
+        data = readjson(input_file)
+    elif input_file.endswith("jsonl"):
+        data = read_jsonl(input_file)
+
+    all_grounded = 0.0
+    number_of_path = 0
+    grounding_progress = 0.0
+    len_of_predict_path = 0
+    len_of_grounded_path = 0
+    cvt_end = 0
+    data = data[:1000]
+    
+    for lines in data:
+        len_of_predict_knowledge, len_of_grounded_knowledge = lines['len_of_predict_knowledge'], lines['len_of_grounded_knowledge']
+        number_of_path += len(len_of_predict_knowledge.keys())
+        kg_paths = lines['kg_paths'].split("\n")
+        for path in kg_paths:
+            if path.split(" -> ")[-1].startswith("m."):
+                cvt_end += 1
+                break
+
+        for k, v in len_of_predict_knowledge.items():
+            grounding_progress += len_of_grounded_knowledge[k][-1] / v[-1]
+            if len_of_grounded_knowledge[k][-1] == v[-1]:
+                all_grounded += 1.0
+                refine_time[len(len_of_grounded_knowledge[k])-1] += 1
+                
+            len_of_predict_path += v[-1]
+            len_of_grounded_path += len_of_grounded_knowledge[k][-1]
+
+    print("all grounded rate: ", all_grounded/number_of_path)
+    print("avg grounded progress: ", grounding_progress/number_of_path)
+    print("avg len of predict progress: ", len_of_predict_path/len(data))
+    print("avg len of grounded progress: ", len_of_grounded_path/len(data))
+    print("cvt ending rate: ", cvt_end/len(data))
+    print("refine time grounded distribution: ", refine_time)
+
+
+def calculate_answer_coverage_rate(file_path, golden_file_path):
+    """calculate answer coverage rate of reasoning path. 
+    we experiment on 1000 examples of CWQ (we use 8 for maximum edit time, which can be modified according to current resources)
+
+    Args:
+        file_path : _description_
+        golden_file_path (_type_): _description_
+    """
+    if file_path.endswith("jsonl"):
+        predict_graph = read_jsonl(file_path)[:1000]
+    else:
+        predict_graph = readjson(file_path)[:1000]
+
+    golden = readjson(golden_file_path)
+    all_recall = 0
+    all_recall = 0
+    all_knowledge_num = 0
+    all_knowledge_one_path_num_questions = 0
+    all_knowledge_one_path_num = 0
+    recall_one_path = 0
+    all_knowledge_multi_path_num_questions = 0
+    all_knowledge_multi_path_num = 0
+    recall_multi_path = 0
+
+    for index, lines in enumerate(tqdm(predict_graph)):
+        # topic entity (number of which is also the number of reasoning path)
+        topic_entity = golden[index]['topic_entity']
+        num_of_path = len(topic_entity.keys())
+        lines['kg_triples'] = "\n".join(list(set(lines['kg_triples_str'].split("\n"))))
+        answer_list = []
+
+        if "cwq" in file_path:
+            origin_data = golden[index]
+            if 'answers' in origin_data:
+                answers = origin_data["answers"]
+            else:
+                answers = origin_data["answer"]
+
+            if type(answers) == str:
+                answer_list.append(answers)
+            else:
+                alias = []
+                for answer in answers:
+                    if type(answer) == str:
+                        alias.append(answer)
+                    else:
+                        alias = answer['label']
+                    answer_list.extend(alias)
+        
+
+        knowledge_seq = lines['kg_triples'].replace(", ",",").replace(" ,",",").strip()
+        rk = len(list(set(knowledge_seq.split("\n"))))
+        all_knowledge_num += rk
+        if num_of_path == 1:
+            all_knowledge_one_path_num_questions += 1
+            all_knowledge_one_path_num += rk
+        else:
+            all_knowledge_multi_path_num_questions += 1
+            all_knowledge_multi_path_num += rk
+
+        recall = 0
+        for ans in answer_list:
+            if match(knowledge_seq, ans):
+                recall += 1
+
+        all_recall += 1 if recall > 0 else 0
+        if num_of_path == 1:
+            recall_one_path += 1 if recall > 0 else 0
+        else:
+            recall_multi_path += 1 if recall > 0 else 0
+
+    print("# knowledge one path:", all_knowledge_one_path_num_questions)
+    print("# knowledge multi path:", all_knowledge_multi_path_num_questions)
+
+    print("coverage rate overall:" , all_recall/len(predict_graph))
+
+    print("coverage rate one path:" , recall_one_path/all_knowledge_one_path_num_questions)
+    print("coverage rate multi path:" , recall_multi_path/all_knowledge_multi_path_num_questions)
+
+    print("avg number of knowledge overall :" , all_knowledge_num/len(predict_graph))
+    print("avg number of knowledge one path:" , all_knowledge_one_path_num/all_knowledge_one_path_num_questions)
+    print("avg number of knowledge multi path:" , all_knowledge_multi_path_num/all_knowledge_multi_path_num_questions)
+
+
+def analysis_for_different_reasoning_path():    
     options.LLM_type = LLM_BASE[options.llm]
         
     if options.analysis_strategy=="compared_method" and options.dataset != "cwq":
@@ -199,4 +345,4 @@ def main_analysis():
 
 if __name__ == '__main__':
     options = parse_args()
-    main_analysis()
+    analysis_for_different_reasoning_path()

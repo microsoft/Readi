@@ -5,7 +5,7 @@ from collections import defaultdict
 from argparse import ArgumentParser
 from tqdm import tqdm
 import numpy as np
-from config import LLM_BASE
+from config import LLM_BASE, MAX_REFINE_TIME, MAX_LLM_RETRY_TIME
 import json
 import random
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/..")
@@ -14,17 +14,15 @@ from utils.utils import run_llm, get_timestamp
 DATA_PATH = "data/datasets/tableqa"
 PROMPT_PATH = "prompt/table_qa"
 
-MAX_REFINE_TIME = 5
-
 def parse_args():
     parser = ArgumentParser("Tableqa wtq dataset")
     parser.add_argument("--full", action="store_true", help="full dataset.")
     parser.add_argument("--verbose", action="store_true", help="verbose.")
     parser.add_argument("--temperature", type=float, default=0.3)
-    parser.add_argument("--max_token", type=int, default=4096)
+    parser.add_argument("--max_token", type=int, default=2048)
     parser.add_argument("--llm", type=str, choices=LLM_BASE.keys(), default="gpt35", help="base LLM model.")
-    parser.add_argument("--prompt_retrieve", action="store_true", help="use prompt to retrieve.")
-    parser.add_argument("--llm_only", type=bool, default=False, help="llm using the whole table to predict answer.", default=False)
+    parser.add_argument("--llm_only", type=bool, help="llm using the whole table to predict answer.", default=False)
+    parser.add_argument("--openai_api_keys", help="openai_api_keys")
     args = parser.parse_args()
     args.LLM_type = LLM_BASE[args.llm]
     return args
@@ -37,6 +35,9 @@ def question_process(fpath):
 
 
 class MetaTable():
+    """
+        Table initialization and utils
+    """
     def __init__(self, table_info) -> None:
         self.header_contents = defaultdict(list)
         self.headers = [i.replace('\\n',"").replace('\n',"").lower() for i in table_info['header']]
@@ -65,18 +66,37 @@ class MetaTable():
 
 
 def get_init_reasoning(question, table):
+    """generate initial reasoning path
+
+    Args:
+        question (string): the given question
+        table (MetaTable): the whole table of the question
+
+    Returns:
+        reasoning path: chosen headers and entities
+    """
     prompt = open(
         os.path.join(PROMPT_PATH, f"table_qa_init.md"),
         'r', encoding='utf-8'
     ).read()
     prompt += f"\n\nQuestion:{question}\n" + header_row_list_to_table(table.headers, random.sample(table.rows, 1)[0])
-                # "Headers:"+ table.header_str + "\nExample Row:" + str(random.sample(table.rows, 1)[0]).strip("[").strip("]").replace("\'","\"") +"\n"
     prompt += "<Thought>\n"
     entity, headers = call_llm(prompt)
     return entity, headers
 
 
 def grounding_info(entity, predict_header, table, all_table=False):
+    """instantiation function: instantiate the reasoning path on the table (or filtering useful table items), according to the entity and predict_header
+
+    Args:
+        entity : chosen entities
+        predict_header : chosen headers
+        table (MetaTable): the whole table
+        all_table (bool, optional): Whether to use the whole table. Defaults to False.
+
+    Returns:
+        _type_: _description_
+    """
     str_predict_header =[str(i) for i in predict_header]
     predict_header = str_predict_header
     predict_header_str = ", ".join(predict_header)
@@ -89,7 +109,7 @@ def grounding_info(entity, predict_header, table, all_table=False):
             linerized_rows.append("item "+str(index+1)+": " + row_contents) 
         return linerized_table + "\n".join(linerized_rows)
     
-    if len(entity.keys())==0:
+    if len(entity.keys()) == 0:
         # linearize all rows
         for index in range(len(table.rows)):
             row_contents = "; ".join(["(" + col+ ", " + table.get_header_rows(str(col).lower())[index] + ")" for col in predict_header])
@@ -113,20 +133,13 @@ def header_item_str_to_table(input):
     items = []
 
     for line in lines[1:]:
-        # get the item values from the line
         values = line.split(": ")[1].split("; ")
-        # create an empty list to store the formatted values
         formatted_values = []
-        # loop through the values
         for value in values:
-            # remove the parentheses and the header name
             header = value.strip("()").split(", ")[0]
             value = value.strip("()").replace(header, "").strip(",").strip()
-            # capitalize the first letter of the value
             value = value.capitalize()
-            # append the value to the formatted values list
             formatted_values.append(value)
-        # append the formatted values list to the items list
         items.append(formatted_values)
 
     output = ""
@@ -134,12 +147,23 @@ def header_item_str_to_table(input):
     output += "| " + " | ".join(["--"] * len(headers)) + " |\n"
 
     for item in items:
-        # add the data row with pipe separators
         output += "| " + " | ".join(item) + " |\n"
     return output
 
 
 def header_row_list_to_table(header_list, row_list):
+    """
+    transform the format of table
+
+    Args:
+        header_list : list of headers
+        row_list : list of rows
+    Returns:
+        string: transformed table
+        \"| year | division | league | regular season | playoffs | open cup | avg. attendance |
+        | -- | -- | -- | -- | -- | -- | -- |
+        | 2001 | 2 | USL A-League | 4th, Western | Quarterfinals | Did not qualify | 7,169 |\"
+    """
     table = ""
     header_list_lower = [i.lower() for i in header_list]
     table += "| " + " | ".join(header_list_lower) + " |\n"
@@ -148,7 +172,18 @@ def header_row_list_to_table(header_list, row_list):
     return table
 
 
-def parse_answer(entity, predict_header, table:MetaTable):
+def parse_answer(entity, predict_header, table: MetaTable):
+    """detect feedback if anything goes wrong. If not, provide instantiation results
+
+    Args:
+        entity : predicted entities
+        predict_header : predicted headers
+        table (MetaTable): table for the question
+
+    Returns:
+        table items: the instantiation results
+        feedback: feedback if anything goes wrong
+    """
     feedback = ""
     feedback_len = 1
     
@@ -187,17 +222,24 @@ def parse_answer(entity, predict_header, table:MetaTable):
                 feedback=""
                 break
 
-    if len(feedback)==0:
+    if len(feedback) == 0:
         return grounding_info(entity, predict_header, table), feedback
     else:
         return grounding_info({}, predict_header, table), feedback
 
 
 def call_llm(prompt):
-    MAX_RETRY_TIME = 5
-    for _ in range(MAX_RETRY_TIME):
+    """call llm for reasoning path generation or editing
+
+    Args:
+        prompt
+
+    Returns:
+        reasoning path: chosen headers and entities
+    """
+    for _ in range(MAX_LLM_RETRY_TIME):
         try:
-            response = run_llm(prompt, options.temperature, options.max_token, options.openai_api_keys ,options.LLM_type)
+            response = run_llm(prompt, options.temperature, options.max_token, options.openai_api_keys, options.LLM_type)
             entities = response.split("Constrains:")[-1]
             entities = eval(entities)
             relations = response.split("Constrains:")[0].split("Chosen Headers:")[-1].strip('\n').strip()
@@ -214,7 +256,7 @@ def call_llm(prompt):
 
 
 def reasoning_llm(question, instantiate_path):
-    MAX_RETRY_TIME = 10
+    """call llm for reasoning"""
     prompt = open(
         os.path.join(PROMPT_PATH, f"table_qa_reasoning_wikitq.md"),
         'r', encoding='utf-8'
@@ -222,11 +264,11 @@ def reasoning_llm(question, instantiate_path):
     
     append = f"""\nQuestion: {question}\n<Table>\n{instantiate_path}\n</Table>\n<Thought>\n"""
     prompt += append
-    for _ in range(MAX_RETRY_TIME):
+    for _ in range(MAX_LLM_RETRY_TIME):
         try:
             response = run_llm(prompt, options.temperature, options.max_token, options.openai_api_keys, options.LLM_type)
             answer = response.split("Answer:")[-1].strip('\n').strip()
-            if answer[0]=="[" and answer[-1]==']' and "\'" in answer.strip("[").strip("]").strip("\"").strip("\'"):
+            if answer[0] == "[" and answer[-1] == ']' and "\'" in answer.strip("[").strip("]").strip("\"").strip("\'"):
                 answer = [answer.strip("[").strip("]").strip("\"").strip("\'")]
             else:
                 answer = eval(answer)
@@ -242,6 +284,18 @@ def reasoning_llm(question, instantiate_path):
     return answer
 
 def refine_reasoning(question, entity, predict_header, feedback, table):
+    """editing reasoning path
+
+    Args:
+        question : the given question
+        entity : previous entitiy constraints
+        predict_header : previous headers
+        feedback (string): feedback from instantiation
+        table (MetaTable): the whole table of the question
+
+    Returns:
+        reasoning path: chosen headers and entities
+    """
     prompt = open(
         os.path.join(PROMPT_PATH, f"table_qa_refine.md"),
         'r', encoding='utf-8'
@@ -250,7 +304,6 @@ def refine_reasoning(question, entity, predict_header, feedback, table):
     entity_str = str(entity)
     predict_header_str = str(predict_header)
     
-    # header_example = "Headers:"+ table.header_str + "\nExample Row:" + str(random.sample(table.rows, 1)[0]).strip("[").strip("]").replace("\'","\"")
     header_example = header_row_list_to_table(table.headers,random.sample(table.rows, 1)[0])
 
     append = f"""\nQuestion:{question}\n{header_example}>>>>>Wrong Answer:\nChosen Headers: {predict_header_str}\nConstrains: {entity_str}\n<Feedback>\n{feedback}</Feedback>\n<Thought>\n"""
@@ -262,6 +315,14 @@ def refine_reasoning(question, entity, predict_header, feedback, table):
 
 
 def norm_string(answer):
+    """normalize answer string for evaluation
+
+    Args:
+        answer
+
+    Returns:
+        normalized answer
+    """
     res = str(answer).encode("utf-8").decode("utf-8").lower().replace("\u2013","-").replace("\u2212", "-").replace("years", "").replace("season","").replace("_", "").replace("year", "").replace("months", "").replace("$", "").replace("month", "").replace("days", "").replace("day", "").replace(",","").replace("  "," ").replace("(","").replace(")","").replace("+","").replace("-","").replace("/","").replace("\'", "").replace("\"", "").replace("*", "").replace(" ", "").lower()
     if res.endswith(".0") or res.endswith(" m"):
         res=res[:-2]
@@ -307,6 +368,7 @@ def main():
         table = MetaTable(table_info)
         ground_truth = question_dict['answer_text']
         
+        # reasoning path generation 
         entity, predict_header = get_init_reasoning(question, table)
         if options.verbose:
             print(f"Question:{question}")
@@ -323,11 +385,13 @@ def main():
             answer_list.extend(answer)
         else:
             while refine < MAX_REFINE_TIME:
+                # reasoning path instantiation. collect feedback if anything goes wrong.
                 instantiate_path, feedback = parse_answer(entity, predict_header, table)
                 instantiate_paths.append(str((instantiate_path, entity, predict_header)))
                 feedbacks.append(feedback)
                 
-                if feedback=="":
+                if feedback == "":
+                    # QA reasoning 
                     answer = reasoning_llm(question, instantiate_path)
                     answer_list.extend(answer) 
                     break
@@ -336,10 +400,11 @@ def main():
                     print(f"{answer_list}, {f'feedback: {feedback}' if feedback else ''}")
                     print(f"Refine:{refine}")
 
+                # reasoning path editing
                 entity, predict_header = refine_reasoning(question, entity, predict_header, feedback, table)
                 refine += 1
 
-        if answer_list == [] or answer_list == [""] or answer_list[0]=="" or answer_list[0]=="none" or answer_list[0]=="unknown":
+        if answer_list == [] or answer_list == [""] or answer_list[0] == "" or answer_list[0] == "none" or answer_list[0] == "unknown":
             answer_list = []
             instantiate_path = grounding_info(entity, predict_header, table, all_table=True)
             answer = reasoning_llm(question, instantiate_path)

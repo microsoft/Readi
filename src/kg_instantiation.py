@@ -7,6 +7,7 @@ from pyserini.search.hybrid import HybridSearcher
 from pyserini.search.faiss import AutoQueryEncoder
 from collections import deque
 
+# load hybried searcher for relation binding
 query_encoder = AutoQueryEncoder(encoder_dir='facebook/contriever', pooling='mean')
 corpus = LuceneSearcher(os.path.join(CONTRIEVER_PATH, "contriever_fb_relation/index_relation_fb"))
 bm25_searcher = LuceneSearcher(os.path.join(CONTRIEVER_PATH, 'contriever_fb_relation/index_relation_fb'))
@@ -14,14 +15,32 @@ contriever_searcher = FaissSearcher(os.path.join(CONTRIEVER_PATH, 'contriever_fb
 hsearcher = HybridSearcher(contriever_searcher, bm25_searcher)
 
 def similar_relation_from_question(question, topk=5):
-    result= []
+    """search similar relations according to the question. Aims for corrputed reasoning path.
+
+    Args:
+        question
+        topk (Defaults to 5).
+
+    Returns:
+        retrieved relations
+    """
+    result = []
     hits = hsearcher.search(question, k=1000)[:topk]
     for hit in hits:
         result.append(json.loads(corpus.doc(str(hit.docid)).raw())['rel_ori'])
     return result
 
 def grounding_relations(relation, topk=5):
-    result_no_q= []
+    """bind a natural language relation to KG relation candidates
+
+    Args:
+        relation (_type_): _description_
+        topk (int, optional): _description_. Defaults to 5.
+
+    Returns:
+        _type_: _description_
+    """
+    result_no_q = []
     relation_tokens = relation.replace("."," ").replace("_", " ").strip()
     hits = hsearcher.search(relation_tokens.replace("  "," ").strip(), k=1000)[:topk]
     for hit in hits:
@@ -30,28 +49,25 @@ def grounding_relations(relation, topk=5):
     return result_no_q
 
 def relation_binding(reasoning_path_LLM_init, topk=5):
-    path=True
-    # 把所有预测的关系先grounding一下
-    rules = []
-    if path is False:
-        # 用str数组来存路径 效果差一些
-        for keys in reasoning_path_LLM_init.keys():
-            if type(reasoning_path_LLM_init[keys][0]) == str:
-                rules.append(reasoning_path_LLM_init[keys])
-            else:
-                # 这里的rules是LLM生成的路径 initial plan， 现在取每一个topic entity的top1  (init plan 实现了多个)
-                rules.append(reasoning_path_LLM_init[keys][0])
-    else:
-        for keys in reasoning_path_LLM_init.keys():
-            if type(reasoning_path_LLM_init[keys]) == str:
-                rules.append(utils.string_to_path(reasoning_path_LLM_init[keys]))
-            elif len(reasoning_path_LLM_init[keys])>0:
-                # 这里的rules是LLM生成的路径 initial plan， 现在取每一个topic entity的top1  (init plan 实现了多个)
-                rules.append(utils.string_to_path(reasoning_path_LLM_init[keys][0]))
+    """bind all relations in the reasoning path to KG relation candidates
+
+    Args:
+        reasoning_path_LLM_init (dict): generated reasoning path from each topic entity
+        topk (int, optional): bind a relation to topk candidates. Defaults to 5.
+
+    Returns:
+        grounded_relations (dict): grounded relations for each reasoning path
+    """
+    predicted_reasoning_path = []
+    for keys in reasoning_path_LLM_init.keys():
+        if type(reasoning_path_LLM_init[keys]) == str:
+            predicted_reasoning_path.append(utils.string_to_path(reasoning_path_LLM_init[keys]))
+        elif len(reasoning_path_LLM_init[keys])>0:
+            predicted_reasoning_path.append(utils.string_to_path(reasoning_path_LLM_init[keys][0]))
                 
-    # 对所有路径的每一个关系 grounding （faiss）
+    # bind all relations to KG relation candidates（faiss）
     grounded_relations = {}
-    for r in rules:
+    for r in predicted_reasoning_path:
         for rel in r:
             relations_no_q = grounding_relations(rel, topk=topk)
             if rel not in grounded_relations.keys():
@@ -62,35 +78,35 @@ def relation_binding(reasoning_path_LLM_init, topk=5):
     return grounded_relations
 
 
-def apply_rules_LLM_one_path_engine(rules, entity_id_label, grounded_relations):
-    result_paths = []
-    grounded_knowledge_current = []
-    ungrounded_neighbor_relation_dict = {}
+def bfs_for_each_path(entity_id, target_path, grounded_reasoning_set, options, max_que = 300):
+    """
+    Path connecting for each reasoning path, according to the reasoning path.
+    This is essentially a BFS search for each relation in the reasoning path. Each layer of BFS search consists of candidate relations.
+    In each layer, we check if neighbors of the current node have intersection with the candidate relation. If so, current relation is successfully instantiated.
 
-    entity_id, entity_label = entity_id_label
-    relation_path_array = utils.string_to_path(rules[0]) if type(rules)==list else utils.string_to_path(rules)
+    We return useful structured information (including currently instantiated instances and possible candidate relations in the failed points) for editing if instantiation fails.
+    Args:
+        entity_id : topic entity id for current reasoning path
+        target_path : current reasoning path
+        grounded_reasoning_set (list): list of grounded relation candidates for each position in the reasoning path
+        options : parsed arguments
+        max_que (int, optional): maximum queue size for each layer. Defaults to 300.
 
-    grounded_reasoning_set = []
-    for relation in relation_path_array:
-        grounded_reasoning_set.append(grounded_relations[relation])
-
-    result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict = utils.bfs_with_rule_LLM_engine(entity_id, entity_label, relation_path_array, grounded_reasoning_set)
-
-    return result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict
-
-
-
-def bfs_for_each_path(entity_id, target_rule, grounded_reasoning_set, options, max_que = 300):
+    Returns:
+        result_paths : instantiated reasoning path (empty if instantiation fails)
+        grounded_knowledge_current : stores all instances during BFS (length starting from 0)
+        ungrounded_neighbor_relation_dict : if instantiation fails, store some relations as candidates for editing
+    """
     result_paths = []
     current_position = 0
-    queue = deque([(entity_id, [], current_position)])  # 使用队列存储待探索节点和对应路径
+    queue = deque([(entity_id, [], current_position)])  # BFS queue. Container for entities, path instances and current position on path
     grounded_knowledge_current = []
-    ungrounded_neighbor_relation_dict={}
+    ungrounded_neighbor_relation_dict = {}
 
     while queue:
         size = len(queue)
         ungrounded_neighbor_relation_dict.clear()
-        # 遍历当前层
+
         if options.verbose:
             print("current layer size when BFS", size)
 
@@ -98,41 +114,40 @@ def bfs_for_each_path(entity_id, target_rule, grounded_reasoning_set, options, m
             size -= 1
             current_node, current_path, current_position = queue.popleft()
 
-            # 先存储当前层grounded过的路径  注意,这里面每一个都是路径 包括从0 到当前长度的所有路径
+            # push current grounded path to grounded_knowledge_current.
+            # Note that grounded_knowledge_current stores all instantiated path (including length from 0 to current path length
             grounded_knowledge_current.append((current_node, current_path, current_position))
 
-            if current_position == len(target_rule) and current_path not in result_paths and len(current_path)>0:
+            if current_position == len(target_path) and current_path not in result_paths and len(current_path) > 0:
                 result_paths.append(current_path)
 
-            # 如果当前路径长度小于规则长度，继续探索
-            if current_position < len(target_rule):
-                # 当前已有的relation
+            # continue instantiation if current path is shorter than predicted target_path
+            if current_position < len(target_path):
+                # get edges (relations) around current node (except previous relations)
                 pre_relations = [rel[1] for rel in current_path]
                 edge_set = utils.get_ent_one_hop_rel(current_node, pre_relations=pre_relations)
-                
                 if len(edge_set) == 0:
                     continue
-                # 取交集
-                # LLM预测的grounded的relation结果
-                list1 = grounded_reasoning_set[current_position]
-                # 实际的下一跳的relation
-                list2 = edge_set
+
+                # take intersection
+                list1 = grounded_reasoning_set[current_position]  # grounded relations for current position
+                list2 = edge_set                                  # relations around current node
                 list3 = pre_relations
 
                 intersection_grounded = list(set(list1) & set(list2))    
                 intersection_have_grounded = list(set(intersection_grounded) & set(list3))    
                 intersection = list(set(intersection_grounded) - set(intersection_have_grounded))
 
-                # 当前层的当前节点没有交集 要存储一下当前节点的邻居 用来refine
+                # no intersection for current node (something goes wrong), store some relations as candidates for editing
                 if len(intersection) <= 0:
                     ungrounded_neighbor_relation_dict[utils.id2entity_name_or_type_en(current_node)] = edge_set
                     continue
-                # 当前层的当前节点有交集，说明grounded到了  加入队列（等待下一层)
+                # grounded success. add to queue for next loop
                 else:
                     for relation in intersection:
-                        if len(queue)>=max_que:
+                        if len(queue) >= max_que:
                             break
-                        # 前向 后向关系
+                        # forward and backward relations
                         neighbors_with_relation = [neighbor for neighbor in utils.entity_search(current_node, relation, True) + utils.entity_search(current_node, relation, False)]
                         for neighbor in neighbors_with_relation:
                             if len(queue) < max_que:
@@ -140,8 +155,7 @@ def bfs_for_each_path(entity_id, target_rule, grounded_reasoning_set, options, m
                             else:
                                 break
                             
-        if len(ungrounded_neighbor_relation_dict.keys()) == 0 and len(grounded_knowledge_current)==1 and grounded_knowledge_current[-1][-1]==0:
+        if len(ungrounded_neighbor_relation_dict.keys()) == 0 and len(grounded_knowledge_current) == 1 and grounded_knowledge_current[-1][-1] == 0:
             ungrounded_neighbor_relation_dict[utils.id2entity_name_or_type_en(grounded_knowledge_current[-1][0])] = utils.get_ent_one_hop_rel(grounded_knowledge_current[-1][0])
 
     return result_paths, grounded_knowledge_current, ungrounded_neighbor_relation_dict
-

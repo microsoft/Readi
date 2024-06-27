@@ -27,7 +27,7 @@ def abandon_rels(relation):
     
 
 def execute_sparql(sparql_txt):
-    sparql_txt='PREFIX : <http://rdf.freebase.com/ns/>\n'+sparql_txt
+    sparql_txt = 'PREFIX : <http://rdf.freebase.com/ns/>\n'+sparql_txt
     try:
         sparql = SPARQLWrapper(SPARQLPATH)
         sparql.setQuery(sparql_txt)
@@ -73,23 +73,21 @@ def id2entity_name_or_type_en(entity_id):
 
 
 def table_result_to_list(res):
-    #  把这种table的形式[{'p': 'http://rdf.freebase.com/ns/common.topic.image',
+    #  transform table from this form: [{'p': 'http://rdf.freebase.com/ns/common.topic.image',
     #   's': 'http://rdf.freebase.com/ns/m.0crkzcy'},
     #  {'p': 'http://rdf.freebase.com/ns/meteorology.tropical_cyclone.tropical_cyclone_season',
     #   's': 'http://rdf.freebase.com/ns/m.06tgzm'}]
-    # 转换成这种
+    # to this form:
     # {'p': ['http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
     #   'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',]
     #  's': ['http://rdf.freebase.com/ns/common.topic',
     #   'http://rdf.freebase.com/ns/common.topic']}
-    if len(res)==0:
+    if len(res) == 0:
         return []
     else:
-        key_list=res[0].keys()
-        result={}
+        key_list = res[0].keys()
+        result = {}
         for key in key_list:
-            result[key]=list(set([item[key] for item in res]))
+            result[key] = list(set([item[key] for item in res]))
         return result
-    
-# print(execute_sparql("""\nPREFIX ns: <http://rdf.freebase.com/ns/>\nSELECT DISTINCT ?tailEntity \nWHERE {\n  ns:m.0jm9h ns:location.administrative_division.country ?tailEntity .\n}"""))
-# print(id2entity_name_or_type_en("m.047hrrr"))
+

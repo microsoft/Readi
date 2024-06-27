@@ -4,7 +4,7 @@ import os
 
 DATASET_BASE = "data/datasets"
 CONTRIEVER_PATH = "data/"
-RESULT_PATH = "results/KGQA"
+# RESULT_PATH = "results/KGQA"
 OUTPUT_FILE_PATH = "results/"
 MAX_LLM_RETRY_TIME = 5
 MAX_REFINE_TIME = 5
@@ -30,6 +30,7 @@ LLM_BASE = {
     'gpt4': "gpt-4-32k-20230321",
     'gpt4-8k': "gpt-4-20230321",
     'gpt4-turbo': "gpt-4-1106-preview",
+    'gpt4-o': "gpt-4o-20240513-preview",
 }
 
 QUESTION_STRING = {
@@ -50,7 +51,6 @@ def get_topic_entity_list(item, input_file):
         topic_ent = [item['TopicEntityName']]
     else:
         topic_ent = [v for k,v in item['topic_entity'].items()]
-    
     return topic_ent
 
 def get_topic_entity_dict(item, input_file):
@@ -58,7 +58,6 @@ def get_topic_entity_dict(item, input_file):
         entities = {item['TopicEntityID']: item['TopicEntityName']}
     else:
         entities = item['topic_entity']
-        
     return entities
 
 def get_ground_truth(item, dataset_name):
@@ -69,16 +68,15 @@ def get_ground_truth(item, dataset_name):
         else:
             answers = item["answer"]
 
-        if type(answers)==str:
+        if type(answers) == str:
             answer_list.append(answers)
         else:
             for answer in answers:
-                if type(answer)==str:
+                if type(answer) == str:
                     alias=[answer]
                 else:
                     alias = answer['label']
-                    # ans = answer['answer']
-                    # alias.append(ans)
+
                 answer_list.extend(alias)
 
     elif dataset_name.startswith(WEBQSP):

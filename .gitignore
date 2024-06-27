@@ -6,6 +6,8 @@ data/contriever_fb_relation/freebase_contriever_index/index
 *.png
 *.yml
 figures/
+cloadgpt-apim-token-cache.bin
+utils/cloudgpt_aoai_new.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
