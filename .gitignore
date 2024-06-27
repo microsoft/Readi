@@ -1,13 +1,12 @@
 results/
+figures/
 cloudgpt-apim-token-cache.bin
 data/initial_plan/*
 data/contriever_fb_relation/freebase_contriever_index/index
+utils/cloudgpt_aoai_new.py
 *.json
 *.png
 *.yml
-figures/
-cloadgpt-apim-token-cache.bin
-cloudgpt*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
