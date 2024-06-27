@@ -37,7 +37,7 @@ huggingface-hub==0.19.4
 humanfriendly==10.0
 idna==3.6
 isodate==0.6.1
-Jinja2==3.1.2
+Jinja2==3.1.4
 joblib==1.3.2
 langcodes==3.3.0
 Levenshtein==0.23.0
