@@ -4,7 +4,6 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/..")
 import json
 from sentence_transformers import util
 from utils.freebase_func import *
-from utils.cloudgpt_aoai_new import *
 import openai
 import time
 
@@ -27,8 +26,6 @@ def savejson(file_name, new_data):
     with open(file_name, mode='w',encoding='utf-8') as fp:
         json.dump(new_data, fp, indent=4, sort_keys=False,ensure_ascii=False)
 
-r_embedding_map = readjson("data/openai_embeddings/fb_relation_embed.json")
-
 
 def get_openai_embedding(input_message, openai_api_keys):
     ok = False
@@ -45,13 +42,14 @@ def get_openai_embedding(input_message, openai_api_keys):
     return response['data']
 
 
-def run_llm(prompt, temperature, max_tokens, openai_api_keys, engine="gpt-35-turbo-16k-20230613"):
-    got_result = False
+def run_llm(prompt, temperature, max_tokens, openai_api_keys, engine="gpt-3.5-turbo"):
     messages = []
     message_prompt = {"role":"user","content":prompt}
     messages.append(message_prompt)
     f = 0
     result = [{"content": ""}]
+
+    openai.api_key = openai_api_keys
     while(f <= 5):
         try:
             response = openai.ChatCompletion.create(
@@ -185,6 +183,13 @@ def similar_search_list(question, relation_list, options):
     """
     question_embedding = get_openai_embedding(question, options.openai_api_keys)[0]['embedding']
     relation_embeddings = []
+    # read cache file (if applicable)
+    cache_file_path = "data/openai_embeddings/fb_relation_embed.json"
+    if os.path.exists(cache_file_path):
+        r_embedding_map = readjson(cache_file_path)
+    else:
+        r_embedding_map = {}
+
     for rel in relation_list:
         if rel in r_embedding_map.keys():
             relation_embeddings.append(r_embedding_map[rel])
