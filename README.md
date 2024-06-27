@@ -33,7 +33,10 @@ $ pip install -r requirements.txt
 ## Run
 
 `MAX_LLM_RETRY_TIME`, `MAX_REFINE_TIME`,`OUTPUT_FILE_PATH` can be modified in config.py.
+
 LLM openai engine can be modifed with `LLM_BASE` in config.py.
+
+Remember to create results/(KGQA or MQA or tableqa) folder.
 
 ### run kgqa (cwq or WebQSP)
 
