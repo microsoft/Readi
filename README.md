@@ -22,11 +22,12 @@ $ pip install -r requirements.txt
 
 3. Deploy the retrieval module for relation binding (Required for cwq and WebQSP)
 
-    The resource of these is from repo: [KB-BINDER](https://github.com/ltl3A87/KB-BINDER)
+    The resource is from repo: [KB-BINDER](https://github.com/ltl3A87/KB-BINDER).
+    
+    **Please download** the **index** file and put it under `contriever_fb_relation/freebase_contriever_index/` with this [link](https://drive.google.com/file/d/1hnyW-_k0YaAUZDTdYzhbKDTnFuLEW-W2/view?usp=sharing)
 
-    You SHOULD modified the path `CONTRIEVER_PATH` in config.py.
+    You can also MODIFY  the path `CONTRIEVER_PATH` in config.py.
 
-    You can download the index file and put it under `contriever_fb_relation/freebase_contriever_index/` with this [link](https://drive.google.com/file/d/1hnyW-_k0YaAUZDTdYzhbKDTnFuLEW-W2/view?usp=sharing)
 
 4. Create results/(KGQA or MQA or tableqa) folder.
 
