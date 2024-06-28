@@ -17,12 +17,12 @@ PROMPT_PATH = "prompt/table_qa"
 def parse_args():
     parser = ArgumentParser("Tableqa wtq dataset")
     parser.add_argument("--full", action="store_true", help="full dataset.")
-    parser.add_argument("--verbose", action="store_true", help="verbose.")
+    parser.add_argument("--verbose", action="store_true", help="verbose.", default=False)
     parser.add_argument("--temperature", type=float, default=0.3)
     parser.add_argument("--max_token", type=int, default=2048)
     parser.add_argument("--llm", type=str, choices=LLM_BASE.keys(), default="gpt35", help="base LLM model.")
     parser.add_argument("--llm_only", type=bool, help="llm using the whole table to predict answer.", default=False)
-    parser.add_argument("--openai_api_keys", help="openai_api_keys")
+    parser.add_argument("--openai_api_keys", help="openai_api_keys", required=True)
     args = parser.parse_args()
     args.LLM_type = LLM_BASE[args.llm]
     return args

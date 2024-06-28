@@ -28,7 +28,7 @@ def parse_args():
     parser.add_argument("--max_que", type=int, default=200)
     parser.add_argument("--dataset", type=str, required=True, help="choose the dataset.choices={\"cwq\", \"WebQSP\"}")
     parser.add_argument("--llm", type=str, choices=LLM_BASE.keys(), default="gpt35", help="base LLM model.")
-    parser.add_argument("--openai_api_keys", type=str, help="opeani_api_keys", default="")
+    parser.add_argument("--openai_api_keys", type=str, help="opeani_api_keys", default="", required=True)
     parser.add_argument("--count_token_cost", type=bool, help="count_token_cost", default=False)
     parser.add_argument("--initial_path_eval", type=bool, help="evaluate initial reasoning path (ablation study)", default=False)
     

@@ -18,25 +18,23 @@ $ pip install -r requirements.txt
     a. Please refer to [Freebase Setup](https://github.com/dki-lab/Freebase-Setup) to deploy your Freebase engine to run for cwq and WebQSP. \
     (Just clone the code and follow the readme to setup a server port)
     
-    b. set up the port according to the deployed port in utils/freebase_func.py (e.g. SPARQLPATH = "http://127.0.0.1:3002/sparql")
+    b. Set up the port according to the deployed port in utils/freebase_func.py (e.g. SPARQLPATH = "http://127.0.0.1:3002/sparql")
 
 3. Deploy the retrieval module for relation binding (Required for cwq and WebQSP)
 
     The resource of these is from repo: [KB-BINDER](https://github.com/ltl3A87/KB-BINDER)
 
-    You can modified the path `CONTRIEVER_PATH` in config.py 
+    You SHOULD modified the path `CONTRIEVER_PATH` in config.py.
 
     You can download the index file and put it under `contriever_fb_relation/freebase_contriever_index/` with this [link](https://drive.google.com/file/d/1hnyW-_k0YaAUZDTdYzhbKDTnFuLEW-W2/view?usp=sharing)
 
-
+4. Create results/(KGQA or MQA or tableqa) folder.
 
 ## Run
 
 `MAX_LLM_RETRY_TIME`, `MAX_REFINE_TIME`,`OUTPUT_FILE_PATH` can be modified in config.py.
 
 LLM openai engine can be modifed with `LLM_BASE` in config.py.
-
-Remember to create results/(KGQA or MQA or tableqa) folder.
 
 ### run kgqa (cwq or WebQSP)
 

@@ -41,11 +41,11 @@ def parse_args():
     parser = ArgumentParser("KBQA MQA dataset")
     parser.add_argument("--hop", type=str, choices=['1hop', '2hop', '3hop'], default='2hop')
     parser.add_argument("--full", action="store_true", help="full dataset.", default=True)
-    parser.add_argument("--verbose", action="store_true", help="verbose.")
+    parser.add_argument("--verbose", action="store_true", help="verbose.", default=False)
     parser.add_argument("--temperature", type=float, default=0.3)
     parser.add_argument("--max_token", type=int, default=2048)
     parser.add_argument("--llm", type=str, choices=LLM_BASE.keys(), default="gpt35", help="base LLM model.")
-    parser.add_argument("--openai_api_keys", help="openai_api_keys")
+    parser.add_argument("--openai_api_keys", help="openai_api_keys", required=True)
     args = parser.parse_args()
     args.LLM_type = LLM_BASE[args.llm]
     return args
